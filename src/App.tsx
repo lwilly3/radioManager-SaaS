@@ -1,0 +1,111 @@
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './lib/react-query';
+import { useAuthStore } from './store/useAuthStore';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import Layout from './components/Layout';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import ShowPlans from './pages/ShowPlans';
+import MyShowPlans from './pages/MyShowPlans';
+import CreateShowPlan from './pages/CreateShowPlan';
+import EditShowPlan from './pages/EditShowPlan';
+import ShowPlanDetail from './pages/ShowPlanDetail';
+import ShowList from './pages/shows/ShowList';
+import CreateShow from './pages/shows/CreateShow';
+import EditShow from './pages/shows/EditShow';
+import GuestList from './pages/guests/GuestList';
+import CreateGuest from './pages/guests/CreateGuest';
+import EditGuest from './pages/guests/EditGuest';
+import TeamList from './pages/team/TeamList';
+import CreateTeamMember from './pages/team/CreateTeamMember';
+import EditTeamMember from './pages/team/EditTeamMember';
+import Chat from './pages/Chat';
+import NotFound from './pages/NotFound';
+import Archives from './pages/Archives';
+import FullProgram from './pages/FullProgram';
+import Settings from './pages/Settings';
+
+const App: React.FC = () => {
+  const isAuthenticated = useAuthStore((state) => Boolean(state.token));
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <Routes>
+          {/* Public route */}
+          <Route 
+            path="/login" 
+            element={
+              isAuthenticated ? <Navigate to="/" replace /> : <Login />
+            } 
+          />
+
+          {/* Protected routes */}
+          <Route path="/" element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<Dashboard />} />
+            
+            {/* Show Plans */}
+            <Route path="show-plans">
+              <Route index element={<ShowPlans />} />
+              <Route path="create" element={<CreateShowPlan />} />
+              <Route path=":id" element={<ShowPlanDetail />} />
+              <Route path=":id/edit" element={<EditShowPlan />} />
+            </Route>
+
+            {/* My Show Plans */}
+            <Route path="my-show-plans">
+              <Route index element={<MyShowPlans />} />
+              <Route path="create" element={<CreateShowPlan />} />
+              <Route path=":id" element={<ShowPlanDetail />} />
+              <Route path=":id/edit" element={<EditShowPlan />} />
+            </Route>
+
+            {/* Full Program */}
+            <Route path="full-program" element={<FullProgram />} />
+
+            {/* Archives */}
+            <Route path="archives" element={<Archives />} />
+
+            {/* Shows */}
+            <Route path="shows">
+              <Route index element={<ShowList />} />
+              <Route path="create" element={<CreateShow />} />
+              <Route path=":id/edit" element={<EditShow />} />
+            </Route>
+
+            {/* Guests */}
+            <Route path="guests">
+              <Route index element={<GuestList />} />
+              <Route path="create" element={<CreateGuest />} />
+              <Route path=":id/edit" element={<EditGuest />} />
+            </Route>
+
+            {/* Team */}
+            <Route path="team">
+              <Route index element={<TeamList />} />
+              <Route path="create" element={<CreateTeamMember />} />
+              <Route path=":id/edit" element={<EditTeamMember />} />
+            </Route>
+
+            {/* Settings */}
+            <Route path="settings" element={<Settings />} />
+
+            {/* Chat */}
+            <Route path="chat" element={<Chat />} />
+          </Route>
+
+          {/* 404 Not Found */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </QueryClientProvider>
+  );
+};
+
+export default App;

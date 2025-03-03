@@ -1,0 +1,125 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  body {
+    @apply antialiased text-gray-900 bg-gray-50;
+  }
+
+  /* Better mobile tap targets */
+  button, a {
+    @apply cursor-pointer min-h-[44px] min-w-[44px];
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-colors;
+  }
+  
+  .btn-primary {
+    @apply bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300;
+  }
+
+  .form-input {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500;
+  }
+
+  .form-textarea {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none;
+  }
+
+  /* Live show card animation */
+  .live-show-border {
+    @apply before:absolute before:inset-0 before:rounded-lg before:border-2 before:border-indigo-200 before:animate-[highlight_1s_ease-in-out] before:pointer-events-none;
+  }
+
+  /* Mobile optimizations */
+  @media (max-width: 640px) {
+    .btn {
+      @apply px-3 py-2 text-sm;
+    }
+
+    .form-input, .form-textarea {
+      @apply text-base;
+    }
+
+    .touch-target {
+      @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+    }
+
+    .form-group-mobile {
+      @apply space-y-4;
+    }
+
+    .scroll-container {
+      @apply -mx-4 px-4 overflow-x-auto touch-pan-x;
+    }
+  }
+
+  .responsive-grid {
+    @apply grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+  }
+
+  .text-responsive {
+    @apply text-sm sm:text-base;
+  }
+
+  .heading-responsive {
+    @apply text-xl sm:text-2xl font-bold;
+  }
+
+  .padding-responsive {
+    @apply p-3 sm:p-4;
+  }
+
+  .margin-responsive {
+    @apply my-3 sm:my-4;
+  }
+
+  .flex-responsive {
+    @apply flex flex-col sm:flex-row gap-3 sm:gap-4;
+  }
+}
+
+@keyframes highlight {
+  0% {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+}
+
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #4f46e5;
+  border-radius: 50%;
+  width: 3rem;
+  height: 3rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
