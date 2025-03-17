@@ -5,23 +5,18 @@ import ChatHeader from './ChatHeader';
 import Message from './Message';
 import MessageInput from './MessageInput';
 import { v4 as uuidv4 } from 'uuid';
-import type { Message as MessageType } from '../../types';
+import type { Message as MessageType } from '../../types/chat';
 
-/**
- * ChatRoom component displays a single chat room with messages and input.
- * Handles message sending, reactions, and various message interactions.
- */
 interface ChatRoomProps {
-  roomId: string;  // ID of the current chat room
+  roomId: string;
 }
 
 const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
-  // Refs and state
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [replyTo, setReplyTo] = useState<MessageType | undefined>();
-  
-  // Store hooks
-  const currentUser = useAuthStore((state) => state.user);
+  const scrollTimeoutRef = useRef<number | null>(null);
+
+  const { user: currentUser, permissions } = useAuthStore();
   const {
     messages,
     addMessage,
@@ -35,25 +30,37 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
     saveDraft,
     draftMessages,
     rooms,
+    archiveRoom,
+    deleteRoom
   } = useChatStore();
 
-  // Get current room and its messages
   const room = rooms.find((r) => r.id === roomId);
   const roomMessages = messages[roomId] || [];
+  const canManageRoom = room?.createdBy === currentUser?.id;
 
-  // Auto-scroll and mark as read on new messages
   useEffect(() => {
-    markRoomAsRead(roomId);
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [roomId, roomMessages.length, markRoomAsRead]);
+    if (permissions?.can_view_messages) {
+      useChatStore.getState().subscribeToMessages(roomId);
+      markRoomAsRead(roomId);
+      
+      if (scrollTimeoutRef.current) {
+        window.clearTimeout(scrollTimeoutRef.current);
+      }
 
-  /**
-   * Handles sending a new message
-   * @param content Message content
-   * @param type Message type (text, file, etc.)
-   */
+      scrollTimeoutRef.current = window.setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+
+    return () => {
+      if (scrollTimeoutRef.current) {
+        window.clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, [roomId, roomMessages.length, markRoomAsRead, permissions]);
+
   const handleSendMessage = (content: string, type: MessageType['type']) => {
-    if (!currentUser || !room) return;
+    if (!currentUser || !room || !permissions?.can_send_messages) return;
 
     const newMessage: MessageType = {
       id: uuidv4(),
@@ -61,27 +68,24 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
       type,
       sender: currentUser,
       timestamp: new Date().toISOString(),
-      replyTo: replyTo
+      ...(replyTo
         ? {
-            id: replyTo.id,
-            content: replyTo.content,
-            sender: replyTo.sender,
+            replyTo: {
+              id: replyTo.id,
+              content: replyTo.content,
+              sender: replyTo.sender,
+            },
           }
-        : undefined,
+        : {}),
     };
 
     addMessage(roomId, newMessage);
     setReplyTo(undefined);
   };
 
-  /**
-   * Handles file attachments
-   * @param files List of files to attach
-   */
   const handleAttachFiles = async (files: FileList) => {
-    if (!currentUser || !room) return;
+    if (!currentUser || !room || !permissions?.can_upload_files) return;
 
-    // Convert files to attachments
     const attachments = Array.from(files).map((file) => ({
       id: uuidv4(),
       name: file.name,
@@ -109,13 +113,8 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
     addMessage(roomId, newMessage);
   };
 
-  /**
-   * Handles message reactions
-   * @param messageId ID of the message to react to
-   * @param emoji Emoji reaction
-   */
   const handleReaction = (messageId: string, emoji: string) => {
-    if (!currentUser) return;
+    if (!currentUser || !permissions?.can_send_messages) return;
 
     const message = roomMessages.find((m) => m.id === messageId);
     if (!message) return;
@@ -130,41 +129,68 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
     }
   };
 
-  if (!room) return null;
+  const handleArchiveRoom = async () => {
+    if (!canManageRoom) return;
+    if (window.confirm('Êtes-vous sûr de vouloir archiver cette discussion ?')) {
+      await archiveRoom(roomId);
+    }
+  };
+
+  const handleDeleteRoom = async () => {
+    if (!canManageRoom) return;
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette discussion ? Cette action est irréversible.')) {
+      await deleteRoom(roomId);
+    }
+  };
+
+  if (!room || !permissions?.can_view_messages) return null;
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-gray-50">
       <ChatHeader
         room={room}
         onShowMembers={() => {}}
         onShowPinnedMessages={() => {}}
-        onArchiveRoom={() => {}}
+        onArchiveRoom={handleArchiveRoom}
+        onDeleteRoom={canManageRoom ? handleDeleteRoom : undefined}
       />
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {roomMessages.map((message) => (
-          <Message
-            key={message.id}
-            message={message}
-            isCurrentUser={message.sender.id === currentUser?.id}
-            onReply={() => setReplyTo(message)}
-            onPin={() => pinMessage(roomId, message.id)}
-            onDelete={() => deleteMessage(roomId, message.id)}
-            onEdit={(newContent) => editMessage(roomId, message.id, newContent)}
-            onReact={(emoji) => handleReaction(message.id, emoji)}
-          />
-        ))}
-        <div ref={messagesEndRef} />
+      <div className="flex-1 overflow-y-auto">
+        <div className="py-4 space-y-1">
+          {roomMessages.map((message) => (
+            <Message
+              key={message.id}
+              message={message}
+              isCurrentUser={message.sender.id === currentUser?.id}
+              onReply={() =>
+                permissions?.can_send_messages && setReplyTo(message)
+              }
+              onPin={() => pinMessage(roomId, message.id)}
+              onDelete={() =>
+                permissions?.can_delete_messages &&
+                deleteMessage(roomId, message.id)
+              }
+              onEdit={(newContent) =>
+                permissions?.can_send_messages &&
+                editMessage(roomId, message.id, newContent)
+              }
+              onReact={(emoji) => handleReaction(message.id, emoji)}
+            />
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
-      <MessageInput
-        onSendMessage={handleSendMessage}
-        onAttachFiles={handleAttachFiles}
-        replyTo={replyTo}
-        onCancelReply={() => setReplyTo(undefined)}
-        draft={draftMessages[roomId]}
-        onSaveDraft={(content) => saveDraft(roomId, content)}
-      />
+      {permissions?.can_send_messages && (
+        <MessageInput
+          onSendMessage={handleSendMessage}
+          onAttachFiles={handleAttachFiles}
+          replyTo={replyTo}
+          onCancelReply={() => setReplyTo(undefined)}
+          draft={draftMessages[roomId]}
+          onSaveDraft={(content) => saveDraft(roomId, content)}
+        />
+      )}
     </div>
   );
 };

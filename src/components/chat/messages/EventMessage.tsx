@@ -9,6 +9,14 @@ interface EventMessageProps {
 }
 
 const EventMessage: React.FC<EventMessageProps> = ({ event }) => {
+  if (!event) {
+    return (
+      <div className="bg-gray-50 rounded-lg p-3">
+        <p className="text-gray-500">Événement invalide ou supprimé</p>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-gray-50 rounded-lg p-3">
       <div className="flex items-center gap-2 mb-2">
@@ -35,13 +43,13 @@ const EventMessage: React.FC<EventMessageProps> = ({ event }) => {
           </div>
         )}
 
-        {event.attendees.length > 0 && (
+        {event.attendees && event.attendees.length > 0 && (
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-gray-600" />
             <div className="flex -space-x-2">
               {event.attendees.map((attendee, index) => (
                 <div
-                  key={attendee}
+                  key={`${attendee}-${index}`}
                   className="w-6 h-6 rounded-full bg-indigo-100 border-2 border-white flex items-center justify-center"
                 >
                   <span className="text-xs font-medium text-indigo-600">

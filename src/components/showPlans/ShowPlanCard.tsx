@@ -67,20 +67,7 @@ const ShowPlanCard: React.FC<ShowPlanCardProps> = ({
     <div className={`relative ${isLive ? 'live-show-border' : ''}`}>
       <div className="bg-white rounded-lg shadow hover:shadow-md transition-shadow">
         <div className="p-4">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">
-                {showPlan.emission}
-              </h3>
-              <div className="mt-2">
-                <StatusTransition
-                  currentStatus={showPlan.status}
-                  onStatusChange={handleStatusChange}
-                  isDisabled={isUpdating}
-                />
-              </div>
-            </div>
-
+          <div className="flex justify-end items-start mb-4">
             <div className="flex items-center gap-2">
               {userPermissions?.can_delete_showplan &&
                 isLocked &&
@@ -120,6 +107,19 @@ const ShowPlanCard: React.FC<ShowPlanCardProps> = ({
                 </button>
               )}
             </div>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">
+              {showPlan.emission}
+            </h3>
+          </div>
+          <div className="mt-2">
+            {' '}
+            <StatusTransition
+              currentStatus={showPlan.status}
+              onStatusChange={handleStatusChange}
+              isDisabled={isUpdating}
+            />
           </div>
 
           <div className="space-y-3 mb-4">

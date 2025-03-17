@@ -70,8 +70,9 @@ export interface Status {
 // Presenter type
 export interface Presenter {
   id: string;
-  user_id?: number;
+  user_id: string;
   name: string;
+
   profilePicture?: string;
   contact?: {
     email?: string;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { MoreVertical, Users, Pin, Archive } from 'lucide-react';
+import { MoreVertical, Users, Pin, Archive, Trash2 } from 'lucide-react';
 import { Menu } from '@headlessui/react';
 import type { ChatRoom } from '../../types';
 
@@ -8,6 +8,7 @@ interface ChatHeaderProps {
   onShowMembers: () => void;
   onShowPinnedMessages: () => void;
   onArchiveRoom: () => void;
+  onDeleteRoom?: () => void;
 }
 
 const ChatHeader: React.FC<ChatHeaderProps> = ({
@@ -15,6 +16,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   onShowMembers,
   onShowPinnedMessages,
   onArchiveRoom,
+  onDeleteRoom,
 }) => {
   return (
     <div className="px-4 py-3 bg-white border-b border-gray-200 flex items-center justify-between">
@@ -59,6 +61,21 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
                 </button>
               )}
             </Menu.Item>
+            {onDeleteRoom && (
+              <Menu.Item>
+                {({ active }) => (
+                  <button
+                    onClick={onDeleteRoom}
+                    className={`${
+                      active ? 'bg-gray-50' : ''
+                    } w-full px-4 py-2 text-left text-sm text-red-600 flex items-center gap-2`}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Supprimer la discussion
+                  </button>
+                )}
+              </Menu.Item>
+            )}
           </Menu.Items>
         </Menu>
       </div>

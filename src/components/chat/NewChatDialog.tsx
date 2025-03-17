@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog } from '@headlessui/react';
-import { X, Search, Users } from 'lucide-react';
+import { X, Search, Users, Shield, AlertTriangle } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { useTeamStore } from '../../store/useTeamStore';
 import { useChatStore } from '../../store/useChatStore';
+import { useAuthStore } from '../../store/useAuthStore';
 import type { ChatRoom } from '../../types';
 
 interface NewChatDialogProps {
@@ -15,29 +16,69 @@ const NewChatDialog: React.FC<NewChatDialogProps> = ({ isOpen, onClose }) => {
   const [search, setSearch] = useState('');
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [roomName, setRoomName] = useState('');
+  const [roomDescription, setRoomDescription] = useState('');
+  const [error, setError] = useState<string | null>(null);
   
   const members = useTeamStore((state) => state.members);
   const addRoom = useChatStore((state) => state.addRoom);
   const setActiveRoom = useChatStore((state) => state.setActiveRoom);
+  const { user } = useAuthStore();
 
-  const filteredMembers = members.filter((member) =>
-    member.name.toLowerCase().includes(search.toLowerCase())
-  );
+  // Reset form when dialog opens
+  useEffect(() => {
+    if (isOpen) {
+      setSearch('');
+      setSelectedMembers([]);
+      setRoomName('');
+      setRoomDescription('');
+      setError(null);
+    }
+  }, [isOpen]);
 
-  const handleCreateRoom = () => {
-    if (!roomName.trim() || selectedMembers.length === 0) return;
+  const filteredMembers = members.filter(member => {
+    const matchesSearch = member.name.toLowerCase().includes(search.toLowerCase()) ||
+                         member.email.toLowerCase().includes(search.toLowerCase());
+    return matchesSearch;
+  });
 
-    const newRoom: ChatRoom = {
-      id: uuidv4(),
-      name: roomName.trim(),
-      type: 'team',
-      participants: selectedMembers,
-      unreadCount: 0,
-    };
+  const handleCreateRoom = async () => {
+    if (!user) return;
+    if (!roomName.trim()) {
+      setError('Le nom de la discussion est requis');
+      return;
+    }
+    if (selectedMembers.length === 0) {
+      setError('Sélectionnez au moins un participant');
+      return;
+    }
 
-    addRoom(newRoom);
-    setActiveRoom(newRoom.id);
-    onClose();
+    try {
+      const newRoom: ChatRoom = {
+        id: uuidv4(),
+        name: roomName.trim(),
+        description: roomDescription.trim() || undefined,
+        type: 'team',
+        participants: [...selectedMembers, user.id],
+        unreadCount: 0,
+        createdAt: new Date().toISOString(),
+        createdBy: user.id,
+        isArchived: false
+      };
+
+      await addRoom(newRoom);
+      setActiveRoom(newRoom.id);
+      onClose();
+    } catch (err) {
+      setError('Erreur lors de la création de la discussion');
+    }
+  };
+
+  const handleSelectAll = () => {
+    setSelectedMembers(members.map(m => m.id));
+  };
+
+  const handleUnselectAll = () => {
+    setSelectedMembers([]);
   };
 
   return (
@@ -59,6 +100,13 @@ const NewChatDialog: React.FC<NewChatDialogProps> = ({ isOpen, onClose }) => {
           </div>
 
           <div className="p-4 space-y-4">
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700">
+                <AlertTriangle className="h-5 w-5 flex-shrink-0" />
+                <p className="text-sm">{error}</p>
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Nom de la discussion
@@ -74,8 +122,38 @@ const NewChatDialog: React.FC<NewChatDialogProps> = ({ isOpen, onClose }) => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Participants
+                Description (optionnelle)
               </label>
+              <textarea
+                value={roomDescription}
+                onChange={(e) => setRoomDescription(e.target.value)}
+                className="form-textarea"
+                rows={2}
+                placeholder="Description de la discussion..."
+              />
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-gray-700">
+                  Participants
+                </label>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleSelectAll}
+                    className="text-xs text-indigo-600 hover:text-indigo-700"
+                  >
+                    Tout sélectionner
+                  </button>
+                  <span className="text-gray-300">|</span>
+                  <button
+                    onClick={handleUnselectAll}
+                    className="text-xs text-indigo-600 hover:text-indigo-700"
+                  >
+                    Tout désélectionner
+                  </button>
+                </div>
+              </div>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
@@ -121,6 +199,11 @@ const NewChatDialog: React.FC<NewChatDialogProps> = ({ isOpen, onClose }) => {
                   </div>
                 </label>
               ))}
+              {filteredMembers.length === 0 && (
+                <div className="p-4 text-center text-gray-500">
+                  Aucun membre trouvé
+                </div>
+              )}
             </div>
           </div>
 
@@ -130,7 +213,6 @@ const NewChatDialog: React.FC<NewChatDialogProps> = ({ isOpen, onClose }) => {
             </button>
             <button
               onClick={handleCreateRoom}
-              disabled={!roomName.trim() || selectedMembers.length === 0}
               className="btn btn-primary flex items-center gap-2"
             >
               <Users className="h-5 w-5" />

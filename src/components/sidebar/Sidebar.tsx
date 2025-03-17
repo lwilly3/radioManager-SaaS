@@ -12,6 +12,8 @@ import {
   LogOut,
   Archive,
   FileText,
+  CheckSquare,
+  UserCog,
 } from 'lucide-react';
 import SidebarLogo from './SidebarLogo';
 import NavLink from './NavLink';
@@ -29,6 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const location = useLocation();
   const logout = useLogout();
   const user = useAuthStore((state) => state.user);
+  const permissions = useAuthStore((state) => state.permissions);
 
   const handleLogout = () => {
     logout();
@@ -73,54 +76,98 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             text="Tableau de bord"
             isActive={location.pathname === '/'}
           />
-          <NavLink
-            to="/show-plans"
-            icon={<Radio />}
-            text="Conducteurs Prêts à Diffuser"
-            isActive={location.pathname.startsWith('/show-plans')}
-          />
-          <NavLink
-            to="/my-show-plans"
-            icon={<FileText />}
-            text="Mes Conducteurs"
-            isActive={location.pathname.startsWith('/my-show-plans')}
-          />
-          <NavLink
-            to="/shows"
-            icon={<Tv />}
-            text="Émissions"
-            isActive={location.pathname.startsWith('/shows')}
-          />
-          <NavLink
-            to="/guests"
-            icon={<UserCircle />}
-            text="Invités"
-            isActive={location.pathname.startsWith('/guests')}
-          />
-          <NavLink
-            to="/team"
-            icon={<Users />}
-            text="Équipe"
-            isActive={location.pathname === '/team'}
-          />
-          <NavLink
-            to="/chat"
-            icon={<MessageSquare />}
-            text="Discussion"
-            isActive={location.pathname === '/chat'}
-          />
-          <NavLink
-            to="/archives"
-            icon={<Archive />}
-            text="Archives"
-            isActive={location.pathname.startsWith('/archives')}
-          />
-          <NavLink
-            to="/settings"
-            icon={<Settings />}
-            text="Paramètres"
-            isActive={location.pathname === '/settings'}
-          />
+
+          {permissions?.can_acces_showplan_section && (
+            <NavLink
+              to="/show-plans"
+              icon={<Radio />}
+              text="Conducteurs Prêts à Diffuser"
+              isActive={location.pathname.startsWith('/show-plans')}
+            />
+          )}
+
+          {permissions?.can_create_showplan && (
+            <NavLink
+              to="/my-show-plans"
+              icon={<FileText />}
+              text="Mes Conducteurs"
+              isActive={location.pathname.startsWith('/my-show-plans')}
+            />
+          )}
+
+
+{permissions?.can_view_messages && (
+            <NavLink
+              to="/chat"
+              icon={<MessageSquare />}
+              text="Discussion"
+              isActive={location.pathname === '/chat'}
+            />
+          )}
+
+          {permissions?.can_view_tasks && (
+            <NavLink
+              to="/tasks"
+              icon={<CheckSquare />}
+              text="Tâches"
+              isActive={location.pathname.startsWith('/tasks')}
+            />
+          )}
+
+
+          {permissions?.can_acces_emissions_section && (
+            <NavLink
+              to="/shows"
+              icon={<Tv />}
+              text="Émissions"
+              isActive={location.pathname.startsWith('/shows')}
+            />
+          )}
+
+          {permissions?.can_acces_guests_section && (
+            <NavLink
+              to="/guests"
+              icon={<UserCircle />}
+              text="Invités"
+              isActive={location.pathname.startsWith('/guests')}
+            />
+          )}
+
+          {permissions?.can_view_users && (
+            <NavLink
+              to="/team"
+              icon={<Users />}
+              text="Équipe"
+              isActive={location.pathname === '/team'}
+            />
+          )}
+
+          {permissions?.can_acces_users_section && (
+            <NavLink
+              to="/users"
+              icon={<UserCog />}
+              text="Utilisateurs"
+              isActive={location.pathname.startsWith('/users')}
+            />
+          )}
+
+          {permissions?.can_view_archives && (
+            <NavLink
+              to="/archives"
+              icon={<Archive />}
+              text="Archives"
+              isActive={location.pathname.startsWith('/archives')}
+            />
+          )}
+
+          {permissions?.can_manage_settings && (
+            <NavLink
+              to="/settings"
+              icon={<Settings />}
+              text="Paramètres"
+              isActive={location.pathname === '/settings'}
+            />
+          )}
         </nav>
 
         {/* User Menu and Logout */}

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import axios from 'axios';
+import api from '../../api/api'; // Assurez-vous que le chemin est correct
 
-// Interface pour les permissions (correspond à la réponse API)
 interface Permissions {
   user_id: number;
   can_acces_showplan_broadcast_section: boolean;
@@ -53,11 +53,6 @@ interface Permissions {
   granted_at: string;
 }
 
-/**
- * Hook personnalisé pour récupérer les permissions d'un utilisateur spécifique via l'API.
- * @param userId - L'identifiant de l'utilisateur dont les permissions doivent être récupérées.
- * @returns Objet contenant les permissions, ainsi que les états isLoading et error.
- */
 export const useUserPermissions = (userId: number) => {
   const { token } = useAuthStore((state) => state);
   const [permissions, setPermissions] = useState<Permissions | null>(null);
@@ -74,20 +69,24 @@ export const useUserPermissions = (userId: number) => {
 
       setIsLoading(true);
       setError(null);
+      if (userId <= 0) {
+        setIsLoading(false);
+        return;
+      }
 
       try {
-        const response = await axios.get<Permissions>(
+        const response = await api.get<Permissions>(
           `permissions/users/${userId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
+        console.log(`Permissions reçues pour userId ${userId}:`, response.data);
         setPermissions(response.data);
       } catch (err: any) {
         const errorMessage =
           err.response?.data?.detail ||
           'Erreur lors de la récupération des permissions';
         setError(errorMessage);
+        console.error('Erreur dans useUserPermissions :', errorMessage);
       } finally {
         setIsLoading(false);
       }

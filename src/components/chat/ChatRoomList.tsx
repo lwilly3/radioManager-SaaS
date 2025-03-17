@@ -4,15 +4,24 @@ import { fr } from 'date-fns/locale';
 import { useChatStore } from '../../store/useChatStore';
 import NotificationBadge from '../common/NotificationBadge';
 
-const ChatRoomList: React.FC = () => {
+interface ChatRoomListProps {
+  onSelectRoom?: () => void;
+}
+
+const ChatRoomList: React.FC<ChatRoomListProps> = ({ onSelectRoom }) => {
   const { rooms, activeRoomId, setActiveRoom } = useChatStore();
+
+  const handleRoomSelect = (roomId: string) => {
+    setActiveRoom(roomId);
+    onSelectRoom?.();
+  };
 
   return (
     <div className="flex-1 overflow-y-auto">
       {rooms.map((room) => (
         <button
           key={room.id}
-          onClick={() => setActiveRoom(room.id)}
+          onClick={() => handleRoomSelect(room.id)}
           className={`w-full p-4 flex items-start gap-3 hover:bg-gray-50 relative ${
             activeRoomId === room.id ? 'bg-gray-50' : ''
           }`}

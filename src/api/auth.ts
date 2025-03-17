@@ -1,5 +1,6 @@
 import axios from 'axios';
 import type { LoginCredentials, LoginResponse } from '../types/auth';
+import { console } from 'inspector';
 
 const API_URL = 'https://api.radio.audace.ovh';
 
@@ -19,6 +20,7 @@ export const login = async (
   };
 }> => {
   try {
+    console.log('login vian api/auth');
     const response = await axios.post<LoginResponse>(
       `${API_URL}/login`,
       new URLSearchParams(credentials),

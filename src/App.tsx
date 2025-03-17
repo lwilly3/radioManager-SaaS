@@ -21,7 +21,12 @@ import EditGuest from './pages/guests/EditGuest';
 import TeamList from './pages/team/TeamList';
 import CreateTeamMember from './pages/team/CreateTeamMember';
 import EditTeamMember from './pages/team/EditTeamMember';
+import UserList from './pages/users/UserList';
+import CreateUser from './pages/users/CreateUser';
+import EditUser from './pages/users/EditUser';
+import UserRoles from './pages/users/UserRoles';
 import Chat from './pages/Chat';
+import Tasks from './pages/Tasks';
 import NotFound from './pages/NotFound';
 import Archives from './pages/Archives';
 import FullProgram from './pages/FullProgram';
@@ -92,6 +97,17 @@ const App: React.FC = () => {
               <Route path="create" element={<CreateTeamMember />} />
               <Route path=":id/edit" element={<EditTeamMember />} />
             </Route>
+
+            {/* Users */}
+            <Route path="users">
+              <Route index element={<UserList />} />
+              <Route path="create" element={<CreateUser />} />
+              <Route path=":id/edit" element={<EditUser />} />
+              <Route path=":id/roles" element={<UserRoles />} />
+            </Route>
+
+            {/* Tasks */}
+            <Route path="tasks" element={<Tasks />} />
 
             {/* Settings */}
             <Route path="settings" element={<Settings />} />

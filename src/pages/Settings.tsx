@@ -9,13 +9,17 @@ import PresenterPrivileges from '../components/settings/PresenterPrivileges';
 import GeneralSettings from '../components/settings/GeneralSettings';
 import RoleTemplates from '../components/settings/RoleTemplates';
 import PermissionAuditLog from '../components/settings/PermissionAuditLog';
-import PresentersList from '../components/settings/PresentersList';
+// import PresentersList from '../components/settings/PresentersList';
+import PresentersList from '../components/settings/presenters/PresenterList';
+
+import RoleManagement from '../components/settings/RoleManagement';
 import {
   Settings as SettingsIcon,
   Users,
   Shield,
   BookTemplate,
   History,
+  UserCog,
 } from 'lucide-react';
 
 // Composant ErrorBoundary pour isoler les erreurs
@@ -76,7 +80,7 @@ const Settings: React.FC = () => {
     log(
       `Tab changed to: ${value}, current activeTab before update: ${activeTab}`
     );
-    setActiveTab(value); // Force la mise à jour de l'état
+    setActiveTab(value);
     log(`Tab changed to: ${value}, activeTab after update: ${activeTab}`);
   };
 
@@ -112,6 +116,16 @@ const Settings: React.FC = () => {
       >
         <Shield className="h-4 w-4" />
         <span>Privilèges</span>
+      </TabsTrigger>
+      <TabsTrigger
+        key="roles"
+        value="roles"
+        active={activeTab === 'roles'}
+        className="flex items-center gap-2 whitespace-nowrap"
+        onValueChange={handleTabChange}
+      >
+        <UserCog className="h-4 w-4" />
+        <span>Rôles</span>
       </TabsTrigger>
       <TabsTrigger
         key="templates"
@@ -200,6 +214,19 @@ const Settings: React.FC = () => {
         >
           {log(`Rendering PresenterPrivileges for tab: ${activeTab}`)}
           <PresenterPrivileges />
+        </TabsContent>
+
+        <TabsContent
+          key="roles-content"
+          value="roles"
+          active={activeTab === 'roles'}
+          parentValue={activeTab}
+          className="mt-0"
+        >
+          {log(`Rendering RoleManagement for tab: ${activeTab}`)}
+          <ErrorBoundary>
+            <RoleManagement />
+          </ErrorBoundary>
         </TabsContent>
 
         <TabsContent
