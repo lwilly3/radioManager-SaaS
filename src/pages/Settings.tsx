@@ -21,6 +21,10 @@ import {
   History,
   UserCog,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom'; // Importer useNavigate
+import { useAuthStore } from '../store/useAuthStore';
+
+
 
 // Composant ErrorBoundary pour isoler les erreurs
 class ErrorBoundary extends React.Component<
@@ -31,6 +35,8 @@ class ErrorBoundary extends React.Component<
     super(props);
     this.state = { hasError: false, error: null };
   }
+
+  
 
   static getDerivedStateFromError(error: Error) {
     return { hasError: true, error };
@@ -58,6 +64,22 @@ const Settings: React.FC = () => {
     type: 'success' | 'error';
     message: string;
   } | null>(null);
+  const { permissions } = useAuthStore();
+  
+
+
+  const navigate = useNavigate(); // Ajouter useNavigate
+
+  // if (!permissions?.can_manage_settings) {
+  //   navigate('/404'); // Rediriger vers la page 404
+
+  //   }
+  
+    // Vérifier la permission et rediriger vers 404 si elle manque
+    useEffect(() => {
+      if ( permissions && !permissions.can_manage_settings) {
+        navigate('/404'); // Rediriger vers la page 404
+      }});
 
   // Log pour vérifier l'état initial et les mises à jour
   useEffect(() => {

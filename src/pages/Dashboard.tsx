@@ -8,10 +8,14 @@ import QuickActions from '../components/dashboard/QuickActions';
 import { useDashboard } from '../hooks/dashbord/useDashboard';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useAuthStore } from '../store/useAuthStore';
+
 
 const Dashboard: React.FC = () => {
   const { dashboardData, isLoading, error } = useDashboard();
   const navigate = useNavigate();
+  const {  permissions } = useAuthStore();
+
 
   // Trouver l'émission en direct (si elle existe)
   const liveShow = dashboardData?.programme_du_jour.find(
@@ -29,11 +33,13 @@ const Dashboard: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900">Tableau de bord</h1>
           <p className="text-gray-600">Bienvenue sur RadioManager</p>
         </div>
+        {/* Conditionner l'affichage du bouton avec can_create_emissions */}
+        { permissions?.can_create_emissions&&(
         <button 
           onClick={() => navigate('/shows/create')}
           className="btn btn-primary">
           Créer une émission
-        </button>
+        </button> )}
       </header>
 
       {isLoading ? (

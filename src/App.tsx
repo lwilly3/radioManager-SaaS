@@ -31,6 +31,7 @@ import NotFound from './pages/NotFound';
 import Archives from './pages/Archives';
 import FullProgram from './pages/FullProgram';
 import Settings from './pages/Settings';
+import Profile from './pages/Profile';
 
 const App: React.FC = () => {
   const isAuthenticated = useAuthStore((state) => Boolean(state.token));
@@ -111,6 +112,9 @@ const App: React.FC = () => {
 
             {/* Settings */}
             <Route path="settings" element={<Settings />} />
+
+            {/* Profile */}
+            <Route path="profile" element={<Profile />} />
 
             {/* Chat */}
             <Route path="chat" element={<Chat />} />

@@ -19,6 +19,23 @@ const ShowList: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showType, setShowType] = useState('');
 
+
+  const {  permissions } = useAuthStore();
+
+      
+    
+    
+      // if (!permissions?.can_acces_emissions_section) {
+      //   navigate('/404'); // Rediriger vers la page 404
+    
+      //   }
+         // Vérifier la permission et rediriger vers 404 si elle manque
+  useEffect(() => {
+    if (!error && permissions && !permissions.can_acces_emissions_section) {
+      navigate('/404'); // Rediriger vers la page 404
+    }
+  }, [permissions, error, navigate]);
+
   // Filtrer les émissions en fonction de la recherche et du type
   const filteredShows = filterShows(shows, searchQuery, showType);
 

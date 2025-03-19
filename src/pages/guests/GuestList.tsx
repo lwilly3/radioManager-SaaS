@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+// import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+
 import { useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import GuestDetailDialog from '../../components/guests/GuestDetailDialog';
@@ -6,6 +8,8 @@ import GuestSearchBar from '../../components/guests/GuestSearchBar';
 import GuestCard from '../../components/guests/GuestCard';
 import { useGuestSearch } from '../../hooks/guests/useGuestSearch';
 import type { Guest } from '../../types';
+import { useAuthStore } from '../../store/useAuthStore';
+
 
 const GuestList: React.FC = () => {
   const navigate = useNavigate();
@@ -20,6 +24,23 @@ const GuestList: React.FC = () => {
     error,
   } = useGuestSearch(query);
   console.log('Guests to render:', guests);
+
+  const {  permissions } = useAuthStore();
+
+      
+    
+    
+  // if (!permissions?.can_acces_guests_section) {
+  //   navigate('/404'); // Rediriger vers la page 404
+
+  //   }
+
+    // Vérifier la permission et rediriger vers 404 si elle manque
+    useEffect(() => {
+      if (!isLoading && !error && permissions && !permissions.can_acces_guests_section) {
+        navigate('/404'); // Rediriger vers la page 404
+      }
+    }, [permissions, isLoading, error, navigate]);
 
   const handleSearch = () => {
     // Lancer la recherche avec la valeur actuelle de searchInput

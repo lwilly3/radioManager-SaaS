@@ -1,13 +1,14 @@
-
 import React from 'react';
-import { LogOut, Settings, User } from 'lucide-react';
+import { LogOut, UserCircle, User } from 'lucide-react';
 import { Menu } from '@headlessui/react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useLogout } from '../../hooks/auth/useLogout';
 
 const UserMenu: React.FC = () => {
   const user = useAuthStore((state) => state.user);
   const logout = useLogout();
+  const navigate = useNavigate();
 
   if (!user) {
     return null;
@@ -35,10 +36,10 @@ const UserMenu: React.FC = () => {
                 className={`${
                   active ? 'bg-gray-50' : ''
                 } w-full px-4 py-2 text-left text-sm text-gray-700 flex items-center gap-2`}
-                onClick={() => {}} // Add settings route handler
+                onClick={() => navigate('/profile')}
               >
-                <Settings className="h-4 w-4" />
-                Paramètres
+                <UserCircle className="h-4 w-4" />
+                Mon profil
               </button>
             )}
           </Menu.Item>

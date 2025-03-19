@@ -11,6 +11,8 @@ interface AuthState {
     name: string;
     family_name: string;
     username: string;
+    email: string;
+    phone_number: string;
   } | null;
   token: string | null;
   permissions: Record<string, boolean | string | number> | null;
@@ -22,6 +24,8 @@ interface AuthState {
       name: string;
       family_name: string;
       username: string;
+      email: string;
+      phone_number: string;
     } | null
   ) => void;
   setPermission: (
@@ -37,8 +41,6 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       user: null,
-      name: null,
-      family_name: null,
       token: null,
       permissions: null,
       isLoading: false,
@@ -73,6 +75,8 @@ export const useAuthStore = create<AuthState>()(
                           name: data.name,
                           family_name: data.family_name,
                           username: data.username,
+                          email: data.email,
+                          phone_number: data.phone_number,
                         }
                       : null,
                   permissions: data.permissions,
@@ -102,14 +106,16 @@ export const useAuthStore = create<AuthState>()(
         });
       },
 
-
       syncPermissionsWithFirestore: async () => {
         const state = get();
         if (!state.user || !state.token || !state.permissions) return;
-      
+
         set({ isLoading: true });
         try {
-          console.log('Début de synchronisation avec Firestore : ', state.permissions);
+          console.log(
+            'Début de synchronisation avec Firestore : ',
+            state.permissions
+          );
           const userRef = doc(db, 'users', state.user.id);
           await setDoc(
             userRef,
@@ -119,6 +125,9 @@ export const useAuthStore = create<AuthState>()(
               family_name: state.user.family_name,
               username: state.user.username,
               permissions: state.permissions,
+              email: state.user.email,
+              phone_number: state.user.phone_number,
+
               updatedAt: new Date().toISOString(),
             },
             { merge: true }

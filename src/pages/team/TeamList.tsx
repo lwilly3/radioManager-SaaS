@@ -5,6 +5,8 @@ import { useTeamStore } from '../../store/useTeamStore';
 import TeamMemberDetailDialog from '../../components/team/TeamMemberDetailDialog';
 import Notification from '../../components/common/Notification';
 import type { TeamMember } from '../../types';
+import { useAuthStore } from '../../store/useAuthStore';
+
 
 const TeamList: React.FC = () => {
   const navigate = useNavigate();
@@ -18,6 +20,15 @@ const TeamList: React.FC = () => {
     message: string;
   } | null>(null);
 
+  const {  permissions } = useAuthStore();
+
+      
+    
+
+  if (!permissions?.can_acces_users_section) {
+    navigate('/404'); // Rediriger vers la page 404
+
+    }
   useEffect(() => {
     if (location.state?.notification) {
       setNotification(location.state.notification);

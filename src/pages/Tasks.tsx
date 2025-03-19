@@ -16,6 +16,7 @@ import TaskCreator from '../components/chat/TaskCreator';
 import TaskDetailDialog from '../components/tasks/TaskDetailDialog';
 import { usePresenters } from '../hooks/presenters/usePresenters';
 import type { Task, TaskStatus } from '../types/task';
+import { useNavigate } from 'react-router-dom'; // Importer useNavigate
 
 type TaskFilter = 'all' | 'assigned' | 'created';
 
@@ -32,6 +33,23 @@ const Tasks: React.FC = () => {
     'all' | 'low' | 'medium' | 'high'
   >('all');
   const [userFilter, setUserFilter] = useState<TaskFilter>('assigned');
+    // import { useNavigate } from 'react-router-dom'; // Importer useNavigate
+    const {  permissions } = useAuthStore();
+    const navigate = useNavigate(); // Ajouter useNavigate
+  
+  
+  
+    // if (!permissions?.can_view_tasks) {
+    //   navigate('/404'); // Rediriger vers la page 404
+  
+    //   }
+    
+    // Vérifier la permission et rediriger vers 404 si elle manque
+    useEffect(() => {
+      if (!isLoading && !error && permissions && !permissions.can_view_tasks) {
+        navigate('/404'); // Rediriger vers la page 404
+      }
+    }, [permissions, isLoading, error, navigate]);
 
   useEffect(() => {
     console.log('id de lutilisateur qui cree la tache');

@@ -11,6 +11,9 @@ import Pagination from '../components/archives/Pagination';
 import { useAuthStore } from '../store/useAuthStore';
 import api from '../api/api';
 import { generateKey } from '../utils/keyGenerator'; // Import de la fonction utilitaire
+import { useNavigate } from 'react-router-dom'; // Importer useNavigate
+import  {  useEffect } from 'react';
+
 
 interface Presenter {
   id: number;
@@ -45,6 +48,7 @@ interface SearchFilters {
 }
 
 const Archives: React.FC = () => {
+
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedShow, setSelectedShow] = useState<Show | null>(null);
@@ -58,6 +62,13 @@ const Archives: React.FC = () => {
   });
   const [isSearchTriggered, setIsSearchTriggered] = useState(false);
   const token = useAuthStore((state) => state.token);
+  // import { useNavigate } from 'react-router-dom'; // Importer useNavigate
+  const {  permissions } = useAuthStore();
+  const navigate = useNavigate(); // Ajouter useNavigate
+
+
+
+  
 
   const { data, isLoading, error } = useQuery<ApiResponse>({
     queryKey: ['archives', filters, currentPage],
@@ -124,6 +135,17 @@ const Archives: React.FC = () => {
     setCurrentPage(1);
     setIsSearchTriggered(false);
   };
+  // Vérifier la permission et rediriger vers 404 si elle manque
+  useEffect(() => {
+    if (!isLoading && !error && permissions && !permissions.can_view_archives) {
+      navigate('/404'); // Rediriger vers la page 404
+    }
+  }, [permissions, isLoading, error, navigate]);
+
+  // if (!permissions?.can_view_archives) {
+  //   navigate('/404'); // Rediriger vers la page 404
+
+  //   }
 
   return (
     <div className="space-y-6">

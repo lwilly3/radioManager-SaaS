@@ -20,6 +20,23 @@ const UserList: React.FC = () => {
   const [editingRolesForUser, setEditingRolesForUser] = useState<number | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<number[]>([]);
 
+  const {  permissions } = useAuthStore();
+
+      
+    
+
+  // if (!permissions?.can_acces_users_section) {
+  //   navigate('/404'); // Rediriger vers la page 404
+
+  //   }
+
+     // Vérifier la permission et rediriger vers 404 si elle manque
+  useEffect(() => {
+    if (!isLoading && !error && permissions && !permissions.can_acces_users_section) {
+      navigate('/404'); // Rediriger vers la page 404
+    }
+  }, [permissions, isLoading, error, navigate]);
+
   useEffect(() => {
     const fetchData = async () => {
       if (!token) return;
