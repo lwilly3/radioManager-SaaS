@@ -1,8 +1,29 @@
-
 export interface Emission {
   id: number;
   title: string;
-  description?: string;
+  synopsis: string;
+  type: string;
+  duration: number;
+  frequency: string;
+  description: string;
+}
+
+export interface CreateEmissionData {
+  title: string;
+  synopsis: string;
+  type: string;
+  duration: number;
+  frequency: string;
+  description: string;
+}
+
+export interface UpdateEmissionData {
+  title: string;
+  synopsis: string;
+  type: string;
+  duration: number;
+  frequency: string;
+  description: string;
 }
 
 export interface CreateShowPlanPayload {

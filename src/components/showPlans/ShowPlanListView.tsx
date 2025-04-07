@@ -52,39 +52,44 @@ const ShowPlanListView: React.FC<ShowPlanListViewProps> = ({
       <div className="bg-white rounded-lg shadow hover:shadow-md transition-shadow p-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex-1">
-            <div className="flex items-start gap-2 mb-2">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-gray-900 line-clamp-1">
                   {showPlan.emission}
                 </h3>
-                <p className="text-sm text-indigo-600 font-medium">
+                <p className="text-sm text-indigo-600 font-medium line-clamp-1">
                   {showPlan.title}
                 </p>
               </div>
-              <StatusTransition
-                currentStatus={showPlan.status}
-                onStatusChange={handleStatusChange}
-              />
+              <div className="self-start sm:self-center">
+                <StatusTransition
+                  currentStatus={showPlan.status}
+                  onStatusChange={handleStatusChange}
+                />
+              </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm text-gray-600">
               <div className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
-                <span>
+                <Calendar className="h-4 w-4 flex-shrink-0" />
+                <span className="hidden sm:inline">
                   {format(date, "d MMMM yyyy 'à' HH:mm", { locale: fr })}
+                </span>
+                <span className="sm:hidden">
+                  {format(date, "dd/MM/yy HH'h'mm", { locale: fr })}
                 </span>
               </div>
               <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
+                <Clock className="h-4 w-4 flex-shrink-0" />
                 <span>{totalDuration} min</span>
               </div>
               <div className="flex items-center gap-1">
-                <Radio className="h-4 w-4" />
-                <span>{showPlan.segments.length} segments</span>
+                <Radio className="h-4 w-4 flex-shrink-0" />
+                <span>{showPlan.segments.length}</span>
               </div>
               {showPlan.guests.length > 0 && (
                 <div className="flex items-center gap-1">
-                  <Users className="h-4 w-4" />
+                  <Users className="h-4 w-4 flex-shrink-0" />
                   <span>
                     {showPlan.guests.length} invité
                     {showPlan.guests.length > 1 ? 's' : ''}
@@ -94,7 +99,7 @@ const ShowPlanListView: React.FC<ShowPlanListViewProps> = ({
             </div>
 
             {showPlan.description && (
-              <p className="mt-2 text-sm text-gray-600 line-clamp-2">
+              <p className="mt-2 text-sm text-gray-600 line-clamp-2 hidden sm:block">
                 {showPlan.description}
               </p>
             )}
@@ -136,7 +141,8 @@ const ShowPlanListView: React.FC<ShowPlanListViewProps> = ({
               }
               className="btn btn-primary"
             >
-              Voir les détails
+              <span className="hidden sm:inline">Voir les détails</span>
+              <span className="sm:hidden">Détails</span>
             </button>
           </div>
         </div>

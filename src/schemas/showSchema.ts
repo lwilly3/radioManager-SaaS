@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const showSchema = z.object({
   title: z.string().min(1, "Le titre de l'émission est requis"),
+  synopsis: z.string().min(1, "Le synopsis est requis"),
   type: z.enum([
     'morning-show',
     'news',

@@ -20,20 +20,11 @@ const UserList: React.FC = () => {
   const [editingRolesForUser, setEditingRolesForUser] = useState<number | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<number[]>([]);
 
-  const {  permissions } = useAuthStore();
+  const { permissions } = useAuthStore();
 
-      
-    
-
-  // if (!permissions?.can_acces_users_section) {
-  //   navigate('/404'); // Rediriger vers la page 404
-
-  //   }
-
-     // Vérifier la permission et rediriger vers 404 si elle manque
   useEffect(() => {
     if (!isLoading && !error && permissions && !permissions.can_acces_users_section) {
-      navigate('/404'); // Rediriger vers la page 404
+      navigate('/404');
     }
   }, [permissions, isLoading, error, navigate]);
 
@@ -94,7 +85,6 @@ const UserList: React.FC = () => {
 
       setSelectedRoles(newSelectedRoles);
       
-      // Update the users list with new roles
       setUsers(users.map(user => {
         if (user.id === editingRolesForUser) {
           return {
@@ -117,7 +107,6 @@ const UserList: React.FC = () => {
       user.name.toLowerCase().includes(searchLower) ||
       user.family_name.toLowerCase().includes(searchLower);
 
-    // Filter by selected role
     const matchesRole = selectedRole 
       ? user.roles.some(role => role.id === selectedRole)
       : true;
@@ -180,128 +169,130 @@ const UserList: React.FC = () => {
         </div>
       ) : filteredUsers.length > 0 ? (
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Utilisateur
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Rôles
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Créé le
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10">
-                        {user.profilePicture ? (
-                          <img
-                            className="h-10 w-10 rounded-full"
-                            src={user.profilePicture}
-                            alt={user.name}
-                          />
-                        ) : (
-                          <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                            <User className="h-5 w-5 text-gray-500" />
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Utilisateur
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Rôles
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Créé le
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredUsers.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10">
+                          {user.profilePicture ? (
+                            <img
+                              className="h-10 w-10 rounded-full"
+                              src={user.profilePicture}
+                              alt={user.name}
+                            />
+                          ) : (
+                            <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                              <User className="h-5 w-5 text-gray-500" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">
+                            {user.name} {user.family_name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {user.email}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="relative">
+                        <div 
+                          className="flex items-center gap-2 cursor-pointer"
+                          onClick={() => handleEditRoles(user)}
+                        >
+                          <div className="flex flex-wrap gap-1">
+                            {user.roles.map((role) => (
+                              <span
+                                key={role.id}
+                                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800"
+                              >
+                                {role.name}
+                              </span>
+                            ))}
+                          </div>
+                          <ChevronDown className="h-4 w-4 text-gray-500" />
+                        </div>
+
+                        {editingRolesForUser === user.id && (
+                          <div className="absolute z-50 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+                            <div className="px-3 py-2 border-b border-gray-100">
+                              <div className="flex items-center justify-between">
+                                <h4 className="text-sm font-medium text-gray-700">Rôles</h4>
+                                <button
+                                  onClick={() => setEditingRolesForUser(null)}
+                                  className="text-gray-400 hover:text-gray-600"
+                                >
+                                  <X className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </div>
+                            {availableRoles.map((role) => (
+                              <label
+                                key={role.id}
+                                className="flex items-center px-3 py-2 hover:bg-gray-50"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={selectedRoles.includes(role.id)}
+                                  onChange={() => handleRoleToggle(role.id)}
+                                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                                />
+                                <span className="ml-2 text-sm text-gray-700">{role.name}</span>
+                              </label>
+                            ))}
                           </div>
                         )}
                       </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          {user.name} {user.family_name}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {user.email}
-                        </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {format(new Date(user.created_at), 'dd MMMM yyyy', {
+                        locale: fr,
+                      })}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => navigate(`/users/${user.id}/edit`)}
+                          className="text-gray-600 hover:text-gray-900"
+                          title="Modifier"
+                        >
+                          <Edit className="h-5 w-5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteUser(user.id)}
+                          className="text-red-600 hover:text-red-900"
+                          title="Supprimer"
+                        >
+                          <Trash2 className="h-5 w-5" />
+                        </button>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="relative">
-                      <div 
-                        className="flex items-center gap-2 cursor-pointer"
-                        onClick={() => handleEditRoles(user)}
-                      >
-                        <div className="flex flex-wrap gap-1">
-                          {user.roles.map((role) => (
-                            <span
-                              key={role.id}
-                              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800"
-                            >
-                              {role.name}
-                            </span>
-                          ))}
-                        </div>
-                        <ChevronDown className="h-4 w-4 text-gray-500" />
-                      </div>
-
-                      {editingRolesForUser === user.id && (
-                        <div className="absolute z-10 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
-                          <div className="px-3 py-2 border-b border-gray-100">
-                            <div className="flex items-center justify-between">
-                              <h4 className="text-sm font-medium text-gray-700">Rôles</h4>
-                              <button
-                                onClick={() => setEditingRolesForUser(null)}
-                                className="text-gray-400 hover:text-gray-600"
-                              >
-                                <X className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </div>
-                          {availableRoles.map((role) => (
-                            <label
-                              key={role.id}
-                              className="flex items-center px-3 py-2 hover:bg-gray-50"
-                            >
-                              <input
-                                type="checkbox"
-                                checked={selectedRoles.includes(role.id)}
-                                onChange={() => handleRoleToggle(role.id)}
-                                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                              />
-                              <span className="ml-2 text-sm text-gray-700">{role.name}</span>
-                            </label>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {format(new Date(user.created_at), 'dd MMMM yyyy', {
-                      locale: fr,
-                    })}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => navigate(`/users/${user.id}/edit`)}
-                        className="text-gray-600 hover:text-gray-900"
-                        title="Modifier"
-                      >
-                        <Edit className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteUser(user.id)}
-                        className="text-red-600 hover:text-red-900"
-                        title="Supprimer"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       ) : (
         <div className="text-center py-12 bg-white rounded-lg shadow">

@@ -109,12 +109,11 @@ const ShowPlanCard: React.FC<ShowPlanCardProps> = ({
             </div>
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-lg font-semibold text-gray-900 line-clamp-1">
               {showPlan.emission}
             </h3>
           </div>
           <div className="mt-2">
-            {' '}
             <StatusTransition
               currentStatus={showPlan.status}
               onStatusChange={handleStatusChange}
@@ -122,37 +121,34 @@ const ShowPlanCard: React.FC<ShowPlanCardProps> = ({
             />
           </div>
 
-          <div className="space-y-3 mb-4">
+          <div className="space-y-3 mb-4 mt-3">
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Calendar className="h-4 w-4 mr-2" />
-              <span>
-                {format(date, "d MMMM yyyy 'à' HH:mm", { locale: fr })}
+              <Calendar className="h-4 w-4 flex-shrink-0" />
+              <span className="truncate">
+                {format(date, "d MMM yyyy 'à' HH:mm", { locale: fr })}
                 {' - '}
                 {format(endTime, 'HH:mm', { locale: fr })}
               </span>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4">
               <div className="flex items-center text-sm text-gray-600">
-                <Clock className="h-4 w-4 mr-2" />
+                <Clock className="h-4 w-4 mr-1 flex-shrink-0" />
                 <span>{totalDuration} min</span>
               </div>
               <div className="flex items-center text-sm text-gray-600">
-                <Radio className="h-4 w-4 mr-2" />
+                <Radio className="h-4 w-4 mr-1 flex-shrink-0" />
                 <span>{showPlan.segments.length} segments</span>
               </div>
               {showPlan.guests.length > 0 && (
                 <div className="flex items-center text-sm text-gray-600">
-                  <Users className="h-4 w-4 mr-2" />
-                  <span>
-                    {showPlan.guests.length} invité
-                    {showPlan.guests.length > 1 ? 's' : ''}
-                  </span>
+                  <Users className="h-4 w-4 mr-1 flex-shrink-0" />
+                  <span>{showPlan.guests.length} invité{showPlan.guests.length > 1 ? 's' : ''}</span>
                 </div>
               )}
             </div>
             {showPlan.title && (
-              <div className="line-clamp-1 whitespace-nowrap">
+              <div className="line-clamp-1 text-sm text-gray-600">
                 {showPlan.title}
               </div>
             )}
@@ -202,7 +198,8 @@ const ShowPlanCard: React.FC<ShowPlanCardProps> = ({
               }
               className="flex items-center text-sm text-indigo-600 hover:text-indigo-700 font-medium"
             >
-              Voir les détails
+              <span className="hidden sm:inline">Voir les détails</span>
+              <span className="sm:hidden">Détails</span>
               <ChevronRight className="h-4 w-4 ml-1" />
             </button>
           </div>

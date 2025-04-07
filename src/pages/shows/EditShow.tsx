@@ -4,93 +4,95 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ChevronLeft } from 'lucide-react';
 import { showSchema } from '../../schemas/showSchema';
-import { useShowStore } from '../../store/useShowStore';
-import FormField from '../../components/common/FormField';
-// import PresenterManager from '../../components/showPlans/presenters/PresenterManager';
-import type { ShowFormData, Presenter } from '../../types';
-import { useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
+import { emissionApi } from '../../services/api/emissions';
+import FormField from '../../components/common/FormField';
+import type { UpdateEmissionData, Emission } from '../../types/emission';
 
 const EditShow: React.FC = () => {
-  const token = useAuthStore((state) => state.token);
-
-  // Récupération de l'objet `location` pour accéder aux données transmises
-  const location = useLocation();
-  const { show: show } = location.state || {};
-  // const token = useAuthStore((state) => state.token);
-
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  // const shows = useShowStore((state) => state.shows);
-  const updateShow = useShowStore((state) => state.updateShow);
-
-  // const show = shows.find(s => s.id === id);
-  const [selectedPresenters, setSelectedPresenters] = useState<Presenter[]>([]);
+  const { token, permissions } = useAuthStore();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [emission, setEmission] = useState<Emission | null>(null);
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid },
+    formState: { errors },
     setValue,
-  } = useForm<ShowFormData>({
+  } = useForm<UpdateEmissionData>({
     resolver: zodResolver(showSchema),
-    mode: 'onChange',
   });
 
   useEffect(() => {
-    if (show) {
-      setValue('title', show.title);
-      setValue('type', show.type);
-      setValue('duration', show.duration);
-      setValue('frequency', show.frequency);
-      setValue('description', show.description);
-      // setSelectedPresenters(show.presenters);
-    } else {
-      navigate('/shows');
-    }
-  }, [show, setValue, navigate]);
-
-  // const handleAddPresenter = (presenter: Presenter) => {
-  //   setSelectedPresenters([...selectedPresenters, presenter]);
-  // };
-
-  // const handleRemovePresenter = (presenterId: string) => {
-  //   setSelectedPresenters(selectedPresenters.filter(p => p.id !== presenterId));
-  // };
-
-  // const handleSetMainPresenter = (presenterId: string) => {
-  //   setSelectedPresenters(
-  //     selectedPresenters.map(p => ({
-  //       ...p,
-  //       isMainPresenter: p.id === presenterId,
-  //     }))
-  //   );
-  // };
-
-  const onSubmit = (data: ShowFormData) => {
-    if (!show) return;
-
-    const updatedShow = {
-      ...show,
-      ...data,
-      // presenters: selectedPresenters,
-      updatedAt: new Date().toISOString(),
+    const fetchEmission = async () => {
+      if (!token || !id) return;
+      
+      try {
+        setIsLoading(true);
+        const data = await emissionApi.getAllEmissions(token);
+        const foundEmission = data.find(e => e.id === parseInt(id));
+        
+        if (foundEmission) {
+          setEmission(foundEmission);
+          setValue('title', foundEmission.title);
+          setValue('synopsis', foundEmission.synopsis);
+          setValue('type', foundEmission.type);
+          setValue('duration', foundEmission.duration);
+          setValue('frequency', foundEmission.frequency);
+          setValue('description', foundEmission.description);
+        } else {
+          navigate('/shows');
+        }
+      } catch (err) {
+        console.error('Failed to fetch emission:', err);
+        setError('Failed to load emission data');
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    updateShow(updatedShow);
+    fetchEmission();
+  }, [token, id, setValue, navigate]);
 
-    navigate('/shows', {
-      replace: true,
-      state: {
-        notification: {
-          type: 'success',
-          message: "L'émission a été modifiée avec succès",
+  const onSubmit = async (data: UpdateEmissionData) => {
+    if (!token || !id || !permissions?.can_edit_emissions) return;
+
+    try {
+      setIsLoading(true);
+      await emissionApi.update(token, parseInt(id), data);
+      
+      navigate('/shows', {
+        replace: true,
+        state: {
+          notification: {
+            type: 'success',
+            message: 'Émission mise à jour avec succès',
+          },
         },
-      },
-    });
+      });
+    } catch (err) {
+      console.error('Failed to update emission:', err);
+      setError("Erreur lors de la mise à jour de l'émission");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  if (!show) return null;
+  if (!permissions?.can_edit_emissions) {
+    navigate('/404');
+    return null;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-12">
+        <div className="spinner" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -105,22 +107,25 @@ const EditShow: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-lg shadow">
-        <div className="p-4 sm:p-6 border-b border-gray-200">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+        <div className="p-6 border-b border-gray-200">
+          <h1 className="text-2xl font-bold text-gray-900">
             Modifier l'émission
           </h1>
-          <p className="mt-1 text-sm sm:text-base text-gray-600">
+          <p className="mt-1 text-gray-600">
             Modifiez les informations de l'émission ci-dessous
           </p>
         </div>
 
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="p-4 sm:p-6 space-y-6"
-        >
-          <div className="space-y-4">
+        {error && (
+          <div className="p-4 bg-red-50 border-l-4 border-red-400 text-red-700">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
+          <div className="grid gap-6 sm:grid-cols-2">
             <FormField
-              label="Titre de l'émission"
+              label="Titre"
               error={errors.title?.message}
               required
             >
@@ -128,12 +133,25 @@ const EditShow: React.FC = () => {
                 type="text"
                 {...register('title')}
                 className="form-input"
-                placeholder="Ex: La Matinale"
+                placeholder="Titre de l'émission"
               />
             </FormField>
 
             <FormField
-              label="Type d'émission"
+              label="Synopsis"
+              error={errors.synopsis?.message}
+              required
+            >
+              <input
+                type="text"
+                {...register('synopsis')}
+                className="form-input"
+                placeholder="Bref résumé de l'émission"
+              />
+            </FormField>
+
+            <FormField
+              label="Type"
               error={errors.type?.message}
               required
             >
@@ -152,76 +170,62 @@ const EditShow: React.FC = () => {
               </select>
             </FormField>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                label="Durée (minutes)"
-                error={errors.duration?.message}
-                required
-              >
-                <input
-                  type="number"
-                  {...register('duration', { valueAsNumber: true })}
-                  className="form-input"
-                  min="1"
-                  placeholder="Ex: 120"
-                />
-              </FormField>
-
-              <FormField
-                label="Fréquence"
-                error={errors.frequency?.message}
-                required
-              >
-                <select {...register('frequency')} className="form-input">
-                  <option value="">Sélectionner une fréquence</option>
-                  <option value="daily">Quotidienne</option>
-                  <option value="weekly">Hebdomadaire</option>
-                  <option value="monthly">Mensuelle</option>
-                  <option value="special">Spéciale</option>
-                </select>
-              </FormField>
-            </div>
-
             <FormField
-              label="Description"
-              error={errors.description?.message}
+              label="Durée (minutes)"
+              error={errors.duration?.message}
               required
             >
-              <textarea
-                {...register('description')}
-                rows={4}
-                className="form-textarea"
-                placeholder="Description de l'émission..."
+              <input
+                type="number"
+                {...register('duration', { valueAsNumber: true })}
+                className="form-input"
+                min="1"
               />
             </FormField>
 
             <FormField
-              label="Présentateurs"
-              description="Sélectionnez un ou plusieurs présentateurs pour cette émission"
+              label="Fréquence"
+              error={errors.frequency?.message}
+              required
             >
-              {/* <PresenterManager
-                selectedPresenters={selectedPresenters}
-                onAddPresenter={handleAddPresenter}
-                onRemovePresenter={handleRemovePresenter}
-                onSetMainPresenter={handleSetMainPresenter}
-              /> */}
+              <select {...register('frequency')} className="form-input">
+                <option value="">Sélectionner une fréquence</option>
+                <option value="daily">Quotidienne</option>
+                <option value="weekly">Hebdomadaire</option>
+                <option value="monthly">Mensuelle</option>
+                <option value="special">Spéciale</option>
+              </select>
             </FormField>
           </div>
 
-          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6 border-t border-gray-200">
+          <FormField
+            label="Description"
+            error={errors.description?.message}
+            required
+          >
+            <textarea
+              {...register('description')}
+              rows={4}
+              className="form-textarea"
+              placeholder="Description détaillée de l'émission..."
+            />
+          </FormField>
+
+          <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
             <button
               type="button"
               onClick={() => navigate('/shows')}
-              className="w-full sm:w-auto btn btn-secondary"
+              className="btn btn-secondary"
+              disabled={isLoading}
             >
               Annuler
             </button>
             <button
               type="submit"
-              className="w-full sm:w-auto btn btn-primary"
-              disabled={!isValid}
+              className="btn btn-primary"
+              disabled={isLoading}
             >
-              Enregistrer les modifications
+              {isLoading ? 'Enregistrement...' : 'Enregistrer les modifications'}
             </button>
           </div>
         </form>

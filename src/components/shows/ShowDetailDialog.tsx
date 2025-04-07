@@ -100,8 +100,7 @@ const ShowDetailDialog: React.FC<ShowDetailDialogProps> = ({
                 <span className="text-sm text-gray-600">Présentateurs</span>
                 <div className="flex items-center gap-1 text-gray-900">
                   <Users className="h-4 w-4" />
-                  {/* <span>{show.presenters.length}</span> */}
-                  <span>{1}</span>
+                  <span>{show.presenters?.length || ""}</span>
                 </div>
               </div>
 
@@ -110,12 +109,19 @@ const ShowDetailDialog: React.FC<ShowDetailDialogProps> = ({
                 <div className="flex items-center gap-1 text-gray-900">
                   <Radio className="h-4 w-4" />
                   <span>
-                    {/* {format(new Date(show.createdAt), 'dd/MM/yyyy', {
+                    {format(new Date(show.created_at), 'dd/MM/yyyy', {
                       locale: fr,
-                    })} */}
+                    })}
                   </span>
                 </div>
               </div>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-medium text-gray-900 mb-2">
+                Synopsis
+              </h3>
+              <p className="text-gray-600">{show.synopsis}</p>
             </div>
 
             <div>

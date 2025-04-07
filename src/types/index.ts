@@ -82,16 +82,34 @@ export interface Presenter {
 }
 
 // Guest types
+// export interface Guest {
+//   id: string;
+//   name: string;
+//   role: GuestRole;
+//   biography?: string;
+//   avatar?: string;
+//   contact?: {
+//     email?: string;
+//     phone?: string;
+//   };
+// }
+export interface Appearance {
+  show_id: number;
+  show_title: string;
+  broadcast_date: string;
+}
+
 export interface Guest {
-  id: string;
+  id: number; // Requis pour GuestCard et navigation dans GuestDetailDialog
   name: string;
-  role: GuestRole;
-  biography?: string;
-  avatar?: string;
-  contact?: {
-    email?: string;
-    phone?: string;
-  };
+  contact_info: string | null;
+  biography: string | null;
+  role: string | null;
+  phone: string | null;
+  email: string | null;
+  avatar: string | null;
+  segments: any[]; // À affiner si utilisé
+  appearances: Appearance[];
 }
 
 export type GuestRole =

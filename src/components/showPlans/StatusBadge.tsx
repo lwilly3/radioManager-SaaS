@@ -1,5 +1,15 @@
 import React from 'react';
 import { useStatusStore } from '../../store/useStatusStore';
+import { useWindowSize } from '../../hooks/useWindowSize';
+
+// Mapping des noms courts pour mobile
+const shortStatusNames: Record<string, string> = {
+  'En préparation': 'Prép.',
+  'En attente de diffusion': 'Attente',
+  'En cours': 'Direct',
+  'Terminé': 'Terminé',
+  'Archivé': 'Archive',
+};
 
 interface StatusBadgeProps {
   status: string; // Correspond au "name" du statut
@@ -16,6 +26,8 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({
 }) => {
   const statuses = useStatusStore((state) => state.statuses);
   const statusConfig = statuses.find((s) => s.name === status); // Recherche dans `defaultStatuses`
+  const { width } = useWindowSize();
+  const isMobile = width < 640; // Breakpoint pour mobile
 
   // Si aucun statut correspondant n'est trouvé
   if (!statusConfig) return null;
@@ -27,6 +39,9 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({
     borderColor: `${statusConfig.color}30`, // Couleur pour la bordure
   };
 
+  // Déterminer le texte à afficher selon la taille de l'écran
+  const displayText = isMobile ? shortStatusNames[statusConfig.name] || statusConfig.name : statusConfig.name;
+
   return (
     <span
       className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-sm font-medium border ${
@@ -35,7 +50,7 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({
       style={style}
       onClick={onClick}
     >
-      {statusConfig.name}
+      {displayText}
       {onDelete && (
         <button
           onClick={(e) => {
@@ -52,51 +67,3 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({
 };
 
 export default StatusBadge;
-
-// import React from 'react';
-// import { Status } from '../../types';
-
-// interface StatusBadgeProps {
-//   status: string;
-//   onClick?: () => void;
-//   onDelete?: () => void;
-//   className?: string;
-// }
-
-// const StatusBadge: React.FC<StatusBadgeProps> = ({
-//   status,
-//   onClick,
-//   onDelete,
-//   className = '',
-// }) => {
-//   const style = {
-//     backgroundColor: `${status.color}15`,
-//     color: status.color,
-//     borderColor: `${status.color}30`,
-//   };
-
-//   return (
-//     <span
-//       className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-sm font-medium border ${
-//         onClick ? 'cursor-pointer hover:opacity-80' : ''
-//       } ${className}`}
-//       style={style}
-//       onClick={onClick}
-//     >
-//       {status.name}
-//       {onDelete && (
-//         <button
-//           onClick={(e) => {
-//             e.stopPropagation();
-//             onDelete();
-//           }}
-//           className="ml-1 hover:opacity-80"
-//         >
-//           ×
-//         </button>
-//       )}
-//     </span>
-//   );
-// };
-
-// export default StatusBadge;

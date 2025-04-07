@@ -3,65 +3,65 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ChevronLeft } from 'lucide-react';
-import { v4 as uuidv4 } from 'uuid';
-import { showSchema } from '../../schemas/showSchema';
-import { useShowStore } from '../../store/useShowStore';
+import { useAuthStore } from '../../store/useAuthStore';
+import { emissionApi } from '../../services/api/emissions';
 import FormField from '../../components/common/FormField';
-import PresenterManager from '../../components/showPlans/presenters/PresenterManager';
-import type { ShowFormData, Presenter } from '../../types';
+import { showSchema } from '../../schemas/showSchema';
+import type { CreateEmissionData } from '../../types/emission';
+import { isAxiosError } from 'axios';
 
 const CreateShow: React.FC = () => {
   const navigate = useNavigate();
-  const [selectedPresenters, setSelectedPresenters] = useState<Presenter[]>([]);
-  const addShow = useShowStore((state) => state.addShow);
+  const { token, permissions } = useAuthStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid },
-  } = useForm<ShowFormData>({
+    formState: { errors },
+  } = useForm<CreateEmissionData>({
     resolver: zodResolver(showSchema),
-    mode: 'onChange',
   });
 
-  const handleAddPresenter = (presenter: Presenter) => {
-    setSelectedPresenters([...selectedPresenters, presenter]);
-  };
-
-  const handleRemovePresenter = (presenterId: string) => {
-    setSelectedPresenters(selectedPresenters.filter(p => p.id !== presenterId));
-  };
-
-  const handleSetMainPresenter = (presenterId: string) => {
-    setSelectedPresenters(
-      selectedPresenters.map(p => ({
-        ...p,
-        isMainPresenter: p.id === presenterId,
-      }))
-    );
-  };
-
-  const onSubmit = (data: ShowFormData) => {
-    const newShow = {
-      id: uuidv4(),
-      ...data,
-      presenters: selectedPresenters,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    addShow(newShow);
+  const onSubmit = async (data: CreateEmissionData) => {
+    if (!token || !permissions?.can_create_emissions) return;
     
-    navigate('/shows', { 
-      replace: true,
-      state: { 
-        notification: {
-          type: 'success',
-          message: 'L\'émission a été créée avec succès'
-        }
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      await emissionApi.create(token, data);
+      navigate('/shows', {
+        replace: true,
+        state: {
+          notification: {
+            type: 'success',
+            message: 'Émission créée avec succès',
+          },
+        },
+      });
+    } catch (err) {
+      console.error('Failed to create emission:', err);
+      
+      if (isAxiosError(err)) {
+        setError(
+          err.response?.data?.message || 
+          err.response?.data?.detail || 
+          "Une erreur est survenue lors de la création de l'émission"
+        );
+      } else {
+        setError("Erreur de connexion. Veuillez vérifier votre connexion internet et réessayer.");
       }
-    });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (!permissions?.can_create_emissions) {
+    navigate('/404');
+    return null;
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -70,25 +70,31 @@ const CreateShow: React.FC = () => {
           onClick={() => navigate('/shows')}
           className="flex items-center text-gray-600 hover:text-gray-900"
         >
-          <ChevronLeft className="h-5 w-5" />
-          <span>Retour aux émissions</span>
+          <ChevronLeft className="h-5 w-5 mr-1" />
+          Retour aux émissions
         </button>
       </div>
 
       <div className="bg-white rounded-lg shadow">
-        <div className="p-4 sm:p-6 border-b border-gray-200">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h2 className="text-xl font-semibold text-gray-900">
             Nouvelle émission
-          </h1>
-          <p className="mt-1 text-sm sm:text-base text-gray-600">
+          </h2>
+          <p className="mt-1 text-sm text-gray-600">
             Créez une nouvelle émission en remplissant les informations ci-dessous
           </p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="p-4 sm:p-6 space-y-6">
-          <div className="space-y-4">
-            <FormField 
-              label="Titre de l'émission" 
+        {error && (
+          <div className="mx-6 mt-4 p-4 bg-red-50 border-l-4 border-red-400 text-red-700">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
+          <div className="grid gap-6 sm:grid-cols-2">
+            <FormField
+              label="Titre"
               error={errors.title?.message}
               required
             >
@@ -96,12 +102,25 @@ const CreateShow: React.FC = () => {
                 type="text"
                 {...register('title')}
                 className="form-input"
-                placeholder="Ex: La Matinale"
+                placeholder="Titre de l'émission"
               />
             </FormField>
 
-            <FormField 
-              label="Type d'émission"
+            <FormField
+              label="Synopsis"
+              error={errors.synopsis?.message}
+              required
+            >
+              <input
+                type="text"
+                {...register('synopsis')}
+                className="form-input"
+                placeholder="Bref résumé de l'émission"
+              />
+            </FormField>
+
+            <FormField
+              label="Type"
               error={errors.type?.message}
               required
             >
@@ -120,76 +139,62 @@ const CreateShow: React.FC = () => {
               </select>
             </FormField>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField 
-                label="Durée (minutes)"
-                error={errors.duration?.message}
-                required
-              >
-                <input
-                  type="number"
-                  {...register('duration', { valueAsNumber: true })}
-                  className="form-input"
-                  min="1"
-                  placeholder="Ex: 120"
-                />
-              </FormField>
-
-              <FormField 
-                label="Fréquence"
-                error={errors.frequency?.message}
-                required
-              >
-                <select {...register('frequency')} className="form-input">
-                  <option value="">Sélectionner une fréquence</option>
-                  <option value="daily">Quotidienne</option>
-                  <option value="weekly">Hebdomadaire</option>
-                  <option value="monthly">Mensuelle</option>
-                  <option value="special">Spéciale</option>
-                </select>
-              </FormField>
-            </div>
-
             <FormField
-              label="Description"
-              error={errors.description?.message}
+              label="Durée (minutes)"
+              error={errors.duration?.message}
               required
             >
-              <textarea
-                {...register('description')}
-                rows={4}
-                className="form-textarea"
-                placeholder="Description de l'émission..."
+              <input
+                type="number"
+                {...register('duration', { valueAsNumber: true })}
+                className="form-input"
+                min="1"
               />
             </FormField>
 
             <FormField
-              label="Présentateurs"
-              description="Sélectionnez un ou plusieurs présentateurs pour cette émission"
+              label="Fréquence"
+              error={errors.frequency?.message}
+              required
             >
-              <PresenterManager
-                selectedPresenters={selectedPresenters}
-                onAddPresenter={handleAddPresenter}
-                onRemovePresenter={handleRemovePresenter}
-                onSetMainPresenter={handleSetMainPresenter}
-              />
+              <select {...register('frequency')} className="form-input">
+                <option value="">Sélectionner une fréquence</option>
+                <option value="daily">Quotidienne</option>
+                <option value="weekly">Hebdomadaire</option>
+                <option value="monthly">Mensuelle</option>
+                <option value="special">Spéciale</option>
+              </select>
             </FormField>
           </div>
 
-          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6 border-t border-gray-200">
+          <FormField
+            label="Description"
+            error={errors.description?.message}
+            required
+          >
+            <textarea
+              {...register('description')}
+              rows={4}
+              className="form-textarea"
+              placeholder="Description détaillée de l'émission..."
+            />
+          </FormField>
+
+          <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
             <button
               type="button"
               onClick={() => navigate('/shows')}
-              className="w-full sm:w-auto btn btn-secondary"
+              className="btn btn-secondary"
+              disabled={isSubmitting}
             >
               Annuler
             </button>
-            <button 
+            <button
               type="submit"
-              className="w-full sm:w-auto btn btn-primary"
-              disabled={!isValid}
+              className="btn btn-primary"
+              disabled={isSubmitting}
             >
-              Créer l'émission
+              {isSubmitting ? 'Création...' : 'Créer l\'émission'}
             </button>
           </div>
         </form>

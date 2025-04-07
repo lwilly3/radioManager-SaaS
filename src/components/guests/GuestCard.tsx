@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { User } from 'lucide-react';
 import type { Guest } from '../../types';
@@ -25,14 +24,24 @@ const GuestCard: React.FC<GuestCardProps> = ({ guest, onSelect }) => {
             </div>
           )}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">{guest.name}</h3>
-            <p className="text-sm text-gray-600">{guest.role}</p>
+            <h3 className="text-lg font-semibold text-gray-900">
+              {guest.name}
+            </h3>
+            <p className="text-sm text-gray-600">
+              {guest.role || 'Rôle non spécifié'}
+            </p>
           </div>
         </div>
         <div className="space-y-2 mb-4">
-          {guest.contact?.email && (
-            <p className="text-sm text-gray-600 truncate">{guest.contact.email}</p>
+          {guest.email && (
+            <p className="text-sm text-gray-600 truncate">{guest.email}</p>
           )}
+          {guest.phone && (
+            <p className="text-sm text-gray-600 truncate">{guest.phone}</p>
+          )}
+          <p className="text-sm text-gray-500">
+            {guest.appearances.length} participation(s)
+          </p>
         </div>
       </div>
       <div className="px-4 py-3 border-t border-gray-100 bg-gray-50 rounded-b-lg">
