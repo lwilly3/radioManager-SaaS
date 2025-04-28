@@ -4,7 +4,7 @@ import type { LoginCredentials, LoginResponse } from '../../types/auth';
 
 export const authApi = async (credentials: LoginCredentials) => {
   try {
-    const response = await api.post<LoginResponse>('login', new URLSearchParams(credentials), {
+    const response = await api.post<LoginResponse>('auth/login', new URLSearchParams(credentials), {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
@@ -30,7 +30,7 @@ export const authApi = async (credentials: LoginCredentials) => {
 
 export const logoutApi = async (token: string): Promise<void> => {
   try {
-    await api.post('logout', {}, {
+    await api.post('auth/logout', {}, {
       headers: { Authorization: `Bearer ${token}` },
     });
     console.log("Token invalidé avec succès via l'API");
