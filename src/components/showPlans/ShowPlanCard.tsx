@@ -37,7 +37,7 @@ const ShowPlanCard: React.FC<ShowPlanCardProps> = ({
     const success = await deleteShow(id);
     if (success) {
       alert('Show supprimé avec succès');
-      navigate('/show-plans');
+      navigate('/');
     }
   };
 
@@ -76,7 +76,6 @@ const ShowPlanCard: React.FC<ShowPlanCardProps> = ({
                 ) : (
                   <button
                     onClick={() => handleDelete(showPlan.id)}
-                    disabled={isDeleting || isLocked}
                     className="p-2 rounded-full bg-red-50 text-red-600 hover:bg-red-100 flex items-center justify-center"
                     aria-label="Modifier le conducteur"
                   >
@@ -143,7 +142,10 @@ const ShowPlanCard: React.FC<ShowPlanCardProps> = ({
               {showPlan.guests.length > 0 && (
                 <div className="flex items-center text-sm text-gray-600">
                   <Users className="h-4 w-4 mr-1 flex-shrink-0" />
-                  <span>{showPlan.guests.length} invité{showPlan.guests.length > 1 ? 's' : ''}</span>
+                  <span>
+                    {showPlan.guests.length} invité
+                    {showPlan.guests.length > 1 ? 's' : ''}
+                  </span>
                 </div>
               )}
             </div>

@@ -51,14 +51,6 @@ export const useShowChatStore = create<ShowChatState>((set) => ({
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         });
-
-        // const messagesRef = collection(showChatRef, 'messages');
-        // await addDoc(messagesRef, {
-        //   content: 'Discussion du conducteur initialisée',
-        //   sender: { id: 'system', name: 'Système' },
-        //   timestamp: serverTimestamp(),
-        //   readBy: [],
-        // });
       }
     } catch (error) {
       console.error('Error initializing show chat:', error);
@@ -133,9 +125,9 @@ export const useShowChatStore = create<ShowChatState>((set) => ({
       .initializeShowChat(showId)
       .then(() => {
         const messagesRef = collection(db, 'show_chats', showId, 'messages');
+        // Modified query to avoid the composite index requirement
         const q = query(
           messagesRef,
-          where('sender.id', '!=', userId),
           orderBy('timestamp', 'desc')
         );
 
@@ -151,10 +143,10 @@ export const useShowChatStore = create<ShowChatState>((set) => ({
               readBy: doc.data().readBy || [],
             })) as ShowChatMessage[];
 
+            // Filter messages client-side instead of in the query
             const unreadMessages = allMessages.filter(
-              (msg) => !msg.readBy.includes(userId)
+              (msg) => msg.sender.id !== userId && !msg.readBy.includes(userId)
             );
-            // .slice(0, 1);
 
             set({ unreadMessages });
           },
@@ -178,7 +170,7 @@ export const useShowChatStore = create<ShowChatState>((set) => ({
       await useShowChatStore.getState().initializeShowChat(showId);
 
       const messagesRef = collection(db, 'show_chats', showId, 'messages');
-      const q = query(messagesRef); // Tous les messages
+      const q = query(messagesRef);
 
       const snapshot = await getDocs(q);
       if (snapshot.empty) return;

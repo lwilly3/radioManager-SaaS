@@ -9,6 +9,7 @@ import {
   Menu,
   X,
   StopCircle,
+  Check,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -21,6 +22,7 @@ import PresenterBadge from '../components/showPlans/presenters/PresenterBadge';
 import { generateKey } from '../utils/keyGenerator';
 import { useStatusUpdate } from '../hooks/status/useStatusUpdate';
 import { useDashboard } from '../hooks/dashbord/useDashboard';
+import PdfGenerator from '../components/common/PdfGenerator';
 
 const ShowPlanDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -33,6 +35,10 @@ const ShowPlanDetail: React.FC = () => {
   const [activeSegmentId, setActiveSegmentId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showPlan, setShowPlan] = useState<any>(null);
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
 
   // Try to find the show plan from different sources
   useEffect(() => {
@@ -101,6 +107,22 @@ const ShowPlanDetail: React.FC = () => {
     }
   };
 
+  const handleExportSuccess = () => {
+    setNotification({
+      type: 'success',
+      message: 'PDF généré avec succès',
+    });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  const handleExportError = (errorMessage: string) => {
+    setNotification({
+      type: 'error',
+      message: `Erreur lors de l'export: ${errorMessage}`,
+    });
+    setTimeout(() => setNotification(null), 5000);
+  };
+
   // Format date safely
   const formatDate = (dateToFormat: Date, formatString: string) => {
     try {
@@ -125,25 +147,47 @@ const ShowPlanDetail: React.FC = () => {
               <span className="hidden sm:inline">Retour aux conducteurs</span>
             </button>
 
-            {/* End Broadcast Button */}
-            {isLive && (
-              <button
-                onClick={handleEndBroadcast}
-                disabled={isUpdating}
-                className="btn bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"
-              >
-                <StopCircle className="h-5 w-5" />
-                {isUpdating ? 'Fin en cours...' : 'Fin de Diffusion'}
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {/* Notification */}
+              {notification && (
+                <div className={`px-3 py-2 rounded-lg text-sm ${
+                  notification.type === 'success' 
+                    ? 'bg-green-50 text-green-700' 
+                    : 'bg-red-50 text-red-700'
+                }`}>
+                  {notification.message}
+                </div>
+              )}
+              
+              {/* Export PDF Button */}
+              <PdfGenerator
+                data={showPlan}
+                type="showPlan"
+                buttonText={isLive ? "Exporter" : "Exporter PDF"}
+                onSuccess={handleExportSuccess}
+                onError={handleExportError}
+              />
 
-            {/* Mobile Sidebar Toggle */}
-            <button
-              onClick={() => setIsSidebarOpen(true)}
-              className="lg:hidden p-2 text-gray-600 hover:text-gray-900"
-            >
-              <Menu className="h-6 w-6" />
-            </button>
+              {/* End Broadcast Button */}
+              {isLive && (
+                <button
+                  onClick={handleEndBroadcast}
+                  disabled={isUpdating}
+                  className="btn bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"
+                >
+                  <StopCircle className="h-5 w-5" />
+                  {isUpdating ? 'Fin en cours...' : 'Fin de Diffusion'}
+                </button>
+              )}
+
+              {/* Mobile Sidebar Toggle */}
+              <button
+                onClick={() => setIsSidebarOpen(true)}
+                className="lg:hidden p-2 text-gray-600 hover:text-gray-900"
+              >
+                <Menu className="h-6 w-6" />
+              </button>
+            </div>
           </div>
 
           <div className="space-y-6">

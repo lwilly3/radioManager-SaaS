@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { emissionApi } from '../services/api/emissions';
+import { showsApi } from '../services/api/shows';
 import EmissionSelect from '../components/showPlans/forms/EmissionSelect';
 import ShowPlanForm from '../components/showPlans/forms/ShowPlanForm';
 import NewSegmentForm from '../components/showPlans/segments/NewSegmentForm';
@@ -44,18 +44,19 @@ const CreateShowPlan: React.FC = () => {
   };
 
   const handleDeleteSegment = (segmentId: string) => {
-    setSegments((prevSegments) => 
+    setSegments((prevSegments) =>
       prevSegments.filter((segment) => segment.id !== segmentId)
     );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!token || !selectedEmission || !selectedStatus || !formData.title) return;
-    
+    if (!token || !selectedEmission || !selectedStatus || !formData.title)
+      return;
+
     setIsLoading(true);
     try {
-      const payload = {
+      const data = {
         title: formData.title,
         type: formData.showType || 'talk-show',
         broadcast_date: `${formData.date}T${formData.time}`,
@@ -74,10 +75,11 @@ const CreateShowPlan: React.FC = () => {
           guest_ids: segment.guests || [],
         })),
       };
+      await showsApi.create(token, data);
 
-      await emissionApi.createShowPlan(token, payload);
-      
-      navigate('/show-plans', {
+      // await emissionApi.createShowPlan(token, payload);
+
+      navigate('/my-show-plans', {
         replace: true,
         state: {
           notification: {
@@ -111,7 +113,8 @@ const CreateShowPlan: React.FC = () => {
             Nouveau conducteur
           </h1>
           <p className="mt-1 text-gray-600">
-            Créez un nouveau conducteur en remplissant les informations ci-dessous
+            Créez un nouveau conducteur en remplissant les informations
+            ci-dessous
           </p>
         </div>
 
@@ -122,10 +125,7 @@ const CreateShowPlan: React.FC = () => {
             onSelect={setSelectedEmission}
           />
 
-          <ShowPlanForm
-            defaultValues={formData}
-            onValuesChange={setFormData}
-          />
+          <ShowPlanForm defaultValues={formData} onValuesChange={setFormData} />
 
           <div className="border-t border-gray-200 pt-6">
             <StatusSelect
@@ -156,10 +156,15 @@ const CreateShowPlan: React.FC = () => {
             >
               Annuler
             </button>
-            <button 
+            <button
               type="submit"
               className="btn btn-primary"
-              disabled={isLoading || !selectedEmission || !selectedStatus || segments.length === 0}
+              disabled={
+                isLoading ||
+                !selectedEmission ||
+                !selectedStatus ||
+                segments.length === 0
+              }
             >
               {isLoading ? 'Création en cours...' : 'Créer le conducteur'}
             </button>

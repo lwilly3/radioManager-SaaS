@@ -80,15 +80,15 @@ export const showsApi = {
     }
   },
 
-  // Create new show
-  create: async (token: string, data: any): Promise<ShowPlan> => {
+  // Create new showPlan creation d'un conducteur
+  create: async (token: string, data: any): Promise<any> => {
     try {
       const response = await api.post(
         '/shows/detail',
         data,
         authHeaders(token)
       );
-      return mapApiShowToShowPlan(response.data);
+      return response.data;
     } catch (error) {
       console.error('Failed to create show:', error);
       throw error;

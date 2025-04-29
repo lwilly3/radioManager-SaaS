@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Dialog } from '@headlessui/react';
 import {
   X,
-  Calendar,
   Clock,
   Users,
+  Calendar,
   Radio,
+  Check,
   ChevronDown,
   ChevronUp,
   User,
@@ -13,6 +14,7 @@ import {
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { generateKey } from '../../utils/keyGenerator';
+import PdfGenerator from '../common/PdfGenerator';
 
 interface Presenter {
   id: number;
@@ -28,7 +30,7 @@ interface Show {
   title: string;
   broadcast_date: string;
   duration: number;
-  presenters: Presenter[]; // Changement ici : tableau d'objets
+  presenters: Presenter[];
   status: string;
   description?: string;
   guests?: { id: number; name: string; role: string; avatar?: string | null }[];
@@ -59,20 +61,40 @@ const ArchiveDetailDialog: React.FC<ArchiveDetailDialogProps> = ({
   isOpen,
   onClose,
 }) => {
-  const [expandedSegments, setExpandedSegments] = useState<Set<number>>(
+  const [expandedSegments, setExpandedSegments] = useState<Set<string>>(
     new Set()
   );
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
 
   const toggleSegment = (index: number) => {
     setExpandedSegments((prev) => {
       const next = new Set(prev);
-      if (next.has(index)) {
-        next.delete(index);
+      if (next.has(index.toString())) {
+        next.delete(index.toString());
       } else {
-        next.add(index);
+        next.add(index.toString());
       }
       return next;
     });
+  };
+
+  const handleExportSuccess = () => {
+    setNotification({
+      type: 'success',
+      message: 'PDF généré avec succès',
+    });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  const handleExportError = (errorMessage: string) => {
+    setNotification({
+      type: 'error',
+      message: `Erreur lors de l'export: ${errorMessage}`,
+    });
+    setTimeout(() => setNotification(null), 5000);
   };
 
   return (
@@ -95,13 +117,38 @@ const ArchiveDetailDialog: React.FC<ArchiveDetailDialogProps> = ({
                 </span>
               </div>
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 text-gray-500 hover:text-gray-700 rounded-lg"
-            >
-              <X className="h-5 w-5" />
-            </button>
+            <div className="flex items-center gap-2">
+              <PdfGenerator 
+                data={show}
+                type="archive"
+                buttonText=""
+                className="p-2 text-gray-500 hover:text-indigo-600 rounded-lg"
+                onSuccess={handleExportSuccess}
+                onError={handleExportError}
+              />
+              <button
+                onClick={onClose}
+                className="p-2 text-gray-500 hover:text-gray-700 rounded-lg"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
           </div>
+
+          {notification && (
+            <div className={`mx-6 mt-4 p-3 rounded-lg flex items-center gap-2 ${
+              notification.type === 'success' 
+                ? 'bg-green-50 text-green-700' 
+                : 'bg-red-50 text-red-700'
+            }`}>
+              {notification.type === 'success' ? (
+                <Check className="h-5 w-5 flex-shrink-0" />
+              ) : (
+                <X className="h-5 w-5 flex-shrink-0" />
+              )}
+              <p>{notification.message}</p>
+            </div>
+          )}
 
           <div className="p-4 sm:p-6 space-y-6">
             {/* Informations de diffusion */}
@@ -267,14 +314,14 @@ const ArchiveDetailDialog: React.FC<ArchiveDetailDialogProps> = ({
                             </div>
                           </div>
                         </div>
-                        {expandedSegments.has(index) ? (
+                        {expandedSegments.has(index.toString()) ? (
                           <ChevronUp className="h-5 w-5 text-gray-500" />
                         ) : (
                           <ChevronDown className="h-5 w-5 text-gray-500" />
                         )}
                       </button>
 
-                      {expandedSegments.has(index) && (
+                      {expandedSegments.has(index.toString()) && (
                         <div className="p-3 border-t border-gray-200">
                           {segment.description && (
                             <p className="text-sm text-gray-600 mb-3">
@@ -337,7 +384,14 @@ const ArchiveDetailDialog: React.FC<ArchiveDetailDialogProps> = ({
             )}
           </div>
 
-          <div className="flex justify-end gap-3 p-4 sm:p-6 border-t bg-gray-50">
+          <div className="flex justify-end gap-3 p-4 sm:p-6 border-t bg-gray-50 rounded-b-lg">
+            <PdfGenerator 
+              data={show}
+              type="archive"
+              buttonText="Exporter en PDF"
+              onSuccess={handleExportSuccess}
+              onError={handleExportError}
+            />
             <button onClick={onClose} className="btn btn-secondary">
               Fermer
             </button>

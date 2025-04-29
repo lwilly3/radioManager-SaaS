@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, MessageSquare, Download, User } from 'lucide-react';
+import { Users, MessageSquare, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import ReactQuill from 'react-quill';
@@ -10,6 +10,7 @@ import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../../../api/firebase/firebase';
 import type { ShowPlan } from '../../../types';
 import { generateKey } from '../../../utils/keyGenerator';
+import PdfGenerator from '../../common/PdfGenerator';
 
 interface ShowPlanSidebarProps {
   showPlan: ShowPlan;
@@ -19,6 +20,10 @@ const ShowPlanSidebar: React.FC<ShowPlanSidebarProps> = ({ showPlan }) => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [technicalNotes, setTechnicalNotes] = useState('');
   const [isNotesLoading, setIsNotesLoading] = useState(true);
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
   const { unreadMessages, subscribeToUnreadMessages, markMessagesAsRead } =
     useShowChatStore();
 
@@ -79,6 +84,22 @@ const ShowPlanSidebar: React.FC<ShowPlanSidebarProps> = ({ showPlan }) => {
     }
   };
 
+  const handleExportSuccess = () => {
+    setNotification({
+      type: 'success',
+      message: 'PDF généré avec succès',
+    });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  const handleExportError = (errorMessage: string) => {
+    setNotification({
+      type: 'error',
+      message: `Erreur lors de l'export: ${errorMessage}`,
+    });
+    setTimeout(() => setNotification(null), 5000);
+  };
+
   const modules = {
     toolbar: [
       [{ header: [1, 2, false] }],
@@ -91,14 +112,27 @@ const ShowPlanSidebar: React.FC<ShowPlanSidebarProps> = ({ showPlan }) => {
   return (
     <div className="w-80 border-l border-gray-200 bg-gray-50 p-4 overflow-y-auto">
       <div className="space-y-6">
+        {/* Notification */}
+        {notification && (
+          <div className={`p-3 rounded-lg flex items-center gap-2 ${
+            notification.type === 'success' 
+              ? 'bg-green-50 text-green-700' 
+              : 'bg-red-50 text-red-700'
+          }`}>
+            <p className="text-sm">{notification.message}</p>
+          </div>
+        )}
+        
         {/* Actions */}
         <div className="space-y-2">
           <h3 className="text-sm font-medium text-gray-900">Actions</h3>
           <div className="space-y-2">
-            <button className="w-full btn btn-primary flex items-center justify-center gap-2">
-              <Download className="h-4 w-4" />
-              Exporter en PDF
-            </button>
+            <PdfGenerator
+              data={showPlan}
+              type="showPlan"
+              onSuccess={handleExportSuccess}
+              onError={handleExportError}
+            />
             <div className="space-y-2">
               <button
                 onClick={handleOpenChat}
@@ -233,4 +267,4 @@ const ShowPlanSidebar: React.FC<ShowPlanSidebarProps> = ({ showPlan }) => {
   );
 };
 
-export default ShowPlanSidebar;
+export default ShowPlanSidebar
