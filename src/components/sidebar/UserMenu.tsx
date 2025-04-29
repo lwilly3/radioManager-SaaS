@@ -1,9 +1,10 @@
 import React from 'react';
-import { LogOut, UserCircle, User } from 'lucide-react';
+import { LogOut, UserCircle, User, Tag } from 'lucide-react';
 import { Menu } from '@headlessui/react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useLogout } from '../../hooks/auth/useLogout';
+import AppVersion from '../settings/AppVersion';
 
 const UserMenu: React.FC = () => {
   const user = useAuthStore((state) => state.user);
@@ -47,6 +48,22 @@ const UserMenu: React.FC = () => {
           <Menu.Item>
             {({ active }) => (
               <button
+                className={`${
+                  active ? 'bg-gray-50' : ''
+                } w-full px-4 py-2 text-left text-sm text-gray-700 flex items-center gap-2`}
+                onClick={() => navigate('/settings?tab=versions')}
+              >
+                <Tag className="h-4 w-4" />
+                Informations de version
+              </button>
+            )}
+          </Menu.Item>
+          
+          <div className="border-t border-gray-100 my-1"></div>
+          
+          <Menu.Item>
+            {({ active }) => (
+              <button
                 onClick={logout}
                 className={`${
                   active ? 'bg-gray-50' : ''
@@ -59,6 +76,10 @@ const UserMenu: React.FC = () => {
           </Menu.Item>
         </Menu.Items>
       </Menu>
+      
+      <div className="mt-2 text-center">
+        <AppVersion className="justify-center" />
+      </div>
     </div>
   );
 };

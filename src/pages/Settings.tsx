@@ -9,10 +9,9 @@ import PresenterPrivileges from '../components/settings/PresenterPrivileges';
 import GeneralSettings from '../components/settings/GeneralSettings';
 import RoleTemplates from '../components/settings/RoleTemplates';
 import PermissionAuditLog from '../components/settings/PermissionAuditLog';
-// import PresentersList from '../components/settings/PresentersList';
 import PresentersList from '../components/settings/presenters/PresenterList';
-
 import RoleManagement from '../components/settings/RoleManagement';
+import VersionInfo from '../components/settings/VersionInfo';
 import {
   Settings as SettingsIcon,
   Users,
@@ -20,11 +19,10 @@ import {
   BookTemplate,
   History,
   UserCog,
+  Tag,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom'; // Importer useNavigate
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
-
-
 
 // Composant ErrorBoundary pour isoler les erreurs
 class ErrorBoundary extends React.Component<
@@ -35,8 +33,6 @@ class ErrorBoundary extends React.Component<
     super(props);
     this.state = { hasError: false, error: null };
   }
-
-  
 
   static getDerivedStateFromError(error: Error) {
     return { hasError: true, error };
@@ -59,27 +55,31 @@ class ErrorBoundary extends React.Component<
 const log = (message: string) => console.log(`[Settings] ${message}`);
 
 const Settings: React.FC = () => {
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState('general');
   const [notification, setNotification] = useState<{
     type: 'success' | 'error';
     message: string;
   } | null>(null);
   const { permissions } = useAuthStore();
-  
+  const navigate = useNavigate();
 
+  // Extraire l'onglet de l'URL si présent
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+    if (tab && ['general', 'presenters', 'privileges', 'roles', 'templates', 'audit', 'versions'].includes(tab)) {
+      setActiveTab(tab);
+      log(`Tab set from URL: ${tab}`);
+    }
+  }, [location]);
 
-  const navigate = useNavigate(); // Ajouter useNavigate
-
-  // if (!permissions?.can_manage_settings) {
-  //   navigate('/404'); // Rediriger vers la page 404
-
-  //   }
-  
-    // Vérifier la permission et rediriger vers 404 si elle manque
-    useEffect(() => {
-      if ( permissions && !permissions.can_manage_settings) {
-        navigate('/404'); // Rediriger vers la page 404
-      }});
+  // Vérifier la permission et rediriger vers 404 si elle manque
+  useEffect(() => {
+    if (permissions && !permissions.can_manage_settings) {
+      navigate('/404');
+    }
+  }, [permissions, navigate]);
 
   // Log pour vérifier l'état initial et les mises à jour
   useEffect(() => {
@@ -103,6 +103,12 @@ const Settings: React.FC = () => {
       `Tab changed to: ${value}, current activeTab before update: ${activeTab}`
     );
     setActiveTab(value);
+    
+    // Mettre à jour l'URL avec le nouvel onglet
+    const searchParams = new URLSearchParams(location.search);
+    searchParams.set('tab', value);
+    navigate(`${location.pathname}?${searchParams.toString()}`, { replace: true });
+    
     log(`Tab changed to: ${value}, activeTab after update: ${activeTab}`);
   };
 
@@ -168,6 +174,16 @@ const Settings: React.FC = () => {
       >
         <History className="h-4 w-4" />
         <span>Journal d'audit</span>
+      </TabsTrigger>
+      <TabsTrigger
+        key="versions"
+        value="versions"
+        active={activeTab === 'versions'}
+        className="flex items-center gap-2 whitespace-nowrap"
+        onValueChange={handleTabChange}
+      >
+        <Tag className="h-4 w-4" />
+        <span>Versions</span>
       </TabsTrigger>
     </TabsList>
   );
@@ -273,6 +289,17 @@ const Settings: React.FC = () => {
         >
           {log(`Rendering PermissionAuditLog for tab: ${activeTab}`)}
           <PermissionAuditLog />
+        </TabsContent>
+
+        <TabsContent
+          key="versions-content"
+          value="versions"
+          active={activeTab === 'versions'}
+          parentValue={activeTab}
+          className="mt-0"
+        >
+          {log(`Rendering VersionInfo for tab: ${activeTab}`)}
+          <VersionInfo />
         </TabsContent>
       </Tabs>
     </div>
