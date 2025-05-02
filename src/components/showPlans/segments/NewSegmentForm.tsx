@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -46,7 +45,7 @@ const NewSegmentForm: React.FC<NewSegmentFormProps> = ({ onAdd }) => {
 
   const onSubmit = (data: SegmentFormData) => {
     const newSegment: ShowSegment = {
-      id: uuidv4(),
+      id: uuidv4(), // Générer un ID unique pour le segment
       ...data,
       startTime: '',
       guests: guests.map(g => g.id),

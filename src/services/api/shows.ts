@@ -1,4 +1,3 @@
-import axios from 'axios';
 import api from '../../api/api';
 import type { ApiShowResponse } from '../../types/api';
 import type { ShowPlan } from '../../types';
@@ -10,38 +9,45 @@ const authHeaders = (token: string) => ({
 const API_URL = 'https://api.radio.audace.ovh';
 
 // Convert API response to internal format
-const mapApiShowToShowPlan = (apiShow: ApiShowResponse): ShowPlan => ({
-  id: apiShow.id,
-  emission: apiShow.emission,
-  title: apiShow.title,
-  showType: 'other',
-  date: apiShow.broadcast_date,
-  description: apiShow.description,
-  status: apiShow.status,
-  segments: apiShow.segments.map((segment) => ({
-    id: segment.id,
-    title: segment.title,
-    duration: segment.duration,
-    type: segment.type.toLowerCase() as any,
-    description: segment.description,
-    startTime: segment.startTime || '',
-    guests: segment.guests.map((guest) => guest.name),
-  })),
-  presenters: apiShow.presenters.map((presenter) => ({
-    id: presenter.id,
-    name: presenter.name,
-    isMainPresenter: presenter.isMainPresenter,
-  })),
-  guests: apiShow.segments
-    .flatMap((segment) => segment.guests)
-    .map((guest) => ({
-      id: guest.id,
-      name: guest.name,
-      role: guest.role as any,
-      biography: guest.biography || undefined,
-      avatar: guest.avatar || undefined,
+const mapApiShowToShowPlan = (apiShow: ApiShowResponse): ShowPlan => {
+  // Utilisez une valeur par défaut si `segments` est absent
+  const segments = apiShow.segments || [];
+  
+  return {
+    id: apiShow.id,
+    emission_id: apiShow.emission_id ? String(apiShow.emission_id) : undefined,
+    emission: apiShow.emission,
+    title: apiShow.title,
+    type: apiShow.type,
+    showType: apiShow.type,
+    date: apiShow.broadcast_date,
+    description: apiShow.description,
+    status: apiShow.status,
+    segments: segments.map((segment) => ({
+      id: segment.id.toString(),
+      title: segment.title,
+      duration: segment.duration,
+      type: segment.type.toLowerCase() as any,
+      description: segment.description,
+      startTime: segment.startTime || '',
+      guests: segment.guests?.map((guest) => guest.id.toString()) || [],
     })),
-});
+    presenters: apiShow.presenters?.map((presenter) => ({
+      id: presenter.id.toString(),
+      name: presenter.name,
+      isMainPresenter: presenter.isMainPresenter,
+    })) || [],
+    guests: segments
+      .flatMap((segment) => segment.guests || [])
+      .map((guest) => ({
+        id: guest.id.toString(),
+        name: guest.name,
+        role: guest.role as any,
+        biography: guest.biography || undefined,
+        avatar: guest.avatar || undefined,
+      })),
+  };
+};
 
 export const showsApi = {
   // Retourne les conducteurs prêts à diffuser
@@ -69,10 +75,7 @@ export const showsApi = {
   // Get show by ID
   getById: async (token: string, id: string): Promise<ShowPlan> => {
     try {
-      const response = await axios.get<ApiShowResponse>(
-        `${API_URL}/shows/x/${id}`,
-        authHeaders(token)
-      );
+      const response = await api.get(`/shows/x/${id}`, authHeaders(token));
       return mapApiShowToShowPlan(response.data);
     } catch (error) {
       console.error(`Failed to fetch show ${id}:`, error);
@@ -98,6 +101,7 @@ export const showsApi = {
   // Update show
   update: async (token: string, id: string, data: any): Promise<ShowPlan> => {
     try {
+      console.log('Données envoyées à l\'API:', data);
       const response = await api.patch(
         `/shows/detail/${id}`,
         data,
@@ -127,7 +131,7 @@ export const showsApi = {
   // Delete show
   deleteDel: async (showId: string, token: string) => {
     try {
-      const response = await axios.delete(`${API_URL}/shows/del/${showId}`, {
+      const response = await api.delete(`/shows/del/${showId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

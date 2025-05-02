@@ -20,7 +20,13 @@ const CreateShowPlan: React.FC = () => {
   const [emissions, setEmissions] = useState<Emission[]>([]);
   const [selectedEmission, setSelectedEmission] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState<Partial<ShowPlanFormData>>({});
+  const [formData, setFormData] = useState<Partial<ShowPlanFormData>>({
+    title: '',
+    showType: '',
+    date: '',
+    time: '',
+    description: '',
+  });
   const [selectedPresenters, setSelectedPresenters] = useState<Presenter[]>([]);
 
   useEffect(() => {
@@ -36,9 +42,17 @@ const CreateShowPlan: React.FC = () => {
     fetchEmissions();
   }, [token]);
 
+  // Journaliser formData après chaque changement
+  useEffect(() => {
+    console.log('formData:', formData);
+  }, [formData]);
+
   // Add segment handlers
   const handleAddSegment = (segment: ShowSegment) => {
-    setSegments((prevSegments) => [...prevSegments, segment]);
+    setSegments((prevSegments) => [
+      ...prevSegments,
+      { ...segment, id: `temp-${Date.now()}` },
+    ]);
   };
 
   const handleReorderSegments = (reorderedSegments: ShowSegment[]) => {
@@ -53,7 +67,10 @@ const CreateShowPlan: React.FC = () => {
 
   // Presenter handlers
   const handleSelectPresenter = (presenter: Presenter) => {
-    setSelectedPresenters([...selectedPresenters, { ...presenter, isMainPresenter: selectedPresenters.length === 0 }]);
+    setSelectedPresenters([...selectedPresenters, {
+      ...presenter,
+      isMainPresenter: selectedPresenters.length === 0
+    }]);
   };
 
   const handleRemovePresenter = (presenterId: string) => {
@@ -65,6 +82,20 @@ const CreateShowPlan: React.FC = () => {
       ...p,
       isMainPresenter: p.id === presenterId
     })));
+  };
+
+  const handleFormChange = (values: Partial<ShowPlanFormData>) => {
+    console.log('handleFormChange values:', values);
+    // Ignorer les mises à jour si toutes les valeurs sont vides
+    const isEmpty = Object.values(values).every(
+      (value) => value === '' || value === undefined
+    );
+    if (isEmpty) return;
+
+    setFormData((prev) => ({
+      ...prev,
+      ...values,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -93,6 +124,7 @@ const CreateShowPlan: React.FC = () => {
           guest_ids: segment.guests || [],
         })),
       };
+      console.log('Payload envoyée :', JSON.stringify(data, null, 2));
       await showsApi.create(token, data);
 
       navigate('/my-show-plans', {
@@ -141,7 +173,7 @@ const CreateShowPlan: React.FC = () => {
             onSelect={setSelectedEmission}
           />
 
-          <ShowPlanForm defaultValues={formData} onValuesChange={setFormData} />
+          <ShowPlanForm defaultValues={formData} onValuesChange={handleFormChange} />
 
           <div className="border-t border-gray-200 pt-6">
             <StatusSelect
@@ -188,7 +220,10 @@ const CreateShowPlan: React.FC = () => {
                 isLoading ||
                 !selectedEmission ||
                 !selectedStatus ||
-                segments.length === 0
+                segments.length === 0 ||
+                !formData.title ||
+                !formData.date ||
+                !formData.time
               }
             >
               {isLoading ? 'Création en cours...' : 'Créer le conducteur'}

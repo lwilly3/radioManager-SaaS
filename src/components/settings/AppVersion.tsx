@@ -6,9 +6,10 @@ import semver from 'semver';
 
 interface AppVersionProps {
   className?: string;
+  onClick?: () => void;
 }
 
-const AppVersion: React.FC<AppVersionProps> = ({ className = '' }) => {
+const AppVersion: React.FC<AppVersionProps> = ({ className = '', onClick }) => {
   const { currentVersion, versions } = useVersionStore();
   
   // Obtenir la dernière version
@@ -21,6 +22,22 @@ const AppVersion: React.FC<AppVersionProps> = ({ className = '' }) => {
   
   // Vérifier si une mise à jour est disponible
   const updateAvailable = latestVersion && semver.gt(latestVersion.version, currentVersion);
+  
+  if (onClick) {
+    return (
+      <button 
+        onClick={onClick}
+        className={`flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 ${className}`}
+        title={updateAvailable ? "Mise à jour disponible" : "Version actuelle"}
+      >
+        <Tag className="h-3 w-3" />
+        <span>v{currentVersion}</span>
+        {updateAvailable && (
+          <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+        )}
+      </button>
+    );
+  }
   
   return (
     <Link 

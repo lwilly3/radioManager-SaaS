@@ -8,7 +8,7 @@ import semver from 'semver';
 export const useVersionStore = create<VersionState>()(
   persist(
     (set, get) => ({
-      currentVersion: '1.0.0', // Version actuelle de l'application
+      currentVersion: '1.1.0', // Version actuelle de l'application
       versions: [],
       isLoading: false,
       error: null,
@@ -27,7 +27,7 @@ export const useVersionStore = create<VersionState>()(
               versions: defaultVersions,
               isLoading: false 
             });
-            return;
+            return defaultVersions;
           }
           
           const versions = snapshot.docs.map(doc => ({
@@ -39,6 +39,7 @@ export const useVersionStore = create<VersionState>()(
             versions,
             isLoading: false 
           });
+          return versions;
         } catch (error) {
           console.error('Erreur lors de la récupération des versions:', error);
           set({ 
@@ -46,6 +47,7 @@ export const useVersionStore = create<VersionState>()(
             isLoading: false,
             versions: defaultVersions // Utiliser les versions par défaut en cas d'erreur
           });
+          return defaultVersions;
         }
       },
 
@@ -77,6 +79,24 @@ export const useVersionStore = create<VersionState>()(
 
 // Versions par défaut utilisées si Firestore n'est pas disponible
 const defaultVersions: Version[] = [
+  {
+    version: '1.1.0',
+    releaseDate: '2025-05-01',
+    description: 'Ajout de fonctionnalités d\'invitation et d\'information de version',
+    features: [
+      'Génération de liens d\'invitation temporaires pour les nouveaux utilisateurs',
+      'Dialogue d\'information de version accessible depuis le menu utilisateur',
+      'Correction du bug de validation des tokens d\'invitation'
+    ],
+    bugfixes: [
+      'Correction du problème de validation des tokens d\'invitation',
+      'Amélioration de la gestion des erreurs lors de la création de compte'
+    ],
+    improvements: [
+      'Interface utilisateur améliorée pour la gestion des versions',
+      'Meilleure expérience utilisateur pour l\'invitation de nouveaux membres'
+    ]
+  },
   {
     version: '1.0.0',
     releaseDate: '2025-04-30',

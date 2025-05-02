@@ -32,6 +32,7 @@ import Archives from './pages/Archives';
 import FullProgram from './pages/FullProgram';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
+import SignupWithInvite from './pages/auth/SignupWithInvite';
 
 const App: React.FC = () => {
   const isAuthenticated = useAuthStore((state) => Boolean(state.token));
@@ -40,13 +41,14 @@ const App: React.FC = () => {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          {/* Public route */}
+          {/* Public routes */}
           <Route 
             path="/login" 
             element={
               isAuthenticated ? <Navigate to="/" replace /> : <Login />
             } 
           />
+          <Route path="/signup/:token" element={<SignupWithInvite />} />
 
           {/* Protected routes */}
           <Route path="/" element={

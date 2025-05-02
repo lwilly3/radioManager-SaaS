@@ -44,7 +44,7 @@ const SegmentList: React.FC<SegmentListProps> = ({ segments, onReorder, onDelete
             {segments.map((segment, index) => (
               <Draggable
                 key={segment.id}
-                draggableId={segment.id}
+                draggableId={String(segment.id)}
                 index={index}
               >
                 {(provided) => (
@@ -91,7 +91,7 @@ const SegmentList: React.FC<SegmentListProps> = ({ segments, onReorder, onDelete
                     </div>
 
                     <button
-                      onClick={() => onDelete(segment.id)}
+                      onClick={() => onDelete(String(segment.id))}
                       className="p-2 text-gray-400 hover:text-red-600 transition-colors"
                       aria-label="Supprimer le segment"
                     >

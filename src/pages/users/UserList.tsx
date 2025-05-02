@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, User, Shield, Trash2, Edit, ChevronDown, X, Filter } from 'lucide-react';
+import { Plus, Search, User, Shield, Trash2, Edit, ChevronDown, X, Filter, Mail } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { usersApi } from '../../services/api/users';
 import { rolesApi } from '../../services/api/roles';
 import type { Users, Role } from '../../types/user';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import GenerateInviteLink from '../../components/auth/GenerateInviteLink';
 
 const UserList: React.FC = () => {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ const UserList: React.FC = () => {
   const token = useAuthStore((state) => state.token);
   const [editingRolesForUser, setEditingRolesForUser] = useState<number | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<number[]>([]);
+  const [showInviteForm, setShowInviteForm] = useState(false);
 
   const { permissions } = useAuthStore();
 
@@ -114,6 +116,11 @@ const UserList: React.FC = () => {
     return matchesSearch && matchesRole;
   });
 
+  const handleInviteSent = (token: string) => {
+    console.log(`Invitation envoyée avec le token: ${token}`);
+    // Vous pouvez ajouter ici une notification ou une mise à jour de l'interface
+  };
+
   return (
     <div className="space-y-6">
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -121,14 +128,27 @@ const UserList: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900">Utilisateurs</h1>
           <p className="text-gray-600">Gérez les utilisateurs et leurs rôles</p>
         </div>
-        <button
-          onClick={() => navigate('/users/create')}
-          className="btn btn-primary flex items-center gap-2"
-        >
-          <Plus className="h-5 w-5" />
-          Nouvel utilisateur
-        </button>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <button
+            onClick={() => setShowInviteForm(!showInviteForm)}
+            className="btn btn-secondary flex items-center gap-2"
+          >
+            <Mail className="h-5 w-5" />
+            {showInviteForm ? "Masquer le formulaire d'invitation" : "Inviter un utilisateur"}
+          </button>
+          <button
+            onClick={() => navigate('/users/create')}
+            className="btn btn-primary flex items-center gap-2"
+          >
+            <Plus className="h-5 w-5" />
+            Nouvel utilisateur
+          </button>
+        </div>
       </header>
+
+      {showInviteForm && (
+        <GenerateInviteLink onInviteSent={handleInviteSent} />
+      )}
 
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">

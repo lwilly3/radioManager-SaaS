@@ -1,15 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { LogOut, UserCircle, User, Tag } from 'lucide-react';
 import { Menu } from '@headlessui/react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useLogout } from '../../hooks/auth/useLogout';
 import AppVersion from '../settings/AppVersion';
+import VersionInfoDialog from '../common/VersionInfoDialog';
 
 const UserMenu: React.FC = () => {
   const user = useAuthStore((state) => state.user);
   const logout = useLogout();
   const navigate = useNavigate();
+  const [isVersionDialogOpen, setIsVersionDialogOpen] = useState(false);
 
   if (!user) {
     return null;
@@ -51,7 +53,7 @@ const UserMenu: React.FC = () => {
                 className={`${
                   active ? 'bg-gray-50' : ''
                 } w-full px-4 py-2 text-left text-sm text-gray-700 flex items-center gap-2`}
-                onClick={() => navigate('/settings?tab=versions')}
+                onClick={() => setIsVersionDialogOpen(true)}
               >
                 <Tag className="h-4 w-4" />
                 Informations de version
@@ -78,8 +80,16 @@ const UserMenu: React.FC = () => {
       </Menu>
       
       <div className="mt-2 text-center">
-        <AppVersion className="justify-center" />
+        <AppVersion 
+          className="justify-center cursor-pointer" 
+          onClick={() => setIsVersionDialogOpen(true)}
+        />
       </div>
+
+      <VersionInfoDialog 
+        isOpen={isVersionDialogOpen} 
+        onClose={() => setIsVersionDialogOpen(false)} 
+      />
     </div>
   );
 };

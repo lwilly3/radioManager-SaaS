@@ -43,7 +43,6 @@ const EditShowPlan: React.FC = () => {
     description: ''
   });
 
-  // Fetch emissions from the database
   useEffect(() => {
     const fetchEmissions = async () => {
       if (!token) return;
@@ -58,7 +57,6 @@ const EditShowPlan: React.FC = () => {
     fetchEmissions();
   }, [token]);
 
-  // Load show plan data when component mounts
   useEffect(() => {
     const loadShowPlan = async () => {
       if (!id || !token) return;
@@ -66,13 +64,13 @@ const EditShowPlan: React.FC = () => {
       try {
         setIsLoading(true);
         
-        // If we have the show plan from location state, use it
         if (locationShowPlan) {
+          console.log('Initialisation avec locationShowPlan:', locationShowPlan);
           initializeFormWithShowPlan(locationShowPlan);
         } else {
-          // Otherwise fetch it from the API
           const fetchedShowPlan = await showsApi.getById(token, id);
           if (fetchedShowPlan) {
+            console.log('Initialisation avec fetchedShowPlan:', fetchedShowPlan);
             initializeFormWithShowPlan(fetchedShowPlan);
           } else {
             navigate('/show-plans');
@@ -89,12 +87,11 @@ const EditShowPlan: React.FC = () => {
     loadShowPlan();
   }, [id, token, navigate, locationShowPlan]);
 
-  // Initialize form with show plan data
   const initializeFormWithShowPlan = (showPlan: any) => {
-    // Parse the date
+    console.log('Valeur de showPlan.emission_id:', showPlan.emission_id);
+    
     const date = new Date(showPlan.date || showPlan.broadcast_date);
     
-    // Set form data
     setFormData({
       title: showPlan.title || '',
       showType: showPlan.showType || showPlan.type || '',
@@ -103,10 +100,14 @@ const EditShowPlan: React.FC = () => {
       description: showPlan.description || ''
     });
     
-    // Set segments
-    setSegments(showPlan.segments || []);
+    const initialSegments = Array.isArray(showPlan.segments) ? showPlan.segments : [];
+    setSegments(initialSegments.map((segment: any) => ({
+      ...segment,
+      id: String(segment.id),
+      guests: Array.isArray(segment.guests) ? segment.guests : [],
+      isNew: false // Marquer comme segment existant
+    })));
     
-    // Set status
     setSelectedStatus(typeof showPlan.status === 'object' ? showPlan.status : { 
       id: showPlan.status,
       name: showPlan.status,
@@ -114,16 +115,23 @@ const EditShowPlan: React.FC = () => {
       priority: 0
     });
     
-    // Set presenters
-    setSelectedPresenters(showPlan.presenters || []);
+    setSelectedPresenters(Array.isArray(showPlan.presenters) ? showPlan.presenters : []);
     
-    // Set selected emission
-    if (showPlan.emission_id) {
-      setSelectedEmission(parseInt(showPlan.emission_id));
+    const emissionId = showPlan.emission_id || showPlan.emission?.id;
+    if (emissionId) {
+      const parsedEmissionId = parseInt(String(emissionId));
+      if (!isNaN(parsedEmissionId)) {
+        setSelectedEmission(parsedEmissionId);
+      } else {
+        console.warn('emission_id non valide:', emissionId);
+        setSelectedEmission(null);
+      }
+    } else {
+      console.warn('emission_id non défini dans showPlan');
+      setSelectedEmission(null);
     }
   };
 
-  // Check form validity whenever relevant state changes
   useEffect(() => {
     const hasRequiredFields = Boolean(
       formData.title && formData.date && formData.time
@@ -136,7 +144,15 @@ const EditShowPlan: React.FC = () => {
   }, [formData, segments, selectedStatus, selectedEmission]);
 
   const handleAddSegment = (segment: ShowSegment) => {
-    setSegments((prevSegments) => [...prevSegments, segment]);
+    setSegments((prevSegments) => [
+      ...prevSegments,
+      {
+        ...segment,
+        id: `temp-${Date.now()}`, // ID temporaire pour l'affichage local
+        guests: segment.guests || [],
+        isNew: true // Marquer comme nouveau segment
+      }
+    ]);
   };
 
   const handleReorderSegments = (reorderedSegments: ShowSegment[]) => {
@@ -147,7 +163,6 @@ const EditShowPlan: React.FC = () => {
     setSegments(segments.filter((segment) => segment.id !== segmentId));
   };
 
-  // Presenter handlers
   const handleSelectPresenter = (presenter: Presenter) => {
     setSelectedPresenters([...selectedPresenters, { ...presenter, isMainPresenter: selectedPresenters.length === 0 }]);
   };
@@ -178,46 +193,57 @@ const EditShowPlan: React.FC = () => {
     setError(null);
 
     try {
-      // Prepare data for API
+      const safeSegments = Array.isArray(segments) ? segments : [];
+      const safePresenters = Array.isArray(selectedPresenters) ? selectedPresenters : [];
+
       const updateData = {
         title: formData.title,
         type: formData.showType || 'talk-show',
         broadcast_date: `${formData.date}T${formData.time}`,
-        duration: segments.reduce((acc, segment) => acc + segment.duration, 0),
-        frequency: 'Daily', // Default value
+        duration: safeSegments.reduce((acc, segment) => acc + (segment.duration || 0), 0),
+        frequency: 'Daily',
         description: formData.description || '',
         status: selectedStatus.id,
         emission_id: selectedEmission,
-        presenter_ids: selectedPresenters.map(p => parseInt(p.id)),
-        segments: segments.map((segment, index) => ({
+        presenter_ids: safePresenters
+          .filter(p => p.id && !isNaN(parseInt(p.id)))
+          .map(p => parseInt(p.id)),
+        segments: safeSegments.map((segment, index) => ({
+          id: segment.isNew ? undefined : (segment.id && !isNaN(parseInt(segment.id)) ? parseInt(segment.id) : undefined),
           title: segment.title,
           type: segment.type,
           position: index + 1,
-          duration: segment.duration,
-          description: segment.description || '',
-          guest_ids: segment.guests || [],
+          duration: segment.duration || 0,
+          description: segment.description || null,
+          guest_ids: Array.isArray(segment.guests)
+            ? segment.guests
+                .filter(g => g && !isNaN(parseInt(typeof g === 'object' ? g.id : g)))
+                .map(g => parseInt(typeof g === 'object' ? g.id : g))
+            : [],
         })),
       };
 
-      // Update the show plan in the API
-      await showsApi.update(token, id, updateData);
+      console.log('Payload envoyée :', JSON.stringify(updateData, null, 2));
+      const response = await showsApi.update(token, id, updateData);
+      console.log('Réponse de l\'API :', JSON.stringify(response, null, 2));
 
-      // Update local state
       const updatedShowPlan = {
         ...locationShowPlan,
         title: formData.title,
         emission_id: selectedEmission,
-        emission: emissions.find(e => e.id === selectedEmission)?.title || locationShowPlan.emission,
+        emission: emissions.find(e => e.id === selectedEmission)?.title || '',
         date: `${formData.date}T${formData.time}`,
         description: formData.description?.trim() || '',
         status: selectedStatus.id,
-        segments,
-        presenters: selectedPresenters,
+        segments: safeSegments.map(s => ({
+          ...s,
+          id: s.isNew ? String(response.segments?.find(seg => seg.title === s.title)?.id || s.id) : s.id
+        })),
+        presenters: safePresenters,
       };
 
       setShowPlans(showPlans.map((sp) => (sp.id === id ? updatedShowPlan : sp)));
 
-      // Redirect with success message
       navigate('/show-plans', {
         replace: true,
         state: {
@@ -228,8 +254,12 @@ const EditShowPlan: React.FC = () => {
         },
       });
     } catch (err) {
-      console.error('Failed to update show plan:', err);
-      setError('Une erreur est survenue lors de la mise à jour du conducteur');
+      console.error('Échec de la mise à jour du conducteur :', err.response?.data || err.message);
+      setError(
+        err.response?.data?.detail
+          ? JSON.stringify(err.response.data.detail)
+          : 'Une erreur est survenue lors de la mise à jour du conducteur'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -280,7 +310,7 @@ const EditShowPlan: React.FC = () => {
                 required
               >
                 <select
-                  value={selectedEmission || ''}
+                  value={selectedEmission ?? ''}
                   onChange={(e) => setSelectedEmission(e.target.value ? Number(e.target.value) : null)}
                   className="form-input"
                 >

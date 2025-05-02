@@ -21,17 +21,37 @@ const ShowPlanForm: React.FC<ShowPlanFormProps> = ({
   } = useForm<ShowPlanFormData>({
     resolver: zodResolver(showPlanSchema),
     mode: 'onChange',
-    defaultValues,
+    defaultValues: {
+      title: defaultValues.title || '',
+      showType: defaultValues.showType || '',
+      date: defaultValues.date || '',
+      time: defaultValues.time || '',
+      description: defaultValues.description || '',
+    },
   });
 
+  // Surveiller les changements et transmettre uniquement les valeurs non vides
   React.useEffect(() => {
-    const subscription = watch((value) => onValuesChange(value));
+    const subscription = watch((value) => {
+      console.log('ShowPlanForm watched values:', value);
+      const updatedValues: Partial<ShowPlanFormData> = {};
+      if (value.title) updatedValues.title = value.title;
+      if (value.showType) updatedValues.showType = value.showType;
+      if (value.date) updatedValues.date = value.date;
+      if (value.time) updatedValues.time = value.time;
+      if (value.description !== undefined) updatedValues.description = value.description;
+
+      // N'envoyer une mise à jour que s'il y a au moins une valeur non vide
+      if (Object.keys(updatedValues).length > 0) {
+        onValuesChange(updatedValues);
+      }
+    });
     return () => subscription.unsubscribe();
   }, [watch, onValuesChange]);
 
   return (
     <div className="space-y-4">
-      <FormField label="Titre" error={errors.title?.message}>
+      <FormField label="Titre" error={errors.title?.message} required>
         <input
           type="text"
           {...register('title')}
