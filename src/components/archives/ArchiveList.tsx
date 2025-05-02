@@ -2,7 +2,7 @@ import React from 'react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Clock, Users, Calendar } from 'lucide-react';
-import { generateKey } from '../../utils/keyGenerator'; // Import de la fonction utilitaire
+import { generateKey } from '../../utils/keyGenerator';
 
 interface ArchiveListProps {
   shows: any[];
@@ -51,7 +51,11 @@ const ArchiveList: React.FC<ArchiveListProps> = ({ shows, onShowDetail }) => {
                 </div>
                 <div className="flex items-center gap-1">
                   <Users className="h-4 w-4" />
-                  <span>{show.presenters}</span>
+                  <span>
+                    {Array.isArray(show.presenters) 
+                      ? show.presenters.map(presenter => presenter.name).join(', ')
+                      : 'No Presenters'}
+                  </span>
                 </div>
               </div>
             </div>

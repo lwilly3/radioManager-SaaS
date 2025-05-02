@@ -9,7 +9,8 @@ import ShowPlanForm from '../components/showPlans/forms/ShowPlanForm';
 import NewSegmentForm from '../components/showPlans/segments/NewSegmentForm';
 import SegmentList from '../components/showPlans/segments/SegmentList';
 import StatusSelect from '../components/showPlans/StatusSelect';
-import type { ShowPlanFormData, ShowSegment, Status, Emission } from '../types';
+import PresenterSelect from '../components/showPlans/forms/PresenterSelect';
+import type { ShowPlanFormData, ShowSegment, Status, Emission, Presenter } from '../types';
 
 const CreateShowPlan: React.FC = () => {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ const CreateShowPlan: React.FC = () => {
   const [selectedEmission, setSelectedEmission] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<Partial<ShowPlanFormData>>({});
+  const [selectedPresenters, setSelectedPresenters] = useState<Presenter[]>([]);
 
   useEffect(() => {
     const fetchEmissions = async () => {
@@ -49,6 +51,22 @@ const CreateShowPlan: React.FC = () => {
     );
   };
 
+  // Presenter handlers
+  const handleSelectPresenter = (presenter: Presenter) => {
+    setSelectedPresenters([...selectedPresenters, { ...presenter, isMainPresenter: selectedPresenters.length === 0 }]);
+  };
+
+  const handleRemovePresenter = (presenterId: string) => {
+    setSelectedPresenters(selectedPresenters.filter(p => p.id !== presenterId));
+  };
+
+  const handleSetMainPresenter = (presenterId: string) => {
+    setSelectedPresenters(selectedPresenters.map(p => ({
+      ...p,
+      isMainPresenter: p.id === presenterId
+    })));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token || !selectedEmission || !selectedStatus || !formData.title)
@@ -65,7 +83,7 @@ const CreateShowPlan: React.FC = () => {
         description: formData.description || '',
         status: selectedStatus.id,
         emission_id: selectedEmission,
-        presenter_ids: [],
+        presenter_ids: selectedPresenters.map(p => parseInt(p.id)),
         segments: segments.map((segment, index) => ({
           title: segment.title,
           type: segment.type,
@@ -76,8 +94,6 @@ const CreateShowPlan: React.FC = () => {
         })),
       };
       await showsApi.create(token, data);
-
-      // await emissionApi.createShowPlan(token, payload);
 
       navigate('/my-show-plans', {
         replace: true,
@@ -131,6 +147,15 @@ const CreateShowPlan: React.FC = () => {
             <StatusSelect
               selectedStatus={selectedStatus}
               onStatusSelect={setSelectedStatus}
+            />
+          </div>
+
+          <div className="border-t border-gray-200 pt-6">
+            <PresenterSelect
+              selectedPresenters={selectedPresenters}
+              onSelectPresenter={handleSelectPresenter}
+              onRemovePresenter={handleRemovePresenter}
+              onSetMainPresenter={handleSetMainPresenter}
             />
           </div>
 

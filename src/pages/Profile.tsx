@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuthStore } from '../store/useAuthStore';
-import { User, Mail, Phone, Save, Loader, Lock, Edit2, X } from 'lucide-react';
+import { useUserPreferencesStore } from '../store/useUserPreferencesStore';
+import { User, Mail, Phone, Save, Loader, Lock, Edit2, X, LayoutGrid, List } from 'lucide-react';
 import FormField from '../components/common/FormField';
 import api from '../api/api';
 
@@ -31,6 +32,7 @@ type PasswordFormData = z.infer<typeof passwordSchema>;
 
 const Profile: React.FC = () => {
   const { user, token, setUser } = useAuthStore();
+  const { preferences, setViewMode } = useUserPreferencesStore();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const [isLoadingPassword, setIsLoadingPassword] = useState(false);
@@ -38,6 +40,11 @@ const Profile: React.FC = () => {
     type: 'success' | 'error';
     message: string;
   } | null>(null);
+
+  // Load user preferences when component mounts
+  useEffect(() => {
+    useUserPreferencesStore.getState().loadPreferences();
+  }, []);
 
   const {
     register: registerProfile,
@@ -296,6 +303,66 @@ const Profile: React.FC = () => {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Display Preferences */}
+      <div className="bg-white rounded-lg shadow">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">Préférences d'affichage</h2>
+              <p className="mt-1 text-gray-600">
+                Personnalisez votre expérience utilisateur
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-6">
+          <div>
+            <h3 className="text-sm font-medium text-gray-700 mb-3">Mode d'affichage par défaut</h3>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`flex flex-col items-center gap-2 p-4 rounded-lg border ${
+                  preferences.viewMode === 'grid'
+                    ? 'border-indigo-500 bg-indigo-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <LayoutGrid className={`h-8 w-8 ${
+                  preferences.viewMode === 'grid' ? 'text-indigo-600' : 'text-gray-500'
+                }`} />
+                <span className={`text-sm font-medium ${
+                  preferences.viewMode === 'grid' ? 'text-indigo-700' : 'text-gray-700'
+                }`}>
+                  Grille
+                </span>
+              </button>
+              
+              <button
+                onClick={() => setViewMode('list')}
+                className={`flex flex-col items-center gap-2 p-4 rounded-lg border ${
+                  preferences.viewMode === 'list'
+                    ? 'border-indigo-500 bg-indigo-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <List className={`h-8 w-8 ${
+                  preferences.viewMode === 'list' ? 'text-indigo-600' : 'text-gray-500'
+                }`} />
+                <span className={`text-sm font-medium ${
+                  preferences.viewMode === 'list' ? 'text-indigo-700' : 'text-gray-700'
+                }`}>
+                  Liste
+                </span>
+              </button>
+            </div>
+            <p className="mt-2 text-sm text-gray-500">
+              Ce paramètre s'applique aux archives, conducteurs et mes conducteurs.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Password Update */}

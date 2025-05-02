@@ -1,12 +1,20 @@
-import React, { useEffect, useState } from 'react'; // Add useState
+import React, { useEffect, useState } from 'react';
 import ShowPlans from './ShowPlans';
 import { useAuthStore } from '../store/useAuthStore';
 import { useShowPlanStore } from '../store/useShowPlanStore';
+import { useUserPreferencesStore } from '../store/useUserPreferencesStore';
 
 const MyShowPlans: React.FC = () => {
   const user = useAuthStore((state) => state.user);
   const showPlans = useShowPlanStore((state) => state.showPlans);
-  const [filteredShows, setFilteredShows] = useState(showPlans); // Local state for filtered shows
+  const [filteredShows, setFilteredShows] = useState(showPlans);
+  
+  // Load user preferences when component mounts
+  const { loadPreferences } = useUserPreferencesStore();
+  
+  useEffect(() => {
+    loadPreferences();
+  }, [loadPreferences]);
 
   // Filter shows based on user when showPlans or user changes
   useEffect(() => {
@@ -14,7 +22,7 @@ const MyShowPlans: React.FC = () => {
       show.presenters.some(presenter => presenter.id === user?.id)
     );
     setFilteredShows(filtered);
-  }, [user, showPlans]); // No setShowPlans in dependencies
+  }, [user, showPlans]);
 
   return (
     <ShowPlans 

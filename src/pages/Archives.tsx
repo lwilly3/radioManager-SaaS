@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Download, Search, Filter, X, LayoutGrid, List, Check } from 'lucide-react';
 import { format } from 'date-fns';
@@ -9,6 +9,7 @@ import ArchiveList from '../components/archives/ArchiveList';
 import ArchiveDetailDialog from '../components/archives/ArchiveDetailDialog';
 import Pagination from '../components/archives/Pagination';
 import { useAuthStore } from '../store/useAuthStore';
+import { useUserPreferencesStore } from '../store/useUserPreferencesStore';
 import api from '../api/api';
 import { generateKey } from '../utils/keyGenerator';
 import { useNavigate } from 'react-router-dom';
@@ -65,7 +66,8 @@ interface SearchFilters {
 const Archives: React.FC = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const { preferences, setViewMode } = useUserPreferencesStore();
+  const [viewMode, setLocalViewMode] = useState<'grid' | 'list'>(preferences.viewMode);
   const [selectedShow, setSelectedShow] = useState<Show | null>(null);
   const [filters, setFilters] = useState<SearchFilters>({
     keywords: '',
@@ -82,6 +84,11 @@ const Archives: React.FC = () => {
   } | null>(null);
   const token = useAuthStore((state) => state.token);
   const { permissions } = useAuthStore();
+
+  // Sync local view mode with store
+  useEffect(() => {
+    setLocalViewMode(preferences.viewMode);
+  }, [preferences.viewMode]);
 
   const { data, isLoading, isError, error } = useQuery<ApiResponse>({
     queryKey: ['archives', filters, currentPage],
@@ -142,6 +149,11 @@ const Archives: React.FC = () => {
     setIsSearchTriggered(false);
   };
 
+  const handleViewModeChange = (mode: 'grid' | 'list') => {
+    setLocalViewMode(mode);
+    setViewMode(mode); // This will also save to Firebase
+  };
+
   React.useEffect(() => {
     if (!isLoading && !error && permissions && !permissions.can_view_archives) {
       navigate('/404');
@@ -163,7 +175,7 @@ const Archives: React.FC = () => {
         <div className="flex items-center gap-3">
           <div className="flex items-center bg-white rounded-lg shadow p-1">
             <button
-              onClick={() => setViewMode('grid')}
+              onClick={() => handleViewModeChange('grid')}
               className={`p-2 rounded ${
                 viewMode === 'grid'
                   ? 'bg-indigo-100 text-indigo-600'
@@ -174,7 +186,7 @@ const Archives: React.FC = () => {
               <LayoutGrid className="h-5 w-5" />
             </button>
             <button
-              onClick={() => setViewMode('list')}
+              onClick={() => handleViewModeChange('list')}
               className={`p-2 rounded ${
                 viewMode === 'list'
                   ? 'bg-indigo-100 text-indigo-600'

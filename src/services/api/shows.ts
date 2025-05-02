@@ -98,7 +98,7 @@ export const showsApi = {
   // Update show
   update: async (token: string, id: string, data: any): Promise<ShowPlan> => {
     try {
-      const response = await api.put(
+      const response = await api.patch(
         `/shows/detail/${id}`,
         data,
         authHeaders(token)

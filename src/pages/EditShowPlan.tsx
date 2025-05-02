@@ -1,116 +1,142 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
-import { showPlanSchema } from '../schemas/showPlanSchema';
 import { useShowPlanStore } from '../store/useShowPlanStore';
 import FormField from '../components/common/FormField';
 import NewSegmentForm from '../components/showPlans/segments/NewSegmentForm';
 import SegmentList from '../components/showPlans/segments/SegmentList';
 import StatusSelect from '../components/showPlans/StatusSelect';
-import PresenterManager from '../components/showPlans/presenters/PresenterManager';
+import PresenterSelect from '../components/showPlans/forms/PresenterSelect';
+import { emissionApi } from '../services/api/emissions';
+import { showsApi } from '../services/api/shows';
+import { useAuthStore } from '../store/useAuthStore';
 import type {
   ShowPlanFormData,
   ShowSegment,
-  ShowTitle,
   Status,
   Presenter,
+  Emission
 } from '../types';
-import { useLocation } from 'react-router-dom';
-
-const showTitles: { value: ShowTitle; label: string }[] = [
-  { value: 'matinale', label: 'La Matinale' },
-  { value: 'midi-info', label: 'Midi Info' },
-  { value: 'journal', label: 'Le Journal' },
-  { value: 'club-sport', label: 'Club Sport' },
-  { value: 'culture-mag', label: 'Culture Mag' },
-  { value: 'debat-soir', label: 'Le Grand Débat du Soir' },
-  { value: 'musique-live', label: 'Musique Live' },
-  { value: 'interview', label: "L'Interview" },
-  { value: 'chronique', label: 'La Chronique' },
-  { value: 'autre', label: 'Autre' },
-];
 
 const EditShowPlan: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
-  const { show: showPlan } = location.state || {};
+  const { show: locationShowPlan } = location.state || {};
   const navigate = useNavigate();
   const showPlans = useShowPlanStore((state) => state.showPlans);
   const setShowPlans = useShowPlanStore((state) => state.setShowPlans);
-
-  // const showPlan = showPlans.find((sp) => sp.id === id);
+  const token = useAuthStore((state) => state.token);
 
   const [segments, setSegments] = useState<ShowSegment[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<Status | null>(null);
   const [selectedPresenters, setSelectedPresenters] = useState<Presenter[]>([]);
   const [isFormValid, setIsFormValid] = useState(false);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    watch,
-    setValue,
-  } = useForm<ShowPlanFormData>({
-    resolver: zodResolver(showPlanSchema),
-    mode: 'onChange',
+  const [emissions, setEmissions] = useState<Emission[]>([]);
+  const [selectedEmission, setSelectedEmission] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState<ShowPlanFormData>({
+    title: '',
+    showType: '',
+    date: '',
+    time: '',
+    description: ''
   });
 
-  // // Load initial data
-  // useEffect(() => {
-  //   if (showPlan) {
-  //     const date = new Date(showPlan.date);
-  //     setValue('title', showPlan.title);
-  //     setValue('date', date.toISOString().split('T')[0]);
-  //     setValue('time', date.toISOString().split('T')[1].substring(0, 5));
-  //     setValue('description', showPlan.description || '');
-  //     setSegments(showPlan.segments);
-  //     setSelectedStatus(showPlan.status);
-  //     setSelectedPresenters(showPlan.presenters);
-  //   } else {
-  //     // navigate('/show-plans');
-  //   }
-  // }, [showPlan, setValue, navigate]);
-
+  // Fetch emissions from the database
   useEffect(() => {
-    if (showPlan) {
-      const date = new Date(showPlan.date);
+    const fetchEmissions = async () => {
+      if (!token) return;
+      try {
+        const data = await emissionApi.getAllEmissions(token);
+        setEmissions(data);
+      } catch (error) {
+        console.error('Failed to fetch emissions:', error);
+        setError('Failed to load emissions data');
+      }
+    };
+    fetchEmissions();
+  }, [token]);
 
-      // Vérifiez si les champs sont déjà remplis avant de les réinitialiser
-      setValue('title', showPlan.title || watch('title'));
-      setValue('date', date.toISOString().split('T')[0] || watch('date'));
-      setValue(
-        'time',
-        date.toISOString().split('T')[1].substring(0, 5) || watch('time')
-      );
-      setValue('description', showPlan.description || watch('description'));
-      setSegments(showPlan.segments || []);
-      setSelectedStatus(showPlan.status || null);
-      setSelectedPresenters(showPlan.presenters || []);
+  // Load show plan data when component mounts
+  useEffect(() => {
+    const loadShowPlan = async () => {
+      if (!id || !token) return;
+      
+      try {
+        setIsLoading(true);
+        
+        // If we have the show plan from location state, use it
+        if (locationShowPlan) {
+          initializeFormWithShowPlan(locationShowPlan);
+        } else {
+          // Otherwise fetch it from the API
+          const fetchedShowPlan = await showsApi.getById(token, id);
+          if (fetchedShowPlan) {
+            initializeFormWithShowPlan(fetchedShowPlan);
+          } else {
+            navigate('/show-plans');
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load show plan:', error);
+        setError('Failed to load show plan data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadShowPlan();
+  }, [id, token, navigate, locationShowPlan]);
+
+  // Initialize form with show plan data
+  const initializeFormWithShowPlan = (showPlan: any) => {
+    // Parse the date
+    const date = new Date(showPlan.date || showPlan.broadcast_date);
+    
+    // Set form data
+    setFormData({
+      title: showPlan.title || '',
+      showType: showPlan.showType || showPlan.type || '',
+      date: date.toISOString().split('T')[0],
+      time: date.toISOString().split('T')[1].substring(0, 5),
+      description: showPlan.description || ''
+    });
+    
+    // Set segments
+    setSegments(showPlan.segments || []);
+    
+    // Set status
+    setSelectedStatus(typeof showPlan.status === 'object' ? showPlan.status : { 
+      id: showPlan.status,
+      name: showPlan.status,
+      color: '#000000',
+      priority: 0
+    });
+    
+    // Set presenters
+    setSelectedPresenters(showPlan.presenters || []);
+    
+    // Set selected emission
+    if (showPlan.emission_id) {
+      setSelectedEmission(parseInt(showPlan.emission_id));
     }
-  }, [showPlan, setValue, navigate]);
+  };
 
-  // Surveiller les changements dans le formulaire
-  const formValues = watch();
-
+  // Check form validity whenever relevant state changes
   useEffect(() => {
-    // Vérifier si tous les champs requis sont remplis
     const hasRequiredFields = Boolean(
-      formValues.title && formValues.date && formValues.time
+      formData.title && formData.date && formData.time
     );
     const hasSegments = segments.length > 0;
     const hasStatus = selectedStatus !== null;
+    const hasEmission = selectedEmission !== null;
 
-    setIsFormValid(hasRequiredFields && hasSegments && hasStatus);
-  }, [formValues, segments, selectedStatus]);
+    setIsFormValid(hasRequiredFields && hasSegments && hasStatus && hasEmission);
+  }, [formData, segments, selectedStatus, selectedEmission]);
 
   const handleAddSegment = (segment: ShowSegment) => {
-    // Ajoute un segment sans affecter les champs du formulaire
     setSegments((prevSegments) => [...prevSegments, segment]);
-
-    // setSegments([...segments, segment]);
   };
 
   const handleReorderSegments = (reorderedSegments: ShowSegment[]) => {
@@ -121,54 +147,100 @@ const EditShowPlan: React.FC = () => {
     setSegments(segments.filter((segment) => segment.id !== segmentId));
   };
 
-  const handleAddPresenter = (presenter: Presenter) => {
-    setSelectedPresenters([...selectedPresenters, presenter]);
+  // Presenter handlers
+  const handleSelectPresenter = (presenter: Presenter) => {
+    setSelectedPresenters([...selectedPresenters, { ...presenter, isMainPresenter: selectedPresenters.length === 0 }]);
   };
 
   const handleRemovePresenter = (presenterId: string) => {
-    setSelectedPresenters(
-      selectedPresenters.filter((p) => p.id !== presenterId)
-    );
+    setSelectedPresenters(selectedPresenters.filter(p => p.id !== presenterId));
   };
 
   const handleSetMainPresenter = (presenterId: string) => {
-    setSelectedPresenters(
-      selectedPresenters.map((p) => ({
-        ...p,
-        isMainPresenter: p.id === presenterId,
-      }))
-    );
+    setSelectedPresenters(selectedPresenters.map(p => ({
+      ...p,
+      isMainPresenter: p.id === presenterId
+    })));
   };
 
-  const onSubmit = (data: ShowPlanFormData) => {
-    if (!isFormValid || !selectedStatus || !showPlan) return;
+  const handleFormChange = (field: keyof ShowPlanFormData, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
 
-    const updatedShowPlan = {
-      ...showPlan,
-      title: data.title,
-      date: `${data.date}T${data.time}`,
-      description: data.description?.trim() || '',
-      status: selectedStatus,
-      segments,
-      presenters: selectedPresenters,
-    };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isFormValid || !selectedStatus || !id || !selectedEmission || !token) return;
 
-    setShowPlans(showPlans.map((sp) => (sp.id === id ? updatedShowPlan : sp)));
+    setIsLoading(true);
+    setError(null);
 
-    // Redirection avec message de succès
-    navigate('/show-plans', {
-      replace: true,
-      state: {
-        notification: {
-          type: 'success',
-          message: 'Le conducteur a été modifié avec succès',
+    try {
+      // Prepare data for API
+      const updateData = {
+        title: formData.title,
+        type: formData.showType || 'talk-show',
+        broadcast_date: `${formData.date}T${formData.time}`,
+        duration: segments.reduce((acc, segment) => acc + segment.duration, 0),
+        frequency: 'Daily', // Default value
+        description: formData.description || '',
+        status: selectedStatus.id,
+        emission_id: selectedEmission,
+        presenter_ids: selectedPresenters.map(p => parseInt(p.id)),
+        segments: segments.map((segment, index) => ({
+          title: segment.title,
+          type: segment.type,
+          position: index + 1,
+          duration: segment.duration,
+          description: segment.description || '',
+          guest_ids: segment.guests || [],
+        })),
+      };
+
+      // Update the show plan in the API
+      await showsApi.update(token, id, updateData);
+
+      // Update local state
+      const updatedShowPlan = {
+        ...locationShowPlan,
+        title: formData.title,
+        emission_id: selectedEmission,
+        emission: emissions.find(e => e.id === selectedEmission)?.title || locationShowPlan.emission,
+        date: `${formData.date}T${formData.time}`,
+        description: formData.description?.trim() || '',
+        status: selectedStatus.id,
+        segments,
+        presenters: selectedPresenters,
+      };
+
+      setShowPlans(showPlans.map((sp) => (sp.id === id ? updatedShowPlan : sp)));
+
+      // Redirect with success message
+      navigate('/show-plans', {
+        replace: true,
+        state: {
+          notification: {
+            type: 'success',
+            message: 'Le conducteur a été modifié avec succès',
+          },
         },
-      },
-    });
+      });
+    } catch (err) {
+      console.error('Failed to update show plan:', err);
+      setError('Une erreur est survenue lors de la mise à jour du conducteur');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  if (!showPlan) {
-    return null;
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-12">
+        <div className="spinner" />
+      </div>
+    );
   }
 
   return (
@@ -193,39 +265,75 @@ const EditShowPlan: React.FC = () => {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
+        {error && (
+          <div className="p-4 bg-red-50 border-l-4 border-red-400 text-red-700">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid gap-6">
             <div className="grid grid-cols-1 gap-4">
               <FormField
-                label="Titre de l'émission"
-                error={errors.title?.message}
+                label="Émission"
+                error={!selectedEmission ? "Veuillez sélectionner une émission" : undefined}
                 required
               >
-                <select {...register('title')} className="form-input">
-                  <option value="">Sélectionner un titre</option>
-                  {showTitles.map((title) => (
-                    <option key={title.value} value={title.value}>
-                      {title.label}
+                <select
+                  value={selectedEmission || ''}
+                  onChange={(e) => setSelectedEmission(e.target.value ? Number(e.target.value) : null)}
+                  className="form-input"
+                >
+                  <option value="">Sélectionner une émission</option>
+                  {emissions.map((emission) => (
+                    <option key={emission.id} value={emission.id}>
+                      {emission.title}
                     </option>
                   ))}
                 </select>
               </FormField>
             </div>
 
+            <div className="grid grid-cols-1 gap-4">
+              <FormField
+                label="Titre de l'émission"
+                error={!formData.title ? "Le titre est requis" : undefined}
+                required
+              >
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => handleFormChange('title', e.target.value)}
+                  className="form-input"
+                  placeholder="Titre du conducteur"
+                />
+              </FormField>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
-              <FormField label="Date" error={errors.date?.message} required>
+              <FormField 
+                label="Date" 
+                error={!formData.date ? "La date est requise" : undefined} 
+                required
+              >
                 <input
                   type="date"
-                  {...register('date')}
+                  value={formData.date}
+                  onChange={(e) => handleFormChange('date', e.target.value)}
                   className="form-input"
                   min={new Date().toISOString().split('T')[0]}
                 />
               </FormField>
 
-              <FormField label="Heure" error={errors.time?.message} required>
+              <FormField 
+                label="Heure" 
+                error={!formData.time ? "L'heure est requise" : undefined} 
+                required
+              >
                 <input
                   type="time"
-                  {...register('time')}
+                  value={formData.time}
+                  onChange={(e) => handleFormChange('time', e.target.value)}
                   className="form-input"
                 />
               </FormField>
@@ -233,10 +341,11 @@ const EditShowPlan: React.FC = () => {
 
             <FormField
               label="Description (optionnelle)"
-              error={errors.description?.message}
+              error={undefined}
             >
               <textarea
-                {...register('description')}
+                value={formData.description || ''}
+                onChange={(e) => handleFormChange('description', e.target.value)}
                 rows={3}
                 className="form-textarea"
                 placeholder="Description de l'émission..."
@@ -254,14 +363,14 @@ const EditShowPlan: React.FC = () => {
               />
             </FormField>
 
-            <FormField label="Présentateurs">
-              <PresenterManager
+            <div className="border-t border-gray-200 pt-6">
+              <PresenterSelect
                 selectedPresenters={selectedPresenters}
-                onAddPresenter={handleAddPresenter}
+                onSelectPresenter={handleSelectPresenter}
                 onRemovePresenter={handleRemovePresenter}
                 onSetMainPresenter={handleSetMainPresenter}
               />
-            </FormField>
+            </div>
           </div>
 
           <div className="border-t border-gray-200 pt-6">
@@ -298,6 +407,7 @@ const EditShowPlan: React.FC = () => {
               type="button"
               onClick={() => navigate('/show-plans')}
               className="btn btn-secondary"
+              disabled={isLoading}
             >
               Annuler
             </button>
@@ -308,9 +418,9 @@ const EditShowPlan: React.FC = () => {
                   ? 'btn-primary'
                   : 'btn-primary opacity-50 cursor-not-allowed'
               }`}
-              disabled={!isFormValid}
+              disabled={!isFormValid || isLoading}
             >
-              Enregistrer les modifications
+              {isLoading ? 'Enregistrement...' : 'Enregistrer les modifications'}
             </button>
           </div>
         </form>

@@ -6,6 +6,7 @@ import ShowPlanFilters from '../components/showPlans/ShowPlanFilters';
 import Notification from '../components/common/Notification';
 import { useShows } from '../hooks/shows/useShows';
 import { useShowPlanStore } from '../store/useShowPlanStore';
+import { useUserPreferencesStore } from '../store/useUserPreferencesStore';
 import { filterShowPlansByDate } from '../utils/dateFilters';
 import { filterShowPlansBySearch } from '../utils/searchFilters';
 
@@ -25,13 +26,19 @@ const ShowPlans: React.FC<ShowPlansProps> = ({
   const { shows, isLoading, error } = useShows();
   const setShowPlans = useShowPlanStore((state) => state.setShowPlans);
   const showPlans = useShowPlanStore((state) => state.showPlans);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const { preferences, setViewMode } = useUserPreferencesStore();
+  const [viewMode, setLocalViewMode] = useState<'grid' | 'list'>(preferences.viewMode);
   const [dateFilter, setDateFilter] = useState<string>('today');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [notification, setNotification] = React.useState<{
     type: 'success' | 'error';
     message: string;
   } | null>(null);
+
+  // Sync local view mode with store
+  useEffect(() => {
+    setLocalViewMode(preferences.viewMode);
+  }, [preferences.viewMode]);
 
   useEffect(() => {
     if (shows) {
@@ -50,6 +57,11 @@ const ShowPlans: React.FC<ShowPlansProps> = ({
   // Appliquer les filtres dans l'ordre: d'abord la recherche, puis le filtre de date
   const filteredBySearch = filterShowPlansBySearch(showPlans, searchQuery);
   const filteredShowPlans = filterShowPlansByDate(filteredBySearch, dateFilter);
+
+  const handleViewModeChange = (mode: 'grid' | 'list') => {
+    setLocalViewMode(mode);
+    setViewMode(mode); // This will also save to Firebase
+  };
 
   if (error) {
     return (
@@ -83,7 +95,7 @@ const ShowPlans: React.FC<ShowPlansProps> = ({
         <div className="flex items-center gap-3">
           <div className="flex items-center bg-white rounded-lg shadow p-1">
             <button
-              onClick={() => setViewMode('grid')}
+              onClick={() => handleViewModeChange('grid')}
               className={`p-2 rounded ${
                 viewMode === 'grid'
                   ? 'bg-indigo-100 text-indigo-600'
@@ -94,7 +106,7 @@ const ShowPlans: React.FC<ShowPlansProps> = ({
               <LayoutGrid className="h-5 w-5" />
             </button>
             <button
-              onClick={() => setViewMode('list')}
+              onClick={() => handleViewModeChange('list')}
               className={`p-2 rounded ${
                 viewMode === 'list'
                   ? 'bg-indigo-100 text-indigo-600'
