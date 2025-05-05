@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useNavigate } from 'react-router-dom';
 import api from '../../api/api';
 
 // Interface pour typer les données du tableau de bord
@@ -50,10 +51,12 @@ interface Segment {
 }
 
 export const useDashboard = () => {
-  const token = useAuthStore((state) => state.token);
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
-    null
-  );
+  const navigate = useNavigate();
+  const { token, logout } = useAuthStore((state) => ({
+    token: state.token,
+    logout: state.logout
+  }));
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,6 +65,7 @@ export const useDashboard = () => {
       if (!token) {
         setError("Aucun token d'authentification disponible");
         setIsLoading(false);
+        navigate('/login');
         return;
       }
 
@@ -70,10 +74,12 @@ export const useDashboard = () => {
 
       try {
         const response = await api.get('dashbord', {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
         });
 
-        // Vérifier que la réponse correspond à l'interface DashboardData
         if (response.data && typeof response.data === 'object') {
           setDashboardData(response.data as DashboardData);
         } else {
@@ -84,17 +90,25 @@ export const useDashboard = () => {
           'Erreur lors de la récupération des données du tableau de bord:',
           err
         );
-        setError(
-          err.response?.data?.detail ||
+        
+        // Handle 401 Unauthorized error
+        if (err.response?.status === 401) {
+          logout();
+          navigate('/login');
+          setError('Session expirée. Veuillez vous reconnecter.');
+        } else {
+          setError(
+            err.response?.data?.detail ||
             'Erreur lors de la récupération des données'
-        );
+          );
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchDashboard();
-  }, [token]);
+  }, [token, navigate, logout]);
 
   return { dashboardData, isLoading, error };
 };

@@ -8,7 +8,7 @@ import semver from 'semver';
 export const useVersionStore = create<VersionState>()(
   persist(
     (set, get) => ({
-      currentVersion: '1.1.0', // Version actuelle de l'application
+      currentVersion: '1.1.1', // Version actuelle de l'application
       versions: [],
       isLoading: false,
       error: null,
@@ -79,6 +79,25 @@ export const useVersionStore = create<VersionState>()(
 
 // Versions par défaut utilisées si Firestore n'est pas disponible
 const defaultVersions: Version[] = [
+  {
+    version: '1.1.1',
+    releaseDate: '2025-05-05',
+    description: 'Correction des erreurs de gestion des permissions et amélioration de la stabilité',
+    features: [
+      'Nouveau système de gestion des erreurs pour les permissions utilisateur',
+      'Amélioration de la gestion des présentateurs'
+    ],
+    bugfixes: [
+      'Correction du problème de rendu des objets d\'erreur dans les composants React',
+      'Correction des erreurs lors de la suppression des présentateurs',
+      'Résolution du problème avec useUpdatePermissions lors de l\'appel dans les gestionnaires d\'événements'
+    ],
+    improvements: [
+      'Meilleure gestion des types pour les messages d\'erreur',
+      'Notifications plus claires lors des opérations sur les présentateurs',
+      'Optimisation des appels API pour la gestion des permissions'
+    ]
+  },
   {
     version: '1.1.0',
     releaseDate: '2025-05-01',

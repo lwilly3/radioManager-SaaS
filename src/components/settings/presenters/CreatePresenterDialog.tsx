@@ -3,8 +3,13 @@ import { Dialog } from '@headlessui/react';
 import { X, Search, User } from 'lucide-react';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { usersApi } from '../../../services/api/users';
-import { presenterApi, CreatePresenterData } from '../../../services/api/presenters';
+import {
+  presenterApi,
+  CreatePresenterData,
+} from '../../../services/api/presenters';
 import type { Users } from '../../../types/user';
+import { useNavigate } from 'react-router-dom';
+import { useUpdatePermissions } from '../../../hooks/permissions/useUpdatePermissions';
 
 interface CreatePresenterDialogProps {
   isOpen: boolean;
@@ -17,19 +22,35 @@ const CreatePresenterDialog: React.FC<CreatePresenterDialogProps> = ({
   isOpen,
   onClose,
   onSuccess,
-  selectedUserId
+  selectedUserId,
 }) => {
-  const token = useAuthStore((state) => state.token);
+  const navigate = useNavigate();
+  const { token, logout } = useAuthStore((state) => ({
+    token: state.token,
+    logout: state.logout,
+  }));
   const [users, setUsers] = useState<Users[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUser, setSelectedUser] = useState<Users | null>(null);
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
   const [formData, setFormData] = useState<Partial<CreatePresenterData>>({
     biography: '',
     contact_info: '',
     isMainPresenter: false,
   });
+
+  // Initialize useUpdatePermissions hook
+  const {
+    updatePermissions,
+    isLoading: isUpdatingPermissions,
+    error: updateError,
+    success,
+  } = useUpdatePermissions();
 
   useEffect(() => {
     if (isOpen && token) {
@@ -41,6 +62,23 @@ const CreatePresenterDialog: React.FC<CreatePresenterDialogProps> = ({
     }
   }, [isOpen, token, selectedUserId]);
 
+  // Handle success or error from permission updates
+  useEffect(() => {
+    if (success) {
+      setNotification({
+        type: 'success',
+        message: 'Permissions mises à jour avec succès',
+      });
+      setTimeout(() => setNotification(null), 3000);
+    } else if (updateError) {
+      setNotification({
+        type: 'error',
+        message: typeof updateError === 'string' ? updateError : 'Erreur lors de la mise à jour des permissions',
+      });
+      setTimeout(() => setNotification(null), 5000);
+    }
+  }, [success, updateError]);
+
   const fetchSelectedUser = async (userId: number) => {
     if (!token) return;
 
@@ -48,7 +86,11 @@ const CreatePresenterDialog: React.FC<CreatePresenterDialogProps> = ({
       setIsLoading(true);
       const response = await usersApi.getById(token, userId);
       setSelectedUser(response);
-    } catch (err) {
+    } catch (err: any) {
+      if (err.response?.status === 401) {
+        logout();
+        navigate('/login');
+      }
       setError('Erreur lors du chargement des informations utilisateur');
     } finally {
       setIsLoading(false);
@@ -62,7 +104,11 @@ const CreatePresenterDialog: React.FC<CreatePresenterDialogProps> = ({
       setIsLoading(true);
       const response = await usersApi.getNonPresenters(token);
       setUsers(response.users);
-    } catch (err) {
+    } catch (err: any) {
+      if (err.response?.status === 401) {
+        logout();
+        navigate('/login');
+      }
       setError('Erreur lors du chargement des utilisateurs');
     } finally {
       setIsLoading(false);
@@ -75,20 +121,65 @@ const CreatePresenterDialog: React.FC<CreatePresenterDialogProps> = ({
 
     try {
       setIsLoading(true);
-      await presenterApi.create(token, {
-        ...formData,
+      setError(null);
+
+      const presenterData: CreatePresenterData = {
         name: `${selectedUser.name} ${selectedUser.family_name}`,
         users_id: selectedUser.id,
+        biography: formData.biography || null,
+        contact_info: formData.contact_info || null,
+        isMainPresenter: formData.isMainPresenter || false,
+        profilePicture: selectedUser.profilePicture,
+      };
+
+      // Create presenter
+      await presenterApi.createOrReassign(token, presenterData);
+
+      // Define presenter permissions
+      const presenterPermissions = {
+        can_acces_showplan_section: true,
+        can_create_showplan: true,
+        can_changestatus_owned_showplan: true,
+        can_delete_showplan: true,
+        can_edit_showplan: true,
+        can_archive_showplan: true,
+        can_acces_guests_section: true,
+        can_view_guests: true,
+        can_edit_guests: true,
+        can_view_archives: true,
+      };
+
+      // Update permissions via API
+      await updatePermissions(selectedUser.id, presenterPermissions);
+
+      setNotification({
+        type: 'success',
+        message: 'Présentateur créé avec succès',
       });
+      setTimeout(() => setNotification(null), 3000);
+
       onSuccess();
-    } catch (err) {
-      setError('Erreur lors de la création du présentateur');
+    } catch (err: any) {
+      if (err.response?.status === 401) {
+        logout();
+        navigate('/login');
+        return;
+      }
+      setError(
+        err.response?.data?.detail ||
+          'Erreur lors de la création du présentateur'
+      );
+      setNotification({
+        type: 'error',
+        message: err.response?.data?.detail || 'Erreur lors de la création du présentateur',
+      });
+      setTimeout(() => setNotification(null), 5000);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const filteredUsers = users.filter(user => {
+  const filteredUsers = users.filter((user) => {
     const searchLower = searchQuery.toLowerCase();
     return (
       user.username.toLowerCase().includes(searchLower) ||
@@ -116,9 +207,19 @@ const CreatePresenterDialog: React.FC<CreatePresenterDialogProps> = ({
             </button>
           </div>
 
-          {error && (
-            <div className="p-4 bg-red-50 border-l-4 border-red-400 text-red-700">
-              {error}
+          {(error || notification) && (
+            <div
+              className={`p-4 ${
+                notification?.type === 'success'
+                  ? 'bg-green-50 text-green-700'
+                  : 'bg-red-50 text-red-700'
+              } border-l-4 ${
+                notification?.type === 'success'
+                  ? 'border-green-400'
+                  : 'border-red-400'
+              }`}
+            >
+              {error || notification?.message}
             </div>
           )}
 
@@ -162,7 +263,9 @@ const CreatePresenterDialog: React.FC<CreatePresenterDialogProps> = ({
                       <div className="font-medium">
                         {selectedUser.name} {selectedUser.family_name}
                       </div>
-                      <div className="text-sm text-gray-500">{selectedUser.email}</div>
+                      <div className="text-sm text-gray-500">
+                        {selectedUser.email}
+                      </div>
                     </div>
                   </div>
                 ) : filteredUsers.length > 0 ? (
@@ -187,7 +290,9 @@ const CreatePresenterDialog: React.FC<CreatePresenterDialogProps> = ({
                         <div className="font-medium">
                           {user.name} {user.family_name}
                         </div>
-                        <div className="text-sm text-gray-500">{user.email}</div>
+                        <div className="text-sm text-gray-500">
+                          {user.email}
+                        </div>
                       </div>
                     </div>
                   ))
@@ -257,16 +362,18 @@ const CreatePresenterDialog: React.FC<CreatePresenterDialogProps> = ({
                     type="button"
                     onClick={onClose}
                     className="btn btn-secondary"
-                    disabled={isLoading}
+                    disabled={isLoading || isUpdatingPermissions}
                   >
                     Annuler
                   </button>
                   <button
                     type="submit"
                     className="btn btn-primary"
-                    disabled={isLoading}
+                    disabled={isLoading || isUpdatingPermissions}
                   >
-                    {isLoading ? 'Création...' : 'Créer le présentateur'}
+                    {isLoading || isUpdatingPermissions
+                      ? 'Création...'
+                      : 'Créer le présentateur'}
                   </button>
                 </div>
               </form>

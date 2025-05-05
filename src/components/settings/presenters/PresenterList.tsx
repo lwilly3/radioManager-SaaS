@@ -3,42 +3,79 @@ import {
   Plus,
   Search,
   User,
+  Shield,
+  Trash2,
+  Edit,
+  X,
+  Filter,
+  Mail,
+  Users,
   Radio,
   Calendar,
-  Edit2,
-  Trash2,
-  Users,
-  X,
 } from 'lucide-react';
 import { useAuthStore } from '../../../store/useAuthStore';
+import { usersApi } from '../../../services/api/users';
+import { rolesApi } from '../../../services/api/roles';
 import {
   presenterApi,
   PresenterResponse,
 } from '../../../services/api/presenters';
-import { usersApi } from '../../../services/api/users';
+import type { Users as UsersType, Role } from '../../../types/user';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import CreatePresenterDialog from './CreatePresenterDialog';
 import EditPresenterDialog from './EditPresenterDialog';
-import type { Users as Utilisateurs } from '../../../types/user';
+import { useUpdatePermissions } from '../../../hooks/permissions/useUpdatePermissions';
 
 const PresenterList: React.FC = () => {
   const [presenters, setPresenters] = useState<PresenterResponse[]>([]);
+  const [availableRoles, setAvailableRoles] = useState<Role[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedRole, setSelectedRole] = useState<number | null>(null);
+  const { token } = useAuthStore((state) => state);
+  const [editingRolesForUser, setEditingRolesForUser] = useState<number | null>(null);
+  const [selectedRoles, setSelectedRoles] = useState<number[]>([]);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [editingPresenter, setEditingPresenter] =
-    useState<PresenterResponse | null>(null);
+  const [editingPresenter, setEditingPresenter] = useState<PresenterResponse | null>(null);
   const [showNonPresenters, setShowNonPresenters] = useState(false);
-  const [nonPresenters, setNonPresenters] = useState<Utilisateurs[]>([]);
+  const [nonPresenters, setNonPresenters] = useState<UsersType[]>([]);
   const [isLoadingNonPresenters, setIsLoadingNonPresenters] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<number | undefined>();
-  const token = useAuthStore((state) => state.token);
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
+
+  // Initialize useUpdatePermissions hook
+  const {
+    updatePermissions,
+    isLoading: isUpdatingPermissions,
+    error: updateError,
+    success,
+  } = useUpdatePermissions();
 
   useEffect(() => {
     fetchPresenters();
   }, [token]);
+
+  // Handle success or error from permission updates
+  useEffect(() => {
+    if (success) {
+      setNotification({
+        type: 'success',
+        message: 'Permissions mises à jour avec succès',
+      });
+      setTimeout(() => setNotification(null), 3000);
+    } else if (updateError) {
+      setNotification({
+        type: 'error',
+        message: typeof updateError === 'string' ? updateError : 'Une erreur est survenue lors de la mise à jour des permissions',
+      });
+      setTimeout(() => setNotification(null), 5000);
+    }
+  }, [success, updateError]);
 
   const fetchPresenters = async () => {
     if (!token) return;
@@ -48,7 +85,7 @@ const PresenterList: React.FC = () => {
       const response = await presenterApi.getAll(token);
       setPresenters(response.presenters);
     } catch (err) {
-      setError('Erreur lors du chargement des présentateurs');
+      setError(err instanceof Error ? err.message : 'Erreur lors du chargement des présentateurs');
     } finally {
       setIsLoading(false);
     }
@@ -63,7 +100,7 @@ const PresenterList: React.FC = () => {
       setNonPresenters(response.users);
       setShowNonPresenters(true);
     } catch (err) {
-      setError('Erreur lors du chargement des utilisateurs');
+      setError(err instanceof Error ? err.message : 'Erreur lors du chargement des utilisateurs');
     } finally {
       setIsLoadingNonPresenters(false);
     }
@@ -72,17 +109,52 @@ const PresenterList: React.FC = () => {
   const handleDelete = async (presenterId: number) => {
     if (!token) return;
 
-    if (
-      !window.confirm('Êtes-vous sûr de vouloir supprimer ce présentateur ?')
-    ) {
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce présentateur ?')) {
       return;
     }
 
     try {
+      // Find the presenter to get the user ID
+      const presenter = presenters.find((p) => p.id === presenterId);
+      if (!presenter || !presenter.users_id) {
+        throw new Error('Utilisateur non trouvé');
+      }
+
+      // Define permissions to revoke
+      const presenterPermissions = {
+        can_acces_showplan_section: false,
+        can_create_showplan: false,
+        can_changestatus_owned_showplan: false,
+        can_delete_showplan: false,
+        can_edit_showplan: false,
+        can_archive_showplan: false,
+        can_acces_guests_section: false,
+        can_view_guests: false,
+        can_edit_guests: false,
+        can_view_archives: false,
+      };
+
+      // Update permissions for the specific user
+      await updatePermissions(presenter.users_id, presenterPermissions);
+
+      // Delete presenter
       await presenterApi.delete(token, presenterId);
+
+      // Update local state
       setPresenters(presenters.filter((p) => p.id !== presenterId));
+
+      setNotification({
+        type: 'success',
+        message: 'Présentateur supprimé avec succès',
+      });
+      setTimeout(() => setNotification(null), 3000);
     } catch (err) {
-      setError('Erreur lors de la suppression du présentateur');
+      setError(err instanceof Error ? err.message : 'Erreur lors de la suppression du présentateur');
+      setNotification({
+        type: 'error',
+        message: err instanceof Error ? err.message : 'Erreur lors de la suppression du présentateur',
+      });
+      setTimeout(() => setNotification(null), 5000);
     }
   };
 
@@ -93,12 +165,11 @@ const PresenterList: React.FC = () => {
   };
 
   const filteredPresenters = presenters.filter((presenter) => {
-    const searchLower = searchQuery.toLowerCase();
-    return (
-      presenter.name.toLowerCase().includes(searchLower) ||
-      presenter.username.toLowerCase().includes(searchLower) ||
-      presenter.biography?.toLowerCase().includes(searchLower)
-    );
+    const matchesSearch =
+      presenter.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (presenter.username &&
+        presenter.username.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesSearch;
   });
 
   return (
@@ -120,6 +191,22 @@ const PresenterList: React.FC = () => {
           </button>
         </div>
       </header>
+
+      {(error || notification) && (
+        <div
+          className={`p-4 ${
+            notification?.type === 'success'
+              ? 'bg-green-50 text-green-700'
+              : 'bg-red-50 text-red-700'
+          } border-l-4 ${
+            notification?.type === 'success'
+              ? 'border-green-400'
+              : 'border-red-400'
+          }`}
+        >
+          {error || notification?.message}
+        </div>
+      )}
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -193,10 +280,6 @@ const PresenterList: React.FC = () => {
         <div className="flex justify-center py-12">
           <div className="spinner" />
         </div>
-      ) : error ? (
-        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg">
-          {error}
-        </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredPresenters.map((presenter) => (
@@ -252,12 +335,13 @@ const PresenterList: React.FC = () => {
                   onClick={() => setEditingPresenter(presenter)}
                   className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
                 >
-                  <Edit2 className="h-4 w-4" />
+                  <Edit className="h-4 w-4" />
                   Modifier
                 </button>
                 <button
                   onClick={() => handleDelete(presenter.id)}
                   className="text-sm text-red-600 hover:text-red-700 font-medium flex items-center gap-1"
+                  disabled={isUpdatingPermissions}
                 >
                   <Trash2 className="h-4 w-4" />
                   Supprimer
