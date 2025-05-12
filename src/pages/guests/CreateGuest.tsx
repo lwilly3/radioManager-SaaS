@@ -181,7 +181,7 @@ const CreateGuest: React.FC = () => {
               className="w-full sm:w-auto btn btn-primary"
               disabled={!isValid} // Désactiver le bouton si le formulaire n'est pas valide
             >
-              Créer l'invité 1
+              Créer l'invité
             </button>
           </div>
         </form>

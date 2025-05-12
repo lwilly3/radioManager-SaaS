@@ -2,9 +2,10 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus } from 'lucide-react';
-import { v4 as uuidv4 } from 'uuid';
 import { guestSchema } from '../../../schemas/showPlanSchema';
 import FormField from '../../common/FormField';
+import api from '../../../api/api';
+import { useAuthStore } from '../../../store/useAuthStore';
 import type { Guest, GuestFormData, GuestRole } from '../../../types';
 
 interface GuestFormProps {
@@ -25,6 +26,8 @@ const guestRoles: { value: GuestRole; label: string }[] = [
 ];
 
 const GuestForm: React.FC<GuestFormProps> = ({ onAdd, onCancel, initialData }) => {
+  const token = useAuthStore((state) => state.token);
+
   const {
     register,
     handleSubmit,
@@ -34,12 +37,81 @@ const GuestForm: React.FC<GuestFormProps> = ({ onAdd, onCancel, initialData }) =
     defaultValues: initialData,
   });
 
-  const onSubmit = (data: GuestFormData) => {
-    const newGuest: Guest = {
-      id: initialData?.id || uuidv4(),
-      ...data,
-    };
-    onAdd(newGuest);
+  const onSubmit = async (data: GuestFormData) => {
+    if (!token) {
+      alert("Erreur : Aucun jeton d'authentification disponible");
+      return;
+    }
+
+    try {
+      let guest: Guest;
+
+      if (initialData) {
+        // Mise à jour d'un invité existant
+        const response = await api.put(
+          `guests/${initialData.id}`,
+          {
+            name: data.name,
+            biography: data.biography,
+            role: data.role,
+            phone: data.contact?.phone || '',
+            email: data.contact?.email || '',
+          },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        // Utiliser la réponse de l'API comme objet Guest
+        guest = {
+          id: response.data.id,
+          name: response.data.name,
+          biography: response.data.biography || null,
+          role: response.data.role || null,
+          phone: response.data.phone || null,
+          email: response.data.email || null,
+          avatar: response.data.avatar || null,
+          segments: response.data.segments || [],
+          appearances: response.data.appearances || [],
+          contact_info: response.data.contact_info || null,
+        };
+      } else {
+        // Création d'un nouvel invité
+        const response = await api.post(
+          'guests/',
+          {
+            name: data.name,
+            biography: data.biography,
+            role: data.role,
+            phone: data.contact?.phone || '',
+            email: data.contact?.email || '',
+          },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        // Utiliser la réponse de l'API comme objet Guest
+        guest = {
+          id: response.data.id,
+          name: response.data.name,
+          biography: response.data.biography || null,
+          role: response.data.role || null,
+          phone: response.data.phone || null,
+          email: response.data.email || null,
+          avatar: response.data.avatar || null,
+          segments: response.data.segments || [],
+          appearances: response.data.appearances || [],
+          contact_info: response.data.contact_info || null,
+        };
+      }
+
+      // Passer l'objet Guest basé sur la réponse de l'API à onAdd
+      onAdd(guest);
+    } catch (error) {
+      console.error('Erreur lors de la création/modification de l\'invité :', error);
+      alert('Une erreur est survenue lors de la création/modification de l\'invité.');
+    }
   };
 
   return (

@@ -38,6 +38,8 @@ export const useUpdatePermissions = (defaultUserId: number = -1) => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
+        console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ update permission response");
+        console.log(response);
 
         setUpdatedPermissions(response.data as UserPermissions);
         setSuccess(true);

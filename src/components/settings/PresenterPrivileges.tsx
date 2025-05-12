@@ -27,7 +27,7 @@ import {
   defaultRoleTemplates,
   RoleTemplate,
 } from '../../types/permissions';
-import { useAuthStore } from '../../store/useAuthStore'; 
+import { useAuthStore } from '../../store/useAuthStore';
 
 interface PresenterWithPermissions {
   id: string;
@@ -42,10 +42,6 @@ interface PresenterWithPermissions {
 }
 
 const PresenterPrivileges: React.FC = () => {
-
-
-
-  
   const { data: presenters = [], isLoading: isLoadingPresenters } =
     usePresenters();
   const [selectedPresenter, setSelectedPresenter] =
@@ -66,7 +62,7 @@ const PresenterPrivileges: React.FC = () => {
   const [showPresentersList, setShowPresentersList] = useState(true);
 
   const prevPermissionsRef = useRef<Partial<UserPermissions> | null>(null);
-      // Récupère les méthodes de useAuthStore
+  // Récupère les méthodes de useAuthStore
   const { setPermission, syncPermissionsWithFirestore } = useAuthStore();
 
   const userId =
@@ -160,63 +156,13 @@ const PresenterPrivileges: React.FC = () => {
     });
   };
 
-  const handlePermissionChange = async (permission: string, value: boolean) => {
-    if (!selectedPresenter || !selectedPresenter.user_id) return;
-  
-    // Sauvegarde des permissions actuelles pour rollback en cas d'échec
-    const previousPermissions = { ...selectedPresenter.permissions };
-    
-    // Mise à jour locale immédiate pour réactivité dans l'UI
-    setSelectedPresenter((prev) => ({
-      ...prev!,
-      permissions: { ...prev!.permissions, [permission]: value },
-    }));
-  
-
-  
-    try {
-      console.log(`Envoi à l’API : ${permission} = ${value}`);
-      // Étape 1 : Mise à jour des permissions via l'API
-      await updatePermissions({ [permission]: value } as Partial<UserPermissions>);
-      console.log('Mise à jour API réussie');
-  
-      // Étape 2 : Mise à jour des permissions dans le store Zustand
-      const updatedPermissions = {
-        ...selectedPresenter.permissions,
-        [permission]: value,
-      };
-      setPermission(updatedPermissions);
-  
-      // Étape 3 : Synchronisation avec Firestore après succès de l'API
-      await syncPermissionsWithFirestore();
-      console.log('Synchronisation avec Firestore réussie');
-  
-      // Notification de succès (optionnel)
-      setNotification({
-        type: 'success',
-        message: 'Permission mise à jour avec succès',
-      });
-      setTimeout(() => setNotification(null), 3000);
-    } catch (err: any) {
-      // En cas d'échec (API ou Firestore), rollback de l'état local
-      setSelectedPresenter((prev) => ({
-        ...prev!,
-        permissions: previousPermissions,
-      }));
-      setNotification({
-        type: 'error',
-        message: err.response?.data?.detail || 'Erreur lors de la mise à jour',
-      });
-      setTimeout(() => setNotification(null), 5000);
-      console.error('Erreur lors de la mise à jour :', err);
-    }
-  };
-
   // const handlePermissionChange = async (permission: string, value: boolean) => {
   //   if (!selectedPresenter || !selectedPresenter.user_id) return;
 
+  //   // Sauvegarde des permissions actuelles pour rollback en cas d'échec
   //   const previousPermissions = { ...selectedPresenter.permissions };
-  //   console.log(`Tentative de mise à jour locale : ${permission} = ${value}`);
+
+  //   // Mise à jour locale immédiate pour réactivité dans l'UI
   //   setSelectedPresenter((prev) => ({
   //     ...prev!,
   //     permissions: { ...prev!.permissions, [permission]: value },
@@ -224,25 +170,73 @@ const PresenterPrivileges: React.FC = () => {
 
   //   try {
   //     console.log(`Envoi à l’API : ${permission} = ${value}`);
-  //     await updatePermissions({
-  //       [permission]: value,
-  //     } as Partial<UserPermissions>);
+  //     // Étape 1 : Mise à jour des permissions via l'API
+  //     await updatePermissions({ [permission]: value } as Partial<UserPermissions>);
   //     console.log('Mise à jour API réussie');
+
+  //     // Étape 2 : Mise à jour des permissions dans le store Zustand
+  //     // const updatedPermissions = {
+  //     //   ...selectedPresenter.permissions,
+  //     //   [permission]: value,
+  //     // };
+  //     // setPermission(updatedPermissions);
+
+  //     // Étape 3 : Synchronisation avec Firestore après succès de l'API
+  //     // await syncPermissionsWithFirestore();
+  //     // console.log('Synchronisation avec Firestore réussie');
+
+  //     // Notification de succès (optionnel)
+  //     setNotification({
+  //       type: 'success',
+  //       message: 'Permission mise à jour avec succès',
+  //     });
+  //     setTimeout(() => setNotification(null), 3000);
   //   } catch (err: any) {
-  //     console.error('Erreur lors de la mise à jour API :', err);
+  //     // En cas d'échec (API ou Firestore), rollback de l'état local
   //     setSelectedPresenter((prev) => ({
   //       ...prev!,
   //       permissions: previousPermissions,
   //     }));
   //     setNotification({
   //       type: 'error',
-  //       message:
-  //         err.response?.data?.detail ||
-  //         'Erreur lors de la mise à jour des permissions',
+  //       message: err.response?.data?.detail || 'Erreur lors de la mise à jour',
   //     });
   //     setTimeout(() => setNotification(null), 5000);
+  //     console.error('Erreur lors de la mise à jour :', err);
   //   }
   // };
+
+  const handlePermissionChange = async (permission: string, value: boolean) => {
+    if (!selectedPresenter || !selectedPresenter.user_id) return;
+
+    const previousPermissions = { ...selectedPresenter.permissions };
+    console.log(`Tentative de mise à jour locale : ${permission} = ${value}`);
+    setSelectedPresenter((prev) => ({
+      ...prev!,
+      permissions: { ...prev!.permissions, [permission]: value },
+    }));
+
+    try {
+      console.log(`Envoi à l’API : ${permission} = ${value}`);
+      await updatePermissions(selectedPresenter.user_id, {
+        [permission]: value,
+      } as Partial<UserPermissions>);
+      console.log('Mise à jour API réussie');
+    } catch (err: any) {
+      console.error('Erreur lors de la mise à jour API :', err);
+      setSelectedPresenter((prev) => ({
+        ...prev!,
+        permissions: previousPermissions,
+      }));
+      setNotification({
+        type: 'error',
+        message:
+          err.response?.data?.detail ||
+          'Erreur lors de la mise à jour des permissions',
+      });
+      setTimeout(() => setNotification(null), 5000);
+    }
+  };
 
   const handleApplyTemplate = async (template: RoleTemplate) => {
     if (!selectedPresenter || !selectedPresenter.user_id) return;

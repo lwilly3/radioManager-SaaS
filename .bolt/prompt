@@ -1413,3 +1413,98 @@ fetch('/', { method: 'GET' });
   * Déclarer la route React : `<Route path="/signup/:token" element={<SignupWithInvite />} />`.
   * Ajouter de la navigation conditionnelle pour `token` manquant.
 
+
+
+# Gestion des permissions utilisateur
+
+Ce document décrit comment ajouter et supprimer les permissions suivantes à un utilisateur :
+- can_acces_showplan_section
+- can_create_showplan
+- can_changestatus_owned_showplan
+- can_delete_showplan
+- can_edit_showplan
+- can_archive_showplan
+- can_acces_guests_section
+- can_view_guests
+- can_edit_guests
+- can_view_archives
+
+## 1. Backend : mise à jour des permissions
+
+### 1.1 hook a utiliser par le front
+utiliser le hook existant useUpdatePermissions
+pour le mecanisme d'atribution ou de supression de ces privileges par defaut des presentateurs
+
+## 2. Liste complète des permissions disponibles
+
+- can_acces_showplan_broadcast_section
+- can_acces_showplan_section
+- can_create_showplan
+- can_edit_showplan
+- can_archive_showplan
+- can_archiveStatusChange_showplan
+- can_delete_showplan
+- can_destroy_showplan
+- can_changestatus_showplan
+- can_changestatus_owned_showplan
+- can_changestatus_archived_showplan
+- can_setOnline_showplan
+- can_viewAll_showplan
+
+- can_acces_users_section
+- can_view_users
+- can_edit_users
+- can_desable_users
+- can_delete_users
+
+- can_manage_roles
+- can_assign_roles
+
+- can_acces_guests_section
+- can_view_guests
+- can_edit_guests
+- can_delete_guests
+
+- can_acces_presenters_section
+- can_view_presenters
+- can_create_presenters
+- can_edit_presenters
+- can_delete_presenters
+
+- can_acces_emissions_section
+- can_view_emissions
+- can_create_emissions
+- can_edit_emissions
+- can_delete_emissions
+- can_manage_emissions
+
+- can_view_notifications
+- can_manage_notifications
+
+- can_view_audit_logs
+- can_view_login_history
+
+- can_manage_settings
+
+- can_view_messages
+- can_send_messages
+- can_delete_messages
+
+- can_view_files
+- can_upload_files
+- can_delete_files
+
+- can_view_tasks
+- can_create_tasks
+- can_edit_tasks
+- can_delete_tasks
+- can_assign_tasks
+
+- can_view_archives
+- can_destroy_archives
+- can_restore_archives
+- can_delete_archives
+
+---
+
+*Fin du guide de gestion des permissions utilisateur.*

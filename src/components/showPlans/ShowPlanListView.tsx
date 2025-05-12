@@ -9,6 +9,8 @@ import SpinnerButton from '../util/SpinnerButton';
 import { useAuthStore } from '../../store/useAuthStore';
 import type { ShowPlan } from '../../types';
 import { generateKey } from '../../utils/keyGenerator';
+import { useStatusUpdate } from '../../hooks/status/useStatusUpdate';
+
 
 interface ShowPlanListViewProps {
   showPlan: ShowPlan;
@@ -20,6 +22,7 @@ const ShowPlanListView: React.FC<ShowPlanListViewProps> = ({
   onStatusChange,
 }) => {
   const navigate = useNavigate();
+  const { updateStatus, isUpdating } = useStatusUpdate();
   const userPermissions = useAuthStore((state) => state.permissions);
   const { deleteShow, isDeleting } = useDeleteShow();
 
@@ -39,8 +42,14 @@ const ShowPlanListView: React.FC<ShowPlanListViewProps> = ({
   const endTime = new Date(date.getTime() + totalDuration * 60000);
   const isLive = showPlan.status === 'en-cours';
 
+
+
+
   const handleStatusChange = async (newStatus: string) => {
-    onStatusChange(showPlan.id, newStatus);
+    const success = await updateStatus(showPlan.id, newStatus);
+    if (success) {
+      onStatusChange(showPlan.id, newStatus);
+    }
   };
 
   const isLocked = !['termine', 'archive', 'en-cours'].includes(
@@ -65,6 +74,7 @@ const ShowPlanListView: React.FC<ShowPlanListViewProps> = ({
                 <StatusTransition
                   currentStatus={showPlan.status}
                   onStatusChange={handleStatusChange}
+                  isDisabled={isUpdating}
                 />
               </div>
             </div>

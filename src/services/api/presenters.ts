@@ -32,7 +32,7 @@ export const presenterApi = {
     token: string
   ): Promise<{ total: number; presenters: PresenterResponse[] }> => {
     try {
-      const response = await api.get('/presenters/all', {
+      const response = await api.get('presenters/all', {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -50,7 +50,7 @@ export const presenterApi = {
     userId: number
   ): Promise<PresenterResponse> => {
     try {
-      const response = await api.get(`/presenters/by-user/${userId}`, {
+      const response = await api.get(`presenters/by-user/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -68,7 +68,7 @@ export const presenterApi = {
     presenterId: number
   ): Promise<PresenterResponse> => {
     try {
-      const response = await api.get(`/presenters/${presenterId}`, {
+      const response = await api.get(`presenters/${presenterId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -96,7 +96,7 @@ export const presenterApi = {
         profilePicture: data.profilePicture || null,
       };
 
-      const response = await api.post('/presenters/', formattedData, {
+      const response = await api.post('presenters/', formattedData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -125,7 +125,7 @@ export const presenterApi = {
         profilePicture: data.profilePicture || null,
       };
 
-      const response = await api.post('/presenters/assign', formattedData, {
+      const response = await api.post('presenters/assign', formattedData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -146,7 +146,7 @@ export const presenterApi = {
   ): Promise<PresenterResponse> => {
     try {
       const response = await api.put(
-        `/presenters/update/${presenterId}`,
+        `presenters/update/${presenterId}`,
         data,
         {
           headers: {
@@ -164,7 +164,7 @@ export const presenterApi = {
 
   delete: async (token: string, presenterId: number): Promise<void> => {
     try {
-      await api.delete(`/presenters/del/${presenterId}`, {
+      await api.delete(`presenters/del/${presenterId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
