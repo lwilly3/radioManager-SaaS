@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { collection, getDocs, query, orderBy, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../api/firebase/firebase';
 import type { Version, VersionState } from '../types/version';
 import semver from 'semver';
@@ -8,7 +8,7 @@ import semver from 'semver';
 export const useVersionStore = create<VersionState>()(
   persist(
     (set, get) => ({
-      currentVersion: '1.1.1', // Version actuelle de l'application
+      currentVersion: '1.1.2', // Version actuelle de l'application
       versions: [],
       isLoading: false,
       error: null,
@@ -16,38 +16,21 @@ export const useVersionStore = create<VersionState>()(
       fetchVersions: async () => {
         set({ isLoading: true, error: null });
         try {
-          // Récupérer les versions depuis Firestore
           const versionsRef = collection(db, 'versions');
           const q = query(versionsRef, orderBy('releaseDate', 'desc'));
           const snapshot = await getDocs(q);
-          
           if (snapshot.empty) {
-            // Si aucune version n'est trouvée, utiliser les versions par défaut
-            set({ 
-              versions: defaultVersions,
-              isLoading: false 
-            });
-            return defaultVersions;
+            set({ versions: defaultVersions, isLoading: false });
+          } else {
+            const versions = snapshot.docs.map(doc => ({
+              ...doc.data() as Version,
+              version: doc.id
+            }));
+            set({ versions, isLoading: false });
           }
-          
-          const versions = snapshot.docs.map(doc => ({
-            ...doc.data() as Version,
-            version: doc.id
-          }));
-          
-          set({ 
-            versions,
-            isLoading: false 
-          });
-          return versions;
         } catch (error) {
           console.error('Erreur lors de la récupération des versions:', error);
-          set({ 
-            error: 'Erreur lors de la récupération des versions',
-            isLoading: false,
-            versions: defaultVersions // Utiliser les versions par défaut en cas d'erreur
-          });
-          return defaultVersions;
+          set({ error: 'Erreur lors de la récupération des versions', isLoading: false, versions: defaultVersions });
         }
       },
 
@@ -79,6 +62,17 @@ export const useVersionStore = create<VersionState>()(
 
 // Versions par défaut utilisées si Firestore n'est pas disponible
 const defaultVersions: Version[] = [
+  {
+    version: '1.1.2',
+    releaseDate: '2025-05-12',
+    description: 'Corrections de bugs sur l\'ajout d\'utilisateurs lors de la création de conducteur et sur l\'attribution de privilèges',
+    features: [],
+    bugfixes: [
+      "Correction de l'ajout d'utilisateurs lors de la création de conducteur",
+      "Correction de l'attribution de privilèges"
+    ],
+    improvements: []
+  },
   {
     version: '1.1.1',
     releaseDate: '2025-05-05',
