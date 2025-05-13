@@ -7,7 +7,7 @@ import semver from 'semver';
 import type { Version } from '../../types/version';
 
 const VersionInfo: React.FC = () => {
-  const { currentVersion, versions, fetchVersions, isLoading, error } = useVersionStore();
+  const { currentVersion, versions, fetchVersions, isLoading, error, displayCount } = useVersionStore();
   const [expandedVersion, setExpandedVersion] = useState<string | null>(null);
   const [showAllVersions, setShowAllVersions] = useState(false);
 
@@ -26,10 +26,10 @@ const VersionInfo: React.FC = () => {
   // Vérifier si une mise à jour est disponible
   const updateAvailable = latestVersion && semver.gt(latestVersion.version, currentVersion);
   
-  // Versions à afficher (toutes ou seulement les 3 dernières)
+  // Versions à afficher (toutes ou seulement les X dernières)
   const displayedVersions = showAllVersions 
     ? sortedVersions 
-    : sortedVersions.slice(0, 3);
+    : sortedVersions.slice(0, displayCount);
 
   const formatDate = (dateString: string) => {
     try {
@@ -183,7 +183,7 @@ const VersionInfo: React.FC = () => {
             ))}
           </div>
 
-          {sortedVersions.length > 3 && (
+          {sortedVersions.length > displayCount && (
             <button
               onClick={() => setShowAllVersions(!showAllVersions)}
               className="mt-4 text-indigo-600 hover:text-indigo-800 text-sm font-medium"

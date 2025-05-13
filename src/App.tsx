@@ -33,6 +33,7 @@ import FullProgram from './pages/FullProgram';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 import SignupWithInvite from './pages/auth/SignupWithInvite';
+import ResetPassword from './pages/auth/ResetPassword';
 
 const App: React.FC = () => {
   const isAuthenticated = useAuthStore((state) => Boolean(state.token));
@@ -49,6 +50,7 @@ const App: React.FC = () => {
             } 
           />
           <Route path="/signup/:token" element={<SignupWithInvite />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
 
           {/* Protected routes */}
           <Route path="/" element={

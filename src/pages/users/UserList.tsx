@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Plus, Search, User, Shield, Trash2, Edit, ChevronDown, X, Filter, Mail } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Plus, Search, User, Shield, Trash2, Edit, ChevronDown, X, Filter, Mail, Key } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { usersApi } from '../../services/api/users';
 import { rolesApi } from '../../services/api/roles';
@@ -8,19 +8,22 @@ import type { Users, Role } from '../../types/user';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import GenerateInviteLink from '../../components/auth/GenerateInviteLink';
+import PasswordResetDialog from '../../components/users/PasswordResetDialog';
 
 const UserList: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [users, setUsers] = useState<Users[]>([]);
   const [availableRoles, setAvailableRoles] = useState<Role[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRole, setSelectedRole] = useState<number | null>(null);
-  const token = useAuthStore((state) => state.token);
+  const { token } = useAuthStore((state) => state);
   const [editingRolesForUser, setEditingRolesForUser] = useState<number | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<number[]>([]);
   const [showInviteForm, setShowInviteForm] = useState(false);
+  const [userForPasswordReset, setUserForPasswordReset] = useState<Users | null>(null);
 
   const { permissions } = useAuthStore();
 
@@ -101,6 +104,15 @@ const UserList: React.FC = () => {
     }
   };
 
+  const handleInviteSent = (token: string) => {
+    console.log(`Invitation envoyée avec le token: ${token}`);
+    // Vous pouvez ajouter ici une notification ou une mise à jour de l'interface
+  };
+
+  const handlePasswordReset = (user: Users) => {
+    setUserForPasswordReset(user);
+  };
+
   const filteredUsers = users.filter((user) => {
     const searchLower = searchQuery.toLowerCase();
     const matchesSearch = 
@@ -115,11 +127,6 @@ const UserList: React.FC = () => {
 
     return matchesSearch && matchesRole;
   });
-
-  const handleInviteSent = (token: string) => {
-    console.log(`Invitation envoyée avec le token: ${token}`);
-    // Vous pouvez ajouter ici une notification ou une mise à jour de l'interface
-  };
 
   return (
     <div className="space-y-6">
@@ -293,6 +300,13 @@ const UserList: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2">
                         <button
+                          onClick={() => handlePasswordReset(user)}
+                          className="text-gray-600 hover:text-indigo-600"
+                          title="Réinitialiser le mot de passe"
+                        >
+                          <Key className="h-5 w-5" />
+                        </button>
+                        <button
                           onClick={() => navigate(`/users/${user.id}/edit`)}
                           className="text-gray-600 hover:text-gray-900"
                           title="Modifier"
@@ -333,6 +347,14 @@ const UserList: React.FC = () => {
             </button>
           </div>
         </div>
+      )}
+
+      {userForPasswordReset && (
+        <PasswordResetDialog
+          isOpen={!!userForPasswordReset}
+          onClose={() => setUserForPasswordReset(null)}
+          user={userForPasswordReset}
+        />
       )}
     </div>
   );

@@ -12,7 +12,9 @@ export interface VersionState {
   versions: Version[];
   isLoading: boolean;
   error: string | null;
-  fetchVersions: () => Promise<void>;
+  displayCount: number; // Nombre de versions à afficher par défaut
+  fetchVersions: () => Promise<Version[]>;
   getVersionHistory: () => Version[];
   getLatestVersion: () => Version | null;
+  setDisplayCount: (count: number) => void;
 }
