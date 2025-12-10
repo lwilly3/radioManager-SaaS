@@ -19,8 +19,8 @@ services:
       dockerfile: Dockerfile
     container_name: radioaudace-frontend
     restart: unless-stopped
-    ports:
-      - "3001:80"
+    expose:
+      - "80"
     environment:
       # ⚠️ IMPORTANT : Modifier cette URL selon votre environnement
       # Production : https://api.cloud.audace.ovh
