@@ -34,9 +34,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=dokploy-network"
       
-      # ⚠️ IMPORTANT : Modifier le domaine selon votre environnement
-      # Production : app.cloud.audace.ovh
-      # Test : autre domaine si nécessaire
+      # Router HTTPS (websecure)
       - "traefik.http.routers.radioaudace-frontend.rule=Host(`app.cloud.audace.ovh`)"
       - "traefik.http.routers.radioaudace-frontend.entrypoints=websecure"
       - "traefik.http.routers.radioaudace-frontend.tls=true"
