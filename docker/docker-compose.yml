@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: radioaudace-frontend
+    restart: unless-stopped
+    ports:
+      - "3001:80"
+    environment:
+      # ⚠️ IMPORTANT : Modifier cette URL selon votre environnement
+      # Production : https://api.cloud.audace.ovh
+      # Test : https://api.audace.ovh
+      - VITE_API_BASE_URL=https://api.cloud.audace.ovh
+      # Ajoutez d'autres variables d'environnement si nécessaire
+      - NODE_ENV=production
+    networks:
+      - radioaudace-network
+    labels:
+      - "traefik.enable=true"
+      # ⚠️ IMPORTANT : Modifier le domaine selon votre environnement
+      # Production : app.cloud.audace.ovh
+      # Test : autre domaine si nécessaire
+      - "traefik.http.routers.radioaudace-frontend.rule=Host(`app.cloud.audace.ovh`)"
+      - "traefik.http.routers.radioaudace-frontend.entrypoints=websecure"
+      - "traefik.http.routers.radioaudace-frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.radioaudace-frontend.loadbalancer.server.port=80"
+
+networks:
+  radioaudace-network:
+    external: true
+    # Si le réseau n'existe pas encore, commentez 'external: true' et décommentez la ligne suivante:
+    # driver: bridge
