@@ -79,9 +79,12 @@ Dans les paramètres Traefik de Dokploy :
 
 ### 5. Réseau Docker
 
-Assurez-vous que le frontend et le backend sont sur le même réseau Docker pour une communication optimale :
+Les réseaux Docker sont automatiquement gérés :
 
-- Réseau : `radioaudace-network` (ou créez-en un nouveau)
+- **audace_network** : Créé par le service backend, partagé avec le frontend
+- **dokploy-network** : Créé par Dokploy pour Traefik
+
+Aucune action manuelle n'est nécessaire si le backend est déjà déployé.
 
 ### 6. Déploiement
 
@@ -100,7 +103,75 @@ Une fois le déploiement terminé :
 2. Vérifiez que l'application se charge correctement
 3. Testez la connexion avec le backend
 
-## 🔧 Structure du déploiement
+## 🔧 Architecture du déploiement
+
+### Vue d'ensemble
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│                  Dokploy (cloud.audace.ovh:3000)               │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│  ┌──────────────────────────────────────────────────────────┐ │
+│  │                   dokploy-network                        │ │
+│  │              (Traefik Reverse Proxy + SSL)              │ │
+│  └──────────────────────────────────────────────────────────┘ │
+│           │                              │                     │
+│           │ HTTPS                        │ HTTPS               │
+│           ▼                              ▼                     │
+│  ┌─────────────────────┐      ┌──────────────────────┐        │
+│  │    Frontend         │      │     Backend API      │        │
+│  │  (React + Nginx)    │      │     (FastAPI)        │        │
+│  │ app.cloud.audace.ovh│      │ api.cloud.audace.ovh │        │
+│  │  Port interne: 80   │      │  Port interne: 8000  │        │
+│  └──────────┬──────────┘      └──────────┬───────────┘        │
+│             │                            │                     │
+│             │  Appels API HTTPS          │                     │
+│             └────────────────────────────┘                     │
+│                                          │                     │
+│  ┌──────────────────────────────────────┴──────────────────┐  │
+│  │                   audace_network                         │  │
+│  │            (Communication interne services)              │  │
+│  └──────────────────────────────────────┬──────────────────┘  │
+│                                          │                     │
+│                                          ▼                     │
+│                                 ┌────────────────┐             │
+│                                 │   PostgreSQL   │             │
+│                                 │  Port: 5432    │             │
+│                                 └────────────────┘             │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+```
+
+### Réseaux Docker
+
+1. **dokploy-network** (externe)
+   - Géré par Traefik
+   - Gère le routing HTTP/HTTPS
+   - Certificats SSL via Let's Encrypt
+   - Les deux services (frontend et backend) y sont connectés
+
+2. **audace_network** (externe)
+   - Réseau partagé entre tous les services
+   - Permet la communication interne entre frontend, backend et PostgreSQL
+   - Créé automatiquement par le service backend
+
+### Flux de communication
+
+1. **Utilisateur → Frontend**
+   - `https://app.cloud.audace.ovh` → Traefik → Frontend (Nginx)
+   - Nginx sert les fichiers React buildés
+
+2. **Frontend → Backend**
+   - L'application React fait des appels API à `https://api.cloud.audace.ovh`
+   - Via `dokploy-network` et Traefik
+   - Variable d'environnement : `VITE_API_BASE_URL`
+
+3. **Backend → Database**
+   - FastAPI se connecte à PostgreSQL via `audace_network`
+   - Communication interne (non exposée publiquement)
+
+## 🔧 Structure du déploiement (ancienne version simplifiée)
 
 ```
 ┌─────────────────────────────────────┐
