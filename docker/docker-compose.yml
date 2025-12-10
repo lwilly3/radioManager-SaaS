@@ -1,3 +1,14 @@
+# Configuration Docker Compose pour le Frontend Radio Manager (React + Vite + Nginx)
+#
+# RÉSEAUX :
+# - audace_network : Réseau partagé avec le backend (permet la communication interne si nécessaire)
+# - dokploy-network : Réseau Traefik pour le reverse proxy, routing HTTP/HTTPS et certificats SSL
+#
+# PRÉREQUIS :
+# Ces réseaux doivent déjà exister (créés automatiquement par Dokploy et le service backend)
+# Le backend est accessible sur : api.cloud.audace.ovh
+# Le frontend sera accessible sur : app.cloud.audace.ovh
+
 version: '3.8'
 
 services:
@@ -17,7 +28,8 @@ services:
       # Ajoutez d'autres variables d'environnement si nécessaire
       - NODE_ENV=production
     networks:
-      - radioaudace-network
+      - audace_network
+      - dokploy-network
     labels:
       - "traefik.enable=true"
       # ⚠️ IMPORTANT : Modifier le domaine selon votre environnement
@@ -29,7 +41,9 @@ services:
       - "traefik.http.services.radioaudace-frontend.loadbalancer.server.port=80"
 
 networks:
-  radioaudace-network:
+  # Réseau partagé avec le backend (PostgreSQL et API FastAPI)
+  audace_network:
     external: true
-    # Si le réseau n'existe pas encore, commentez 'external: true' et décommentez la ligne suivante:
-    # driver: bridge
+  # Réseau Traefik pour le reverse proxy et les certificats SSL
+  dokploy-network:
+    external: true
