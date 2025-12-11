@@ -23,7 +23,7 @@ services:
       - "80"
     environment:
       # ⚠️ IMPORTANT : Modifier cette URL selon votre environnement
-      # Production : https://api.cloud.audace.ovh
+      # Production : https://api.cloud.audace.ovh (SANS slash final)
       # Test : https://api.audace.ovh
       - VITE_API_BASE_URL=https://api.cloud.audace.ovh
       # Ajoutez d'autres variables d'environnement si nécessaire
