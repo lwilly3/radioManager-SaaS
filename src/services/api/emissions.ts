@@ -4,14 +4,12 @@ import type {
   CreateEmissionData,
   UpdateEmissionData,
 } from '../../types/emission';
-import axios from 'axios';
 
 const authHeaders = (token: string) => ({
   headers: { Authorization: `Bearer ${token}` },
 });
 
 // 141.95.52.115
-const API_URL = 'https://api.radio.audace.ovh/';
 
 export const emissionApi = {
   // Get all emissions

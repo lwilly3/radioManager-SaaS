@@ -4,6 +4,7 @@ export interface ShowPlan {
   title: string;
   emission: string;
   emission_id?: string;
+  type?: ShowType;
   showType: ShowType;
   date: string;
   description?: string;
