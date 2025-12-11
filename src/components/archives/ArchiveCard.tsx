@@ -64,7 +64,7 @@ const ArchiveCard: React.FC<ArchiveCardProps> = ({ show, onShowDetail }) => {
             <span>
               {show.presenters.length > 0
                 ? show.presenters.map((p) => p.name).join(', ')
-                : 'Aucun présentateur'}
+                : ''}
             </span>
           </div>
         </div>
