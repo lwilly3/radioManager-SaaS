@@ -5,6 +5,21 @@
 
 ---
 
+## 📚 Documents de référence
+
+| Document | Description |
+|----------|-------------|
+| [`AGENT.md`](AGENT.md) | Ce guide - Conventions et règles pour les agents IA |
+| [`CHANGELOG.md`](CHANGELOG.md) | **Historique des modifications** - Contexte et décisions |
+| [`README.md`](README.md) | Documentation générale du projet |
+| [`docs/API_MIGRATION_GUIDE.md`](docs/API_MIGRATION_GUIDE.md) | Guide de migration des URLs API |
+| [`docs/modules/`](docs/modules/) | Documentation technique par module |
+| [`docs/business/`](docs/business/) | Documentation métier |
+
+> **⚠️ Important :** Consultez `CHANGELOG.md` pour comprendre l'historique et le contexte des modifications récentes avant d'effectuer des changements.
+
+---
+
 ## 📋 Table des matières
 
 1. [Présentation du projet](#-présentation-du-projet)
