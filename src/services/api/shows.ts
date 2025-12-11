@@ -1,133 +1,51 @@
 import api from '../../api/api';
-import type { ApiShowResponse, ApiSegmentResponse, ApiGuestResponse } from '../../types/api';
-import type { ShowPlan, ShowType, SegmentType, Guest } from '../../types';
+import type { ApiShowResponse } from '../../types/api';
+import type { ShowPlan } from '../../types';
 
 const authHeaders = (token: string) => ({
   headers: { Authorization: `Bearer ${token}` },
 });
 
-const mapShowType = (type: string): ShowType => {
-  const normalized = type?.toLowerCase();
-  const allowed: ShowType[] = [
-    'morning-show',
-    'news',
-    'talk-show',
-    'music-show',
-    'cultural',
-    'sports',
-    'documentary',
-    'entertainment',
-    'debate',
-    'other',
-  ];
-
-  return (allowed.find((value) => value === normalized) ?? 'other') as ShowType;
-};
-
-const mapSegmentType = (type: string): SegmentType => {
-  const normalized = type?.toLowerCase();
-  const allowed: SegmentType[] = [
-    'intro',
-    'interview',
-    'music',
-    'ad',
-    'outro',
-    'other',
-  ];
-
-  return (allowed.find((value) => value === normalized) ?? 'other') as SegmentType;
-};
-
-const mapGuestCollection = (segments: ApiSegmentResponse[]): Guest[] => {
-  const guestMap = new Map<string, Guest>();
-  let incrementalId = 1;
-
-  const resolveGuestId = (rawId: string | number | undefined, fallbackKey: string): number => {
-    if (typeof rawId === 'number' && Number.isFinite(rawId)) {
-      return rawId;
-    }
-
-    if (typeof rawId === 'string') {
-      const parsed = Number.parseInt(rawId, 10);
-      if (!Number.isNaN(parsed)) {
-        return parsed;
-      }
-    }
-
-    const existing = guestMap.get(fallbackKey);
-    if (existing) {
-      return existing.id;
-    }
-
-    return incrementalId++;
-  };
-
-  segments.forEach((segment) => {
-    (segment.guests ?? []).forEach((guest: ApiGuestResponse, index: number) => {
-      const key = String(guest.id ?? `${segment.title}-${index}`);
-      const guestId = resolveGuestId(guest.id, key);
-
-      if (!guestMap.has(key)) {
-        guestMap.set(key, {
-          id: guestId,
-          name: guest.name,
-          contact_info: guest.contact_info ?? null,
-          biography: guest.biography ?? null,
-          role: guest.role ?? null,
-          phone: guest.phone ?? null,
-          email: guest.email ?? null,
-          avatar: guest.avatar ?? null,
-          segments: [],
-          appearances: [],
-        });
-      }
-    });
-  });
-
-  return Array.from(guestMap.values());
-};
+const API_URL = 'https://api.radio.audace.ovh';
 
 // Convert API response to internal format
 const mapApiShowToShowPlan = (apiShow: ApiShowResponse): ShowPlan => {
-  const segments = apiShow.segments ?? [];
-
-  const showType = mapShowType(apiShow.type);
-
+  // Utilisez une valeur par défaut si `segments` est absent
+  const segments = apiShow.segments || [];
+  
   return {
-    id: String(apiShow.id),
-    emission_id: apiShow.emission_id != null ? String(apiShow.emission_id) : undefined,
+    id: apiShow.id,
+    emission_id: apiShow.emission_id ? String(apiShow.emission_id) : undefined,
     emission: apiShow.emission,
     title: apiShow.title,
-    type: showType,
-    showType,
+    type: apiShow.type,
+    showType: apiShow.type,
     date: apiShow.broadcast_date,
-    description: apiShow.description ?? undefined,
+    description: apiShow.description,
     status: apiShow.status,
-    segments: segments.map((segment, index) => ({
-      id: String(segment.id ?? `${apiShow.id}-${index}`),
+    segments: segments.map((segment) => ({
+      id: segment.id.toString(),
       title: segment.title,
       duration: segment.duration,
-      type: mapSegmentType(segment.type),
-      description: segment.description ?? undefined,
-      startTime: segment.startTime ?? '',
-      position: segment.position != null ? String(segment.position) : String(index),
-      technicalNotes: segment.technicalNotes ?? undefined,
-      guests: (segment.guests ?? []).map((guest: ApiGuestResponse, guestIndex) =>
-        String(guest.id ?? `${segment.title}-${guestIndex}`)
-      ),
+      type: segment.type.toLowerCase() as any,
+      description: segment.description,
+      startTime: segment.startTime || '',
+      guests: segment.guests?.map((guest) => guest.id.toString()) || [],
     })),
-    presenters: (apiShow.presenters ?? []).map((presenter, index) => ({
-      id: String(presenter.id ?? `${apiShow.id}-presenter-${index}`),
-      user_id: String(presenter.user_id ?? presenter.id ?? `${apiShow.id}-user-${index}`),
+    presenters: apiShow.presenters?.map((presenter) => ({
+      id: presenter.id.toString(),
       name: presenter.name,
-      contact: presenter.contact_info
-        ? {
-            email: presenter.contact_info || undefined,
-          }
-        : undefined,
-      isMainPresenter: Boolean(presenter.isMainPresenter),
-    })),
-    guests: mapGuestCollection(segments),
+      isMainPresenter: presenter.isMainPresenter,
+    })) || [],
+    guests: segments
+      .flatMap((segment) => segment.guests || [])
+      .map((guest) => ({
+        id: guest.id.toString(),
+        name: guest.name,
+        role: guest.role as any,
+        biography: guest.biography || undefined,
+        avatar: guest.avatar || undefined,
+      })),
   };
 };
 
