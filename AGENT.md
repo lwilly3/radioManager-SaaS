@@ -734,6 +734,40 @@ export const myModuleApi = {
 3. **Toujours** passer le token dans les headers
 4. **Gérer** les erreurs 401 (logout automatique)
 
+### 🔄 Migration d'URL API
+
+> **📖 Guide complet :** [`docs/API_MIGRATION_GUIDE.md`](docs/API_MIGRATION_GUIDE.md)
+
+Si l'utilisateur demande de changer l'URL de l'API (par exemple de `api.radio.audace.ovh` vers `api.cloud.audace.ovh`), voici les fichiers à modifier :
+
+| Fichier | Modification |
+|---------|--------------|
+| `src/api/api.ts` | Modifier `DEFAULT_API_BASE_URL` |
+| `src/api/auth.ts` | Utiliser l'instance `api` (pas d'URL hardcodée) |
+| `src/services/api/emissions.ts` | Supprimer `API_URL` si présente |
+| `src/services/api/shows.ts` | Supprimer `API_URL` si présente |
+
+#### Commande rapide pour trouver les URLs hardcodées
+
+```bash
+grep -rn "https://api\." src/
+```
+
+#### Modification de `src/api/api.ts`
+
+```typescript
+// Changer UNIQUEMENT cette ligne :
+const DEFAULT_API_BASE_URL = 'https://NOUVELLE_URL_ICI';
+```
+
+#### Vérification après modification
+
+```bash
+# Vérifier qu'une seule URL existe
+grep -rn "api.cloud.audace.ovh\|api.radio.audace.ovh" src/
+# Résultat attendu : seulement src/api/api.ts
+```
+
 ---
 
 ## 🔐 Système de permissions
