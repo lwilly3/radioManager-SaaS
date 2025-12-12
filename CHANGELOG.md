@@ -54,6 +54,30 @@ Détails : [docs/changelog/CHANGELOG-YYYY.md](docs/changelog/CHANGELOG-YYYY.md#1
 
 ---
 
+## [1.1.4] - 2025-12-12
+
+### 🐛 Corrigé
+- **Persistance des champs formulaire ShowPlan** lors de l'ajout de segments
+  - Création du store `useShowPlanFormStore` pour gérer l'état global du formulaire
+  - Connexion directe de `ShowPlanForm` au store Zustand
+  - Les champs (titre, type, date, heure, description) restent maintenant persistants
+  - Reset automatique des données à la sortie du formulaire
+
+### 📝 Documentation
+- Ajout de `docs/VERSIONING.md` - Guide complet de gestion des versions (SemVer)
+- Ajout de `docs/ARCHITECTURE_ANALYSIS.md` - Analyse de l'architecture des composants
+- Mise à jour de `AGENT.md` :
+  - Nouvelle section "Gestion des Versions - Semantic Versioning"
+  - Règle de confirmation de fix avec mise à jour automatique de version
+  - Règles de qualité du code renforcées
+
+### 🔧 Technique
+- Nouveau store Zustand : `src/store/useShowPlanFormStore.ts`
+- Refactorisation de `ShowPlanForm.tsx` - Inputs contrôlés connectés au store
+- Simplification de `CreateShowPlan.tsx` - Utilisation du store centralisé
+
+---
+
 ## [1.1.3] - 2025-12-11
 
 ### 📝 Documentation

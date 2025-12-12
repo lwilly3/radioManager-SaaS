@@ -13,6 +13,7 @@
 | [`CHANGELOG.md`](CHANGELOG.md) | **Historique des modifications** - Contexte et décisions |
 | [`README.md`](README.md) | Documentation générale du projet |
 | [`docs/GIT_WORKFLOW.md`](docs/GIT_WORKFLOW.md) | **🌿 Stratégie de branches** - develop/main, déploiements |
+| [`docs/VERSIONING.md`](docs/VERSIONING.md) | **🏷️ Gestion des versions** - SemVer, CHANGELOG |
 | [`docs/API_MIGRATION_GUIDE.md`](docs/API_MIGRATION_GUIDE.md) | Guide de migration des URLs API |
 | [`docs/modules/`](docs/modules/) | Documentation technique par module |
 | [`docs/business/`](docs/business/) | Documentation métier |
@@ -61,17 +62,99 @@
 │                                                                     │
 │  1. Faire un résumé rapide du fix appliqué                         │
 │  2. Préparer le message de commit descriptif                       │
-│  3. DEMANDER CONFIRMATION : "Voulez-vous que je pousse sur         │
-│     develop avec ce message : [message] ?"                         │
-│  4. Si oui → commit et push sur develop                            │
-│  5. Mettre à jour CHANGELOG.md si nécessaire                       │
+│  3. DÉTERMINER L'IMPACT SUR LA VERSION (voir règle ci-dessous)     │
+│  4. DEMANDER CONFIRMATION : "Voulez-vous que je pousse sur         │
+│     develop ? Version X.Y.Z → X.Y.W"                               │
+│  5. Si oui → mettre à jour package.json + CHANGELOG.md             │
+│  6. Commit et push sur develop                                     │
 │                                                                     │
-│  EXEMPLE DE MESSAGE DE COMMIT :                                    │
-│  🐛 fix(showPlan): Corriger la persistance des champs formulaire   │
+│  EXEMPLE :                                                         │
+│  "Fix appliqué. Voulez-vous que je pousse sur develop ?            │
+│   Version 1.0.0 → 1.0.1 (patch fix)"                               │
 │                                                                     │
 │  💡 Toujours demander confirmation avant de push !                  │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🏷️ Gestion des Versions - Semantic Versioning (SemVer)
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  📦 FORMAT DE VERSION : MAJOR.MINOR.PATCH (ex: 1.2.3)              │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  🔴 MAJOR (X.0.0) - Changement INCOMPATIBLE                        │
+│     → Rupture de l'API existante                                   │
+│     → Migration nécessaire pour les utilisateurs                   │
+│     → Exemple: Refonte complète d'un module                        │
+│                                                                     │
+│  🟡 MINOR (0.X.0) - Nouvelle FONCTIONNALITÉ                        │
+│     → Ajout de feature rétrocompatible                             │
+│     → Nouvelle page, nouveau module, nouvelle API                  │
+│     → Exemple: Ajout d'un système de notifications                 │
+│                                                                     │
+│  🟢 PATCH (0.0.X) - Correction de BUG                              │
+│     → Fix de bug sans changement d'API                             │
+│     → Amélioration de performance                                  │
+│     → Correction de typo, style                                    │
+│     → Exemple: Fix de persistance formulaire                       │
+│                                                                     │
+├─────────────────────────────────────────────────────────────────────┤
+│  📝 CORRESPONDANCE EMOJI → VERSION                                 │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  🐛 fix      → PATCH   (+0.0.1)                                    │
+│  🔧 chore    → PATCH   (+0.0.1)                                    │
+│  ⚡ perf     → PATCH   (+0.0.1)                                    │
+│  🎨 style    → PATCH   (+0.0.1)                                    │
+│  ♻️  refactor → PATCH   (+0.0.1)                                    │
+│  ✨ feat     → MINOR   (+0.1.0) - reset PATCH à 0                  │
+│  🆕 new      → MINOR   (+0.1.0)                                    │
+│  💥 breaking → MAJOR   (+1.0.0) - reset MINOR et PATCH à 0         │
+│  📝 docs     → Pas de changement de version                        │
+│                                                                     │
+├─────────────────────────────────────────────────────────────────────┤
+│  🔄 PROCESSUS DE MISE À JOUR                                       │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  1. Lire version actuelle: cat package.json | grep version         │
+│  2. Calculer nouvelle version selon le type de changement          │
+│  3. Mettre à jour package.json                                     │
+│  4. Ajouter entrée dans CHANGELOG.md avec date et description      │
+│  5. Commit avec message incluant la nouvelle version               │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Fichiers à mettre à jour lors d'un changement de version
+
+| Fichier | Modification |
+|---------|--------------|
+| `package.json` | Champ `"version": "X.Y.Z"` |
+| `CHANGELOG.md` | Nouvelle entrée avec date, version, description |
+
+### Format d'entrée CHANGELOG.md
+
+```markdown
+## [X.Y.Z] - YYYY-MM-DD
+
+### Type de changement
+- Description du changement
+- Fichiers impactés si pertinent
+
+### Exemples :
+## [1.0.1] - 2025-12-12
+### 🐛 Corrections
+- Fix persistance des champs formulaire ShowPlan lors de l'ajout de segments
+- Création du store useShowPlanFormStore
+
+## [1.1.0] - 2025-12-15
+### ✨ Nouvelles fonctionnalités
+- Ajout du système de notifications en temps réel
+- Nouvelle page de gestion des archives
 ```
 
 ---
