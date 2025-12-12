@@ -134,7 +134,14 @@
 | Fichier | Modification |
 |---------|--------------|
 | `package.json` | Champ `"version": "X.Y.Z"` |
+| `src/store/useVersionStore.ts` | Champ `currentVersion: 'X.Y.Z'` |
+| `src/store/useVersionStore.ts` | Ajouter entrée dans `defaultVersions[]` |
 | `CHANGELOG.md` | Nouvelle entrée avec date, version, description |
+
+> ⚠️ **Important** : 
+> - Ne pas oublier `useVersionStore.ts` sinon la fenêtre "Informations de version" sera obsolète !
+> - Ajouter la nouvelle version EN PREMIER dans le tableau `defaultVersions` (ordre décroissant)
+> - Garder maximum 10 versions dans `defaultVersions`
 
 ### Format d'entrée CHANGELOG.md
 

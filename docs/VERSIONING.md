@@ -183,6 +183,64 @@ git commit -m "✨ feat(module): Description - v1.3.0"
 }
 ```
 
+### src/store/useVersionStore.ts
+
+> ⚠️ **IMPORTANT** : Ce fichier doit aussi être mis à jour sinon l'UI affichera une version obsolète !
+
+**Deux éléments à mettre à jour :**
+
+1. **`currentVersion`** - La version actuelle affichée
+
+```typescript
+export const useVersionStore = create<VersionState>()(
+  persist(
+    (set, get) => ({
+      currentVersion: '1.2.4', // ← Mettre à jour ici !
+      versions: [],
+      ...
+    }),
+    ...
+  )
+);
+```
+
+2. **`defaultVersions`** - L'historique des versions (fenêtre "Informations de version")
+
+```typescript
+const defaultVersions: Version[] = [
+  {
+    version: '1.2.4',           // ← Numéro de version
+    releaseDate: '2025-12-12',  // ← Date au format YYYY-MM-DD
+    description: 'Description courte du changement principal',
+    features: [                  // ← Nouvelles fonctionnalités (✨)
+      'Fonctionnalité 1',
+      'Fonctionnalité 2',
+    ],
+    bugfixes: [                  // ← Corrections de bugs (🐛)
+      'Bug corrigé 1',
+      'Bug corrigé 2',
+    ],
+    improvements: [              // ← Améliorations (⚡♻️)
+      'Amélioration 1',
+      'Amélioration 2',
+    ],
+  },
+  // ... versions précédentes
+];
+```
+
+### Convention pour defaultVersions
+
+| Règle | Description |
+|-------|-------------|
+| **Ordre** | Du plus récent au plus ancien |
+| **Limite** | Garder les **10 dernières versions** maximum |
+| **Date** | Format `YYYY-MM-DD` |
+| **Description** | 1 phrase résumant le changement principal |
+| **features** | Liste des nouvelles fonctionnalités (peut être vide `[]`) |
+| **bugfixes** | Liste des bugs corrigés (peut être vide `[]`) |
+| **improvements** | Liste des améliorations techniques (peut être vide `[]`) |
+
 ### CHANGELOG.md
 
 Le fichier `CHANGELOG.md` à la racine du projet contient l'historique de toutes les versions.
@@ -255,6 +313,40 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 ### 🔒 Sécurité
 - Mise à jour de la dépendance axios (CVE-2025-XXXX)
 ```
+
+---
+
+
+## 🧩 Diagramme de dépendance des variables de version
+
+```mermaid
+graph TD
+    A[package.json<br>champ "version"] -- MAÎTRE<br>(source de vérité) --> B[src/store/useVersionStore.ts<br>currentVersion]
+    B -- Affichage UI<br>et logique --> C[Composant VersionInfoDialog.tsx<br>props: currentVersion, versions]
+    B -- Historique UI --> D[src/store/useVersionStore.ts<br>defaultVersions[]]
+    D -- Liste UI --> C
+    E[Firestore "versions" (optionnel)] -- Peut écraser<br>defaultVersions[] --> B
+    C -- Affichage<br>dans l’UI --> F[Utilisateur]
+```
+
+### Explications
+
+- **package.json ("version")** : Source de vérité principale pour la version de l’application. Toujours synchroniser avec le code.
+- **src/store/useVersionStore.ts**
+  - `currentVersion` : Affiche la version installée dans l’UI et sert à la comparaison avec la dernière version disponible.
+  - `defaultVersions[]` : Historique local des versions, utilisé si Firestore n’est pas disponible ou en cas d’erreur.
+- **Firestore "versions"** (optionnel) : Peut fournir la liste des versions et écraser `defaultVersions[]` dans le store.
+- **Composant `VersionInfoDialog.tsx`** : Utilise `currentVersion` pour afficher la version installée, et `versions` (issu de Firestore ou de `defaultVersions[]`) pour l’historique et la détection de mise à jour.
+- **Utilisateur** : Voit la version installée, l’historique, et les notifications de mise à jour dans l’UI.
+
+### Règle de synchronisation
+
+- **À chaque release** : mettre à jour **TOUS** ces points :
+  1. `package.json` (`"version"`)
+  2. `src/store/useVersionStore.ts` (`currentVersion` et `defaultVersions[]`)
+  3. `CHANGELOG.md`
+  4. Firestore (si utilisé)
+- **Sinon** : l’UI peut afficher une version obsolète ou incohérente.
 
 ---
 
