@@ -12,8 +12,8 @@ name: Deploy to Server
 on:
   push:
     branches:
-      - develop  # ⚠️ Uniquement la branche develop
-      
+      - develop  # ⚠️  Uniquement la branche develop
+
 jobs:
   processus_de_deploiement:
     runs-on: ubuntu-latest
