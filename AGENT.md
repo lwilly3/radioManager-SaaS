@@ -12,11 +12,41 @@
 | [`AGENT.md`](AGENT.md) | Ce guide - Conventions et règles pour les agents IA |
 | [`CHANGELOG.md`](CHANGELOG.md) | **Historique des modifications** - Contexte et décisions |
 | [`README.md`](README.md) | Documentation générale du projet |
+| [`docs/GIT_WORKFLOW.md`](docs/GIT_WORKFLOW.md) | **🌿 Stratégie de branches** - develop/main, déploiements |
 | [`docs/API_MIGRATION_GUIDE.md`](docs/API_MIGRATION_GUIDE.md) | Guide de migration des URLs API |
 | [`docs/modules/`](docs/modules/) | Documentation technique par module |
 | [`docs/business/`](docs/business/) | Documentation métier |
 
 > **⚠️ Important :** Consultez `CHANGELOG.md` pour comprendre l'historique et le contexte des modifications récentes avant d'effectuer des changements.
+>
+> **🌿 Branches :** Consultez `docs/GIT_WORKFLOW.md` pour savoir sur quelle branche travailler (develop = test, main = production).
+
+---
+
+## 🚀 Règle de Push - À LIRE EN PRIORITÉ
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  ⚠️  QUAND L'UTILISATEUR DIT "POUSSE LE CODE" OU "PUSH"            │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  PAR DÉFAUT → Pousser sur develop (serveur TEST)                   │
+│                                                                     │
+│  git checkout develop                                               │
+│  git add -A                                                         │
+│  git commit -m "📝 type(scope): Description"                        │
+│  git push origin develop                                            │
+│                                                                     │
+├─────────────────────────────────────────────────────────────────────┤
+│  UNIQUEMENT si l'utilisateur dit "sur main" ou "en production" :   │
+│                                                                     │
+│  git checkout main                                                  │
+│  git merge develop                                                  │
+│  git push origin main                                               │
+│                                                                     │
+│  ⚠️ Demander confirmation avant de pousser sur main !               │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 

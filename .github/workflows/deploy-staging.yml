@@ -1,0 +1,89 @@
+name: Deploy to Test Server (VPS venv)
+
+# ┌─────────────────────────────────────────────────────────────┐
+# │  DÉPLOIEMENT SERVEUR TEST                                   │
+# │  Branche: develop                                           │
+# │  Serveur: VPS venv (api.radio.audace.ovh)                   │
+# │  Usage: Test et validation avant mise en production         │
+# └─────────────────────────────────────────────────────────────┘
+
+on:
+  push:
+    branches:
+      - develop  # ⚠️ Uniquement la branche develop
+
+jobs:
+  deploy_test:
+    runs-on: ubuntu-latest
+    # Note: Créer l'environment "test" sur GitHub si vous voulez 
+    # utiliser des secrets spécifiques ou des règles de protection
+    # environment:
+    #   name: test
+
+    steps:
+      - name: Pull Git Repository
+        uses: actions/checkout@v2
+
+      - name: Deploy to Test Server (VPS venv)
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/app-radioaudace-test
+            sudo git fetch origin develop
+            sudo git reset --hard origin/develop
+            sudo /usr/local/bin/update_frontend_test.sh
+
+
+
+            ─────────────────────────────────────────────────────────┐
+# │  PRODUCTION DEPLOYMENT                                      │
+# │  Branche: main                                              │
+# │  Serveur: Docker/Dokploy (api.cloud.audace.ovh)             │
+# │  Usage: Déploiement en production pour les utilisateurs     │
+# │                                                             │
+# │  ⚠️  ATTENTION: Ce workflow déploie en PRODUCTION !         │
+# │      Assurez-vous que le code a été testé sur staging       │
+# │                                                             │
+# │  📌 STATUT: DÉSACTIVÉ (décommenter pour activer)            │
+# └─────────────────────────────────────────────────────────────┘
+
+# ═══════════════════════════════════════════════════════════════
+# WORKFLOW COMMENTÉ - Décommenter les lignes ci-dessous pour activer
+# ═══════════════════════════════════════════════════════════════
+
+# on:
+#   push:
+#     branches:
+#       - main  # ⚠️ Uniquement la branche main (production)
+
+# jobs:
+#   processus_de_deploiement:
+#     runs-on: ubuntu-latest
+#     environment:
+#       name: production
+#
+#     steps:
+#       - name: Pull Git Repository
+#         uses: actions/checkout@v2
+#
+#       - name: Deploy to Ubuntu Server
+#         uses: appleboy/ssh-action@master
+#         with:
+#           host: ${{ secrets.SERVER_IP }}
+#           username: ${{ secrets.SERVER_USERNAME }}
+#           password: ${{ secrets.SSH_PRIVATE_KEY }}
+#           script: |
+#             cd /var/www/app-radioaudace
+#             sudo git reset --hard HEAD
+#             sudo /usr/local/bin/update_frontend.sh
+
+# ═══════════════════════════════════════════════════════════════
+# Pour réactiver ce workflow :
+# 1. Décommenter les sections "on:" et "jobs:" ci-dessus
+# 2. Commit et push sur main
+# ═══════════════════════════════════════════════════════════════
+
+    
