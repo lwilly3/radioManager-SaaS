@@ -154,3 +154,14 @@ export interface ShowRundown {
   segments: ShowSegment[];
   guests: Guest[];
 }
+
+// Form data type for ShowPlan creation/editing
+export interface ShowPlanFormData {
+  emission?: string;
+  emission_id?: string;
+  title: string;
+  showType: ShowType;
+  date: string;
+  time?: string;
+  description?: string;
+}

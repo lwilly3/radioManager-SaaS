@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
+import { useShowPlanFormStore } from '../store/useShowPlanFormStore';
 import { emissionApi } from '../services/api/emissions';
 import { showsApi } from '../services/api/shows';
 import EmissionSelect from '../components/showPlans/forms/EmissionSelect';
@@ -10,25 +11,35 @@ import NewSegmentForm from '../components/showPlans/segments/NewSegmentForm';
 import SegmentList from '../components/showPlans/segments/SegmentList';
 import StatusSelect from '../components/showPlans/StatusSelect';
 import PresenterSelect from '../components/showPlans/forms/PresenterSelect';
-import type { ShowPlanFormData, ShowSegment, Status, Emission, Presenter } from '../types';
+import type { ShowSegment, Presenter } from '../types';
+import type { Emission } from '../types/emission';
 
 const CreateShowPlan: React.FC = () => {
   const navigate = useNavigate();
   const token = useAuthStore((state) => state.token);
-  const [segments, setSegments] = useState<ShowSegment[]>([]);
-  const [selectedStatus, setSelectedStatus] = useState<Status | null>(null);
-  const [emissions, setEmissions] = useState<Emission[]>([]);
-  const [selectedEmission, setSelectedEmission] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState<Partial<ShowPlanFormData>>({
-    title: '',
-    showType: '',
-    date: '',
-    time: '',
-    description: '',
-  });
-  const [selectedPresenters, setSelectedPresenters] = useState<Presenter[]>([]);
+  
+  // Utiliser le store Zustand pour les données du formulaire
+  const {
+    formData,
+    selectedEmission,
+    selectedStatus,
+    selectedPresenters,
+    segments,
+    setSelectedEmission,
+    setSelectedStatus,
+    addPresenter,
+    removePresenter,
+    setMainPresenter,
+    addSegment,
+    removeSegment,
+    reorderSegments,
+    resetForm,
+  } = useShowPlanFormStore();
 
+  const [emissions, setEmissions] = useState<Emission[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Charger les émissions
   useEffect(() => {
     const fetchEmissions = async () => {
       if (!token) return;
@@ -42,61 +53,42 @@ const CreateShowPlan: React.FC = () => {
     fetchEmissions();
   }, [token]);
 
-  // Journaliser formData après chaque changement
-  useEffect(() => {
-    console.log('formData:', formData);
-  }, [formData]);
+  // Segment handlers
+  const handleAddSegment = useCallback((segment: ShowSegment) => {
+    addSegment(segment);
+  }, [addSegment]);
 
-  // Add segment handlers
-  const handleAddSegment = (segment: ShowSegment) => {
-    setSegments((prevSegments) => [
-      ...prevSegments,
-      { ...segment, id: `temp-${Date.now()}` },
-    ]);
-  };
+  const handleReorderSegments = useCallback((reorderedSegments: ShowSegment[]) => {
+    reorderSegments(reorderedSegments);
+  }, [reorderSegments]);
 
-  const handleReorderSegments = (reorderedSegments: ShowSegment[]) => {
-    setSegments(reorderedSegments);
-  };
-
-  const handleDeleteSegment = (segmentId: string) => {
-    setSegments((prevSegments) =>
-      prevSegments.filter((segment) => segment.id !== segmentId)
-    );
-  };
+  const handleDeleteSegment = useCallback((segmentId: string) => {
+    removeSegment(segmentId);
+  }, [removeSegment]);
 
   // Presenter handlers
-  const handleSelectPresenter = (presenter: Presenter) => {
-    setSelectedPresenters([...selectedPresenters, {
-      ...presenter,
-      isMainPresenter: selectedPresenters.length === 0
-    }]);
-  };
+  const handleSelectPresenter = useCallback((presenter: Presenter) => {
+    addPresenter(presenter);
+  }, [addPresenter]);
 
-  const handleRemovePresenter = (presenterId: string) => {
-    setSelectedPresenters(selectedPresenters.filter(p => p.id !== presenterId));
-  };
+  const handleRemovePresenter = useCallback((presenterId: string) => {
+    removePresenter(presenterId);
+  }, [removePresenter]);
 
-  const handleSetMainPresenter = (presenterId: string) => {
-    setSelectedPresenters(selectedPresenters.map(p => ({
-      ...p,
-      isMainPresenter: p.id === presenterId
-    })));
-  };
+  const handleSetMainPresenter = useCallback((presenterId: string) => {
+    setMainPresenter(presenterId);
+  }, [setMainPresenter]);
 
-  const handleFormChange = (values: Partial<ShowPlanFormData>) => {
-    console.log('handleFormChange values:', values);
-    // Ignorer les mises à jour si toutes les valeurs sont vides
-    const isEmpty = Object.values(values).every(
-      (value) => value === '' || value === undefined
-    );
-    if (isEmpty) return;
+  // Navigation avec reset du formulaire
+  const handleBack = useCallback(() => {
+    resetForm();
+    navigate('/show-plans');
+  }, [resetForm, navigate]);
 
-    setFormData((prev) => ({
-      ...prev,
-      ...values,
-    }));
-  };
+  const handleCancel = useCallback(() => {
+    resetForm();
+    navigate('/show-plans');
+  }, [resetForm, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,6 +119,9 @@ const CreateShowPlan: React.FC = () => {
       console.log('Payload envoyée :', JSON.stringify(data, null, 2));
       await showsApi.create(token, data);
 
+      // Réinitialiser le formulaire après la création réussie
+      resetForm();
+
       navigate('/my-show-plans', {
         replace: true,
         state: {
@@ -147,7 +142,7 @@ const CreateShowPlan: React.FC = () => {
     <div className="max-w-4xl mx-auto">
       <div className="mb-6">
         <button
-          onClick={() => navigate('/show-plans')}
+          onClick={handleBack}
           className="flex items-center text-gray-600 hover:text-gray-900"
         >
           <ChevronLeft className="h-5 w-5" />
@@ -173,7 +168,7 @@ const CreateShowPlan: React.FC = () => {
             onSelect={setSelectedEmission}
           />
 
-          <ShowPlanForm defaultValues={formData} onValuesChange={handleFormChange} />
+          <ShowPlanForm />
 
           <div className="border-t border-gray-200 pt-6">
             <StatusSelect
@@ -207,7 +202,7 @@ const CreateShowPlan: React.FC = () => {
           <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
             <button
               type="button"
-              onClick={() => navigate('/show-plans')}
+              onClick={handleCancel}
               className="btn btn-secondary"
               disabled={isLoading}
             >

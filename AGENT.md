@@ -50,6 +50,62 @@
 
 ---
 
+## ✅ Règle de Confirmation de Fix - AUTOMATIQUE
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  ⚠️  QUAND L'UTILISATEUR DIT "PROBLÈME RÉSOLU" OU "ÇA MARCHE"      │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  L'AGENT DOIT AUTOMATIQUEMENT :                                    │
+│                                                                     │
+│  1. Faire un résumé rapide du fix appliqué                         │
+│  2. Préparer le message de commit descriptif                       │
+│  3. DEMANDER CONFIRMATION : "Voulez-vous que je pousse sur         │
+│     develop avec ce message : [message] ?"                         │
+│  4. Si oui → commit et push sur develop                            │
+│  5. Mettre à jour CHANGELOG.md si nécessaire                       │
+│                                                                     │
+│  EXEMPLE DE MESSAGE DE COMMIT :                                    │
+│  🐛 fix(showPlan): Corriger la persistance des champs formulaire   │
+│                                                                     │
+│  💡 Toujours demander confirmation avant de push !                  │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🔴 Qualité du Code - Approche Professionnelle
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  ⚠️  RÈGLES OBLIGATOIRES POUR TOUT AGENT IA                        │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  1. TOUJOURS VÉRIFIER AVANT D'IMPORTER UN TYPE :                   │
+│     → grep_search "export.*TypeName|interface TypeName"            │
+│     → Ne JAMAIS supposer qu'un type existe dans ../types           │
+│     → Vérifier le fichier exact d'export                           │
+│                                                                     │
+│  2. APRÈS CHAQUE MODIFICATION :                                    │
+│     → get_errors sur les fichiers modifiés                         │
+│     → Corriger TOUTES les erreurs avant de continuer               │
+│                                                                     │
+│  3. AVANT DE DIRE "C'EST TERMINÉ" :                                │
+│     → npm run build DOIT passer sans erreur                        │
+│     → Aucune erreur TypeScript acceptée                            │
+│                                                                     │
+│  4. SI UNE ERREUR EST SIGNALÉE PAR L'UTILISATEUR :                 │
+│     → S'excuser et corriger immédiatement                          │
+│     → Ajouter des vérifications pour éviter la récidive            │
+│                                                                     │
+│  💡 La qualité prime sur la rapidité !                              │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## 📋 Table des matières
 
 1. [Présentation du projet](#-présentation-du-projet)
@@ -1023,20 +1079,91 @@ setIsOpen(false);
 
 ## ✅ Tests et validation
 
-### Avant de soumettre du code
+### ⚠️ RÈGLE ABSOLUE - Approche Professionnelle
 
-1. **Build réussi** : `npm run build` sans erreur
-2. **Lint propre** : `npm run lint` sans erreur
-3. **Types valides** : Pas d'erreurs TypeScript
-4. **Test manuel** : Fonctionnalité testée dans le navigateur
-5. **Responsive** : Testé sur mobile et desktop
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  🔴 OBLIGATOIRE APRÈS CHAQUE MODIFICATION DE CODE                  │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  1. VÉRIFIER LES ERREURS TypeScript :                              │
+│     → Utiliser get_errors sur les fichiers modifiés                │
+│     → Corriger TOUTES les erreurs avant de continuer               │
+│                                                                     │
+│  2. VÉRIFIER LES IMPORTS :                                         │
+│     → Toujours vérifier que les types/interfaces existent          │
+│     → Chercher où ils sont exportés (grep_search)                  │
+│     → Ne JAMAIS supposer qu'un import existe                       │
+│                                                                     │
+│  3. LANCER LE BUILD :                                              │
+│     → npm run build DOIT passer sans erreur                        │
+│     → Si erreur : corriger AVANT de continuer                      │
+│                                                                     │
+│  4. TESTER L'APPLICATION :                                         │
+│     → npm run dev et vérifier visuellement                         │
+│     → Tester le scénario utilisateur complet                       │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
-### Validation des types
+### Workflow de vérification obligatoire
 
 ```bash
-# Vérifier les types
+# 1. Après chaque modification, vérifier les erreurs
+# (Dans l'agent, utiliser get_errors sur les fichiers modifiés)
+
+# 2. Vérifier que le build passe
+npm run build
+
+# 3. Vérifier les types (optionnel, le build le fait)
 npx tsc --noEmit
+
+# 4. Lancer l'application pour tester
+npm run dev
 ```
+
+### Vérification des imports - CRITIQUE
+
+Avant d'utiliser un type ou une interface :
+
+```typescript
+// ❌ MAUVAIS - Supposer que le type existe dans index.ts
+import type { Emission } from '../types';
+
+// ✅ BON - Vérifier d'abord où le type est exporté
+// 1. Chercher : grep_search "export.*Emission|interface Emission"
+// 2. Importer depuis le bon fichier :
+import type { Emission } from '../types/emission';
+```
+
+### Vérification des types Zustand
+
+Lors de la création d'un store Zustand, toujours :
+
+```typescript
+// ✅ BON - Types explicites pour l'état initial
+const initialState: Pick<MyStoreState, 'data' | 'status'> = {
+  data: {
+    field: undefined as FieldType | undefined,  // Type explicite
+  },
+  status: null,
+};
+
+// ❌ MAUVAIS - Inférence automatique incorrecte
+const initialState = {
+  data: {
+    field: '',  // Sera inféré comme string, pas comme ShowType | undefined
+  },
+};
+```
+
+### Avant de soumettre du code
+
+1. **Erreurs TypeScript** : `get_errors` sur tous les fichiers modifiés
+2. **Build réussi** : `npm run build` sans erreur
+3. **Lint propre** : `npm run lint` sans erreur (si disponible)
+4. **Test manuel** : Fonctionnalité testée dans le navigateur
+5. **Responsive** : Testé sur mobile et desktop (si applicable)
 
 ---
 
