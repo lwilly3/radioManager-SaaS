@@ -131,9 +131,23 @@ L'application utilise **46 permissions granulaires** organisées par domaine :
 
 | Documentation | Description |
 |---------------|-------------|
+| 🤖 [AGENT.md](./AGENT.md) | Guide pour les agents IA - Conventions et règles |
+| 🎓 [Agent Skills](./.github/skills/) | Compétences spécialisées pour l'agent IA |
 | 📘 [Documentation métier](./docs/business/README.md) | Vue fonctionnelle de l'application |
 | 📗 [Documentation technique](./docs/modules/README.md) | Guide développeur par module |
+| 🏷️ [Versioning](./docs/VERSIONING.md) | Gestion des versions (SemVer) |
+| 🔄 [Git Workflow](./docs/GIT_WORKFLOW.md) | Stratégie de branches |
 | 🐳 [Déploiement Docker](./docker/README.md) | Instructions Dokploy |
+
+### 🎓 Pour les agents IA
+
+Le projet dispose d'un **système d'Agent Skills** dans [`.github/skills/`](.github/skills/) qui guide l'agent dans :
+- 🎯 La compréhension du projet ([project-overview](.github/skills/project-overview/SKILL.md))
+- 📐 Les standards de code ([coding-standards](.github/skills/coding-standards/SKILL.md))
+- 🏗️ L'architecture ([architecture](.github/skills/architecture/SKILL.md))
+- 🔄 Le workflow Git ([workflow-git](.github/skills/workflow-git/SKILL.md))
+
+Consultez le [README des skills](.github/skills/README.md) pour plus de détails.
 
 ## 🛠️ Scripts disponibles
 

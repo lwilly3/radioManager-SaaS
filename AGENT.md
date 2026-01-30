@@ -10,6 +10,7 @@
 | Document | Description |
 |----------|-------------|
 | [`AGENT.md`](AGENT.md) | Ce guide - Conventions et règles pour les agents IA |
+| [**`.github/skills/`**](.github/skills/) | **🎓 Agent Skills** - Compétences spécialisées pour l'agent |
 | [`CHANGELOG.md`](CHANGELOG.md) | **Historique des modifications** - Contexte et décisions |
 | [`README.md`](README.md) | Documentation générale du projet |
 | [`docs/GIT_WORKFLOW.md`](docs/GIT_WORKFLOW.md) | **🌿 Stratégie de branches** - develop/main, déploiements |
@@ -21,6 +22,8 @@
 > **⚠️ Important :** Consultez `CHANGELOG.md` pour comprendre l'historique et le contexte des modifications récentes avant d'effectuer des changements.
 >
 > **🌿 Branches :** Consultez `docs/GIT_WORKFLOW.md` pour savoir sur quelle branche travailler (develop = test, main = production).
+>
+> **🎓 Agent Skills :** Les compétences spécialisées dans [`.github/skills/`](.github/skills/) guident l'agent dans les standards de code, l'architecture et le workflow Git. Consultez le [README des skills](.github/skills/README.md) pour plus de détails.
 
 ---
 
@@ -202,18 +205,57 @@
 
 ## 📋 Table des matières
 
-1. [Présentation du projet](#-présentation-du-projet)
-2. [Architecture et structure](#-architecture-et-structure)
-3. [Conventions de code](#-conventions-de-code)
-4. [Design System et UI](#-design-system-et-ui)
-5. [Patterns et bonnes pratiques](#-patterns-et-bonnes-pratiques)
-6. [Gestion d'état](#-gestion-détat)
-7. [Appels API](#-appels-api)
-8. [Système de permissions](#-système-de-permissions)
-9. [Gestion des versions](#-gestion-des-versions)
-10. [Documentation du code](#-documentation-du-code)
-11. [Tests et validation](#-tests-et-validation)
-12. [Checklist avant modification](#-checklist-avant-modification)
+1. [Agent Skills - Compétences spécialisées](#-agent-skills---compétences-spécialisées)
+2. [Présentation du projet](#-présentation-du-projet)
+3. [Architecture et structure](#-architecture-et-structure)
+4. [Conventions de code](#-conventions-de-code)
+5. [Design System et UI](#-design-system-et-ui)
+6. [Patterns et bonnes pratiques](#-patterns-et-bonnes-pratiques)
+7. [Gestion d'état](#-gestion-détat)
+8. [Appels API](#-appels-api)
+9. [Système de permissions](#-système-de-permissions)
+10. [Gestion des versions](#-gestion-des-versions)
+11. [Documentation du code](#-documentation-du-code)
+12. [Tests et validation](#-tests-et-validation)
+13. [Checklist avant modification](#-checklist-avant-modification)
+
+---
+
+## 🎓 Agent Skills - Compétences spécialisées
+
+Le projet utilise un **système d'Agent Skills** situé dans [`.github/skills/`](.github/skills/) pour guider l'agent IA dans différents aspects du développement.
+
+### 📚 Skills disponibles
+
+| Skill | Description | Quand l'utiliser |
+|-------|-------------|------------------|
+| [**project-overview**](.github/skills/project-overview/SKILL.md) | Vision globale du projet, domaine métier, architecture générale | Au démarrage, décisions majeures, nouvelles fonctionnalités |
+| [**coding-standards**](.github/skills/coding-standards/SKILL.md) | Standards TypeScript/React, conventions de code, qualité | À chaque écriture/modification de code |
+| [**architecture**](.github/skills/architecture/SKILL.md) | Patterns architecturaux, organisation du code, performance | Nouvelles fonctionnalités, refactoring, décisions techniques |
+| [**workflow-git**](.github/skills/workflow-git/SKILL.md) | Workflow Git, versioning, conventions de commit | Commit, push, release, gestion de branches |
+
+### 🚀 Activation automatique
+
+Les skills sont activés automatiquement selon le contexte de la requête :
+
+```
+Utilisateur: "Crée un composant QuoteFilter"
+→ Agent active: project-overview → architecture → coding-standards
+
+Utilisateur: "Commit le code"
+→ Agent active: workflow-git
+
+Utilisateur: "Crée une nouvelle version"
+→ Agent active: project-overview → workflow-git
+```
+
+### 📖 Documentation complète
+
+- **[README des skills](.github/skills/README.md)** : Guide complet du système
+- **[Quick Start](.github/skills/QUICKSTART.md)** : Démarrage rapide
+- **[Deliverables](.github/skills/DELIVERABLES.md)** : Récapitulatif technique
+
+> **💡 Important :** Les Agent Skills complètent ce guide AGENT.md en fournissant des instructions détaillées et des exemples concrets pour chaque domaine de compétence. Consultez-les pour des informations approfondies sur les standards de code, l'architecture et le workflow Git.
 
 ---
 

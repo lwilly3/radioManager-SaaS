@@ -52,6 +52,17 @@ Détails : [docs/changelog/CHANGELOG-YYYY.md](docs/changelog/CHANGELOG-YYYY.md#1
 - Migration de l'URL API de `api.radio.audace.ovh` vers `api.cloud.audace.ovh`
 - Voir [`docs/API_MIGRATION_GUIDE.md`](docs/API_MIGRATION_GUIDE.md) pour les détails
 
+### 🎓 Ajouté
+- **Système d'Agent Skills** : Compétences spécialisées pour guider l'agent IA
+  - Skill `project-overview` : Vision globale du projet et domaine métier
+  - Skill `coding-standards` : Standards TypeScript/React et conventions
+  - Skill `architecture` : Patterns architecturaux et organisation du code
+  - Skill `performance` : Optimisation et bonnes pratiques de performance
+  - Skill `workflow-git` : Workflow Git, versioning et conventions de commit
+  - Documentation complète dans `.github/skills/`
+  - Configuration VS Code pour activation automatique
+  - Références ajoutées dans `AGENT.md` et `README.md`
+
 ---
 
 ## [1.2.0] - 2026-01-30
