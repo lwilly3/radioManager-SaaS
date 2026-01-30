@@ -1,0 +1,103 @@
+{
+  "citation_1": {
+    "content": "La radio est le théâtre de l'esprit",
+    "author": {
+      "id": "author-1",
+      "name": "Jean Dupont",
+      "role": "guest",
+      "avatarUrl": ""
+    },
+    "context": {
+      "date": "2026-01-12T10:00:00Z",
+      "emissionId": "",
+      "showPlanId": "",
+      "timestamp": "00:15:30"
+    },
+    "source": {
+      "type": "manual",
+      "audioUrl": ""
+    },
+    "metadata": {
+      "category": "quote",
+      "tags": ["radio", "média", "culture"],
+      "language": "fr",
+      "isVerified": true
+    },
+    "publications": [],
+    "status": "draft",
+    "createdBy": "user-123",
+    "createdAt": "2026-01-12T10:00:00Z",
+    "updatedAt": "2026-01-12T10:00:00Z"
+  },
+  "citation_2": {
+    "content": "L'information est le pouvoir du XXIe siècle",
+    "author": {
+      "id": "author-2",
+      "name": "Marie Martin",
+      "role": "presenter",
+      "avatarUrl": ""
+    },
+    "context": {
+      "date": "2026-01-11T14:30:00Z",
+      "emissionId": "",
+      "showPlanId": "",
+      "timestamp": "00:45:00"
+    },
+    "source": {
+      "type": "manual",
+      "audioUrl": ""
+    },
+    "metadata": {
+      "category": "statement",
+      "tags": ["information", "actualité", "société"],
+      "language": "fr",
+      "isVerified": true
+    },
+    "publications": [],
+    "status": "approved",
+    "createdBy": "user-123",
+    "createdAt": "2026-01-11T14:30:00Z",
+    "updatedAt": "2026-01-11T14:30:00Z"
+  },
+  "citation_3": {
+    "content": "Le journalisme, c'est publier ce que quelqu'un ne veut pas que vous publiiez. Tout le reste, c'est de la communication.",
+    "author": {
+      "id": "author-3",
+      "name": "Sophie Bernard",
+      "role": "guest",
+      "avatarUrl": ""
+    },
+    "context": {
+      "date": "2026-01-10T09:15:00Z",
+      "emissionId": "",
+      "showPlanId": "",
+      "timestamp": "01:20:15"
+    },
+    "source": {
+      "type": "manual",
+      "audioUrl": ""
+    },
+    "metadata": {
+      "category": "position",
+      "tags": ["journalisme", "médias", "liberté de presse"],
+      "language": "fr",
+      "isVerified": true
+    },
+    "publications": [
+      {
+        "id": "pub-1",
+        "platform": "twitter",
+        "publishedAt": "2026-01-10T15:00:00Z",
+        "postUrl": "https://twitter.com/radio/status/123456",
+        "status": "published",
+        "template": "default",
+        "generatedContent": "Le journalisme, c'est publier ce que quelqu'un ne veut pas que vous publiiez... #Journalisme #LibertéDePresse",
+        "imageUrl": ""
+      }
+    ],
+    "status": "published",
+    "createdBy": "user-123",
+    "createdAt": "2026-01-10T09:15:00Z",
+    "updatedAt": "2026-01-10T15:00:00Z"
+  }
+}

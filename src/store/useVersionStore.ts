@@ -4,11 +4,13 @@ import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../api/firebase/firebase';
 import type { Version, VersionState } from '../types/version';
 import semver from 'semver';
+import packageJson from '../../package.json'; // Importer la version depuis package.json
+import { defaultVersions } from './defaultVersions'; // Versions générées depuis CHANGELOG.md
 
 export const useVersionStore = create<VersionState>()(
   persist(
     (set, get) => ({
-      currentVersion: '1.1.3', // Version actuelle de l'application mise à jour
+      currentVersion: packageJson.version, // Utiliser la version dynamique
       versions: [],
       isLoading: false,
       error: null,
@@ -69,6 +71,9 @@ export const useVersionStore = create<VersionState>()(
       },
 
       setDisplayCount: (count: number) => set({ displayCount: count }),
+      resetVersion: () => {
+        set({ currentVersion: packageJson.version }); // Forcer la version actuelle
+      },
     }),
     {
       name: 'version-storage',
@@ -77,116 +82,15 @@ export const useVersionStore = create<VersionState>()(
         versions: state.versions,
         displayCount: state.displayCount,
       }),
+      onRehydrateStorage: () => (state) => {
+        // Vérifier si 'state' est défini avant d'accéder à ses propriétés
+        if (state && state.currentVersion !== packageJson.version) {
+          state.currentVersion = packageJson.version;
+        }
+      },
     }
   )
 );
 
-// Versions par défaut utilisées si Firestore n'est pas disponible
-const defaultVersions: Version[] = [
-  {
-    version: '1.1.3',
-    releaseDate: '2025-05-12',
-    description:
-      "Ajout de la fonctionnalité de réinitialisation de mot de passe pour les utilisateurs",
-    features: [
-      "Réinitialisation de mot de passe pour les administrateurs",
-      "Page de définition de nouveau mot de passe pour les utilisateurs",
-      "Gestion des tokens temporaires de réinitialisation"
-    ],
-    bugfixes: [],
-    improvements: [
-      "Limitation de l'affichage par défaut aux 5 dernières versions",
-      "Meilleure gestion des erreurs lors de la réinitialisation de mot de passe"
-    ],
-  },
-  {
-    version: '1.1.2',
-    releaseDate: '2025-05-12',
-    description:
-      "Corrections de bugs sur l'ajout d'invités lors de la création de conducteur et sur l'attribution de privilèges",
-    features: [],
-    bugfixes: [
-      "Correction de l'ajout d'invités lors de la création de conducteur",
-      "Correction de l'attribution de privilèges",
-    ],
-    improvements: [],
-  },
-  {
-    version: '1.1.1',
-    releaseDate: '2025-05-05',
-    description:
-      'Correction des erreurs de gestion des permissions et amélioration de la stabilité',
-    features: [
-      'Nouveau système de gestion des erreurs pour les permissions utilisateur',
-      'Amélioration de la gestion des présentateurs',
-    ],
-    bugfixes: [
-      "Correction du problème de rendu des objets d'erreur dans les composants React",
-      'Correction des erreurs lors de la suppression des présentateurs',
-      "Résolution du problème avec useUpdatePermissions lors de l'appel dans les gestionnaires d'événements",
-    ],
-    improvements: [
-      "Meilleure gestion des types pour les messages d'erreur",
-      'Notifications plus claires lors des opérations sur les présentateurs',
-      'Optimisation des appels API pour la gestion des permissions',
-    ],
-  },
-  {
-    version: '1.1.0',
-    releaseDate: '2025-05-01',
-    description:
-      "Ajout de fonctionnalités d'invitation et d'information de version",
-    features: [
-      "Génération de liens d'invitation temporaires pour les nouveaux utilisateurs",
-      "Dialogue d'information de version accessible depuis le menu utilisateur",
-      "Correction du bug de validation des tokens d'invitation",
-    ],
-    bugfixes: [
-      "Correction du problème de validation des tokens d'invitation",
-      'Amélioration de la gestion des erreurs lors de la création de compte',
-    ],
-    improvements: [
-      'Interface utilisateur améliorée pour la gestion des versions',
-      "Meilleure expérience utilisateur pour l'invitation de nouveaux membres",
-    ],
-  },
-  {
-    version: '1.0.0',
-    releaseDate: '2025-04-30',
-    description: 'Version initiale de RadioManager',
-    features: [
-      'Gestion des conducteurs radio',
-      'Planification des émissions',
-      'Gestion des invités et présentateurs',
-      "Chat d'équipe intégré",
-      'Système de tâches collaboratif',
-      'Archives des émissions passées',
-    ],
-    bugfixes: [],
-    improvements: [],
-  },
-  {
-    version: '0.9.0',
-    releaseDate: '2025-04-15',
-    description: 'Version bêta de RadioManager',
-    features: [
-      'Interface utilisateur complète',
-      "Système d'authentification",
-      'Gestion des permissions',
-      'Création et édition de conducteurs',
-    ],
-    bugfixes: [],
-    improvements: [],
-  },
-  {
-    version: '0.5.0',
-    releaseDate: '2025-03-20',
-    description: 'Version alpha de RadioManager',
-    features: [
-      "Prototype de l'interface utilisateur",
-      'Fonctionnalités de base pour la gestion des émissions',
-    ],
-    bugfixes: [],
-    improvements: [],
-  },
-];
+// Note: defaultVersions est maintenant importé depuis ./defaultVersions.ts
+// Ce fichier est généré automatiquement par scripts/generate-versions.js depuis CHANGELOG.md

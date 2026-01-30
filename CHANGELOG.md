@@ -52,6 +52,92 @@ Détails : [docs/changelog/CHANGELOG-YYYY.md](docs/changelog/CHANGELOG-YYYY.md#1
 - Migration de l'URL API de `api.radio.audace.ovh` vers `api.cloud.audace.ovh`
 - Voir [`docs/API_MIGRATION_GUIDE.md`](docs/API_MIGRATION_GUIDE.md) pour les détails
 
+### 🎓 Ajouté
+- **Système d'Agent Skills** : Compétences spécialisées pour guider l'agent IA
+  - Skill `project-overview` : Vision globale du projet et domaine métier
+  - Skill `coding-standards` : Standards TypeScript/React et conventions
+  - Skill `architecture` : Patterns architecturaux et organisation du code
+  - Skill `performance` : Optimisation et bonnes pratiques de performance
+  - Skill `workflow-git` : Workflow Git, versioning et conventions de commit
+  - Documentation complète dans `.github/skills/`
+  - Configuration VS Code pour activation automatique
+  - Références ajoutées dans `AGENT.md` et `README.md`
+
+---
+
+## [1.2.0] - 2026-01-30
+
+Nouvelle version majeure du module Citations avec création manuelle et depuis conducteurs, corrections importantes et améliorations techniques.
+
+### ✨ Fonctionnalités
+- **Module Citations - Slice 2 : Créer une citation manuelle**
+  - Ajout du formulaire de création de citation (`QuoteForm.tsx`)
+  - Ajout de la page de création (`CreateQuote.tsx`)
+  - Upload de fichiers audio optionnel (Firebase Storage)
+  - Validation des données avec Zod (`quoteSchema.ts`)
+  - Support des catégories, tags, contexte d'émission
+  - Gestion des auteurs avec avatar optionnel
+  - **Création de citation depuis un conducteur** :
+    - Bouton "Nouvelle citation" dans ShowPlanDetail (avec permission)
+    - Pré-remplissage automatique du contexte (émission, date)
+    - Sélection rapide des invités du conducteur comme auteurs
+    - Liaison automatique de la citation au conducteur (showPlanId, emissionId)
+
+### 🐛 Corrections
+- **Module Citations** : Fix erreur Firestore avec valeurs `undefined`
+  - Ajout de la fonction `removeUndefined` pour nettoyer les données
+  - Utilisation de spread operator conditionnel pour éviter les champs vides
+  - Correction de l'erreur "Unsupported field value: undefined"
+- **Auth** : Fix boucle infinie dans `useAuthCheck`
+  - Extraction correcte de `logout` depuis Zustand avec sélecteurs
+  - Suppression de `logout` des dépendances du useEffect
+- **ProtectedRoute** : Ajout du support `requiredPermission`
+  - Vérification des permissions avant l'accès aux routes protégées
+  - Redirection vers `/` si permission manquante
+
+### 🔧 Technique
+- Mise à jour des types `Quote` pour rendre les champs plus flexibles (context, metadata, author optionnels)
+- Ajout de champs `showId`, `showPlanId`, `showName` dans Context
+- Ajout de la route `/quotes/create` avec permission `quotes_create`
+- Intégration avec Firebase Storage pour les fichiers audio
+- Passage de state via React Router pour pré-remplissage
+
+---
+
+## [1.1.5] - 2025-12-12
+
+### 🔧 Technique
+- Mise à jour du store Zustand (`useVersionStore`) pour rendre la gestion de la version dynamique.
+  - La version actuelle est désormais synchronisée automatiquement avec `package.json`.
+  - Ajout d'une vérification pour éviter les erreurs si `state` est `undefined` lors de la réhydratation.
+
+### 📝 Documentation
+- Mise à jour de `docs/VERSIONING.md` pour inclure les nouvelles instructions liées à la gestion dynamique des versions.
+
+---
+
+## [1.1.4] - 2025-12-12
+
+### 🐛 Corrigé
+- **Persistance des champs formulaire ShowPlan** lors de l'ajout de segments
+  - Création du store `useShowPlanFormStore` pour gérer l'état global du formulaire
+  - Connexion directe de `ShowPlanForm` au store Zustand
+  - Les champs (titre, type, date, heure, description) restent maintenant persistants
+  - Reset automatique des données à la sortie du formulaire
+
+### 📝 Documentation
+- Ajout de `docs/VERSIONING.md` - Guide complet de gestion des versions (SemVer)
+- Ajout de `docs/ARCHITECTURE_ANALYSIS.md` - Analyse de l'architecture des composants
+- Mise à jour de `AGENT.md` :
+  - Nouvelle section "Gestion des Versions - Semantic Versioning"
+  - Règle de confirmation de fix avec mise à jour automatique de version
+  - Règles de qualité du code renforcées
+
+### 🔧 Technique
+- Nouveau store Zustand : `src/store/useShowPlanFormStore.ts`
+- Refactorisation de `ShowPlanForm.tsx` - Inputs contrôlés connectés au store
+- Simplification de `CreateShowPlan.tsx` - Utilisation du store centralisé
+
 ---
 
 ## [1.1.3] - 2025-12-11

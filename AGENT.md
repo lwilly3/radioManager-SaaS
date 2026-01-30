@@ -10,9 +10,11 @@
 | Document | Description |
 |----------|-------------|
 | [`AGENT.md`](AGENT.md) | Ce guide - Conventions et règles pour les agents IA |
+| [**`.github/skills/`**](.github/skills/) | **🎓 Agent Skills** - Compétences spécialisées pour l'agent |
 | [`CHANGELOG.md`](CHANGELOG.md) | **Historique des modifications** - Contexte et décisions |
 | [`README.md`](README.md) | Documentation générale du projet |
 | [`docs/GIT_WORKFLOW.md`](docs/GIT_WORKFLOW.md) | **🌿 Stratégie de branches** - develop/main, déploiements |
+| [`docs/VERSIONING.md`](docs/VERSIONING.md) | **🏷️ Gestion des versions** - SemVer, CHANGELOG |
 | [`docs/API_MIGRATION_GUIDE.md`](docs/API_MIGRATION_GUIDE.md) | Guide de migration des URLs API |
 | [`docs/modules/`](docs/modules/) | Documentation technique par module |
 | [`docs/business/`](docs/business/) | Documentation métier |
@@ -20,6 +22,8 @@
 > **⚠️ Important :** Consultez `CHANGELOG.md` pour comprendre l'historique et le contexte des modifications récentes avant d'effectuer des changements.
 >
 > **🌿 Branches :** Consultez `docs/GIT_WORKFLOW.md` pour savoir sur quelle branche travailler (develop = test, main = production).
+>
+> **🎓 Agent Skills :** Les compétences spécialisées dans [`.github/skills/`](.github/skills/) guident l'agent dans les standards de code, l'architecture et le workflow Git. Consultez le [README des skills](.github/skills/README.md) pour plus de détails.
 
 ---
 
@@ -50,20 +54,208 @@
 
 ---
 
+## ✅ Règle de Confirmation de Fix - AUTOMATIQUE
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  ⚠️  QUAND L'UTILISATEUR DIT "PROBLÈME RÉSOLU" OU "ÇA MARCHE"      │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  L'AGENT DOIT AUTOMATIQUEMENT :                                    │
+│                                                                     │
+│  1. Faire un résumé rapide du fix appliqué                         │
+│  2. Préparer le message de commit descriptif                       │
+│  3. DÉTERMINER L'IMPACT SUR LA VERSION (voir règle ci-dessous)     │
+│  4. DEMANDER CONFIRMATION : "Voulez-vous que je pousse sur         │
+│     develop ? Version X.Y.Z → X.Y.W"                               │
+│  5. Si oui → mettre à jour package.json + CHANGELOG.md             │
+│  6. Commit et push sur develop                                     │
+│                                                                     │
+│  EXEMPLE :                                                         │
+│  "Fix appliqué. Voulez-vous que je pousse sur develop ?            │
+│   Version 1.0.0 → 1.0.1 (patch fix)"                               │
+│                                                                     │
+│  💡 Toujours demander confirmation avant de push !                  │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🏷️ Gestion des Versions - Semantic Versioning (SemVer)
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  📦 FORMAT DE VERSION : MAJOR.MINOR.PATCH (ex: 1.2.3)              │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  🔴 MAJOR (X.0.0) - Changement INCOMPATIBLE                        │
+│     → Rupture de l'API existante                                   │
+│     → Migration nécessaire pour les utilisateurs                   │
+│     → Exemple: Refonte complète d'un module                        │
+│                                                                     │
+│  🟡 MINOR (0.X.0) - Nouvelle FONCTIONNALITÉ                        │
+│     → Ajout de feature rétrocompatible                             │
+│     → Nouvelle page, nouveau module, nouvelle API                  │
+│     → Exemple: Ajout d'un système de notifications                 │
+│                                                                     │
+│  🟢 PATCH (0.0.X) - Correction de BUG                              │
+│     → Fix de bug sans changement d'API                             │
+│     → Amélioration de performance                                  │
+│     → Correction de typo, style                                    │
+│     → Exemple: Fix de persistance formulaire                       │
+│                                                                     │
+├─────────────────────────────────────────────────────────────────────┤
+│  📝 CORRESPONDANCE EMOJI → VERSION                                 │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  🐛 fix      → PATCH   (+0.0.1)                                    │
+│  🔧 chore    → PATCH   (+0.0.1)                                    │
+│  ⚡ perf     → PATCH   (+0.0.1)                                    │
+│  🎨 style    → PATCH   (+0.0.1)                                    │
+│  ♻️  refactor → PATCH   (+0.0.1)                                    │
+│  ✨ feat     → MINOR   (+0.1.0) - reset PATCH à 0                  │
+│  🆕 new      → MINOR   (+0.1.0)                                    │
+│  💥 breaking → MAJOR   (+1.0.0) - reset MINOR et PATCH à 0         │
+│  📝 docs     → Pas de changement de version                        │
+│                                                                     │
+├─────────────────────────────────────────────────────────────────────┤
+│  🔄 PROCESSUS DE MISE À JOUR                                       │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  1. Lire version actuelle: cat package.json | grep version         │
+│  2. Calculer nouvelle version selon le type de changement          │
+│  3. Mettre à jour package.json                                     │
+│  4. Ajouter entrée dans CHANGELOG.md avec date et description      │
+│  5. Commit avec message incluant la nouvelle version               │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Fichiers à mettre à jour lors d'un changement de version
+
+| Fichier | Modification | Automatique |
+|---------|--------------|-------------|
+| `package.json` | Champ `"version": "X.Y.Z"` | ❌ Manuel |
+| `CHANGELOG.md` | Nouvelle entrée avec date, version, description | ❌ Manuel |
+| `src/store/defaultVersions.ts` | Tableau des versions pour l'UI | ✅ Auto (via `npm run generate-versions`) |
+
+> ✅ **Automatisation** : 
+> - Le tableau `defaultVersions` est généré automatiquement depuis `CHANGELOG.md`
+> - Lors du build (`npm run build`), le script `generate-versions.js` parse le CHANGELOG
+> - Il crée/met à jour `src/store/defaultVersions.ts` avec les 10 dernières versions
+> - Plus besoin de modifier manuellement `useVersionStore.ts` !
+>
+> ⚠️ **Important** : 
+> - Toujours mettre à jour `CHANGELOG.md` avec le bon format (voir ci-dessous)
+> - La version dans `package.json` est utilisée automatiquement pour `currentVersion`
+
+### Format d'entrée CHANGELOG.md
+
+```markdown
+## [X.Y.Z] - YYYY-MM-DD
+
+### Type de changement
+- Description du changement
+- Fichiers impactés si pertinent
+
+### Exemples :
+## [1.0.1] - 2025-12-12
+### 🐛 Corrections
+- Fix persistance des champs formulaire ShowPlan lors de l'ajout de segments
+- Création du store useShowPlanFormStore
+
+## [1.1.0] - 2025-12-15
+### ✨ Nouvelles fonctionnalités
+- Ajout du système de notifications en temps réel
+- Nouvelle page de gestion des archives
+```
+
+---
+
+## 🔴 Qualité du Code - Approche Professionnelle
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  ⚠️  RÈGLES OBLIGATOIRES POUR TOUT AGENT IA                        │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  1. TOUJOURS VÉRIFIER AVANT D'IMPORTER UN TYPE :                   │
+│     → grep_search "export.*TypeName|interface TypeName"            │
+│     → Ne JAMAIS supposer qu'un type existe dans ../types           │
+│     → Vérifier le fichier exact d'export                           │
+│                                                                     │
+│  2. APRÈS CHAQUE MODIFICATION :                                    │
+│     → get_errors sur les fichiers modifiés                         │
+│     → Corriger TOUTES les erreurs avant de continuer               │
+│                                                                     │
+│  3. AVANT DE DIRE "C'EST TERMINÉ" :                                │
+│     → npm run build DOIT passer sans erreur                        │
+│     → Aucune erreur TypeScript acceptée                            │
+│                                                                     │
+│  4. SI UNE ERREUR EST SIGNALÉE PAR L'UTILISATEUR :                 │
+│     → S'excuser et corriger immédiatement                          │
+│     → Ajouter des vérifications pour éviter la récidive            │
+│                                                                     │
+│  💡 La qualité prime sur la rapidité !                              │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## 📋 Table des matières
 
-1. [Présentation du projet](#-présentation-du-projet)
-2. [Architecture et structure](#-architecture-et-structure)
-3. [Conventions de code](#-conventions-de-code)
-4. [Design System et UI](#-design-system-et-ui)
-5. [Patterns et bonnes pratiques](#-patterns-et-bonnes-pratiques)
-6. [Gestion d'état](#-gestion-détat)
-7. [Appels API](#-appels-api)
-8. [Système de permissions](#-système-de-permissions)
-9. [Gestion des versions](#-gestion-des-versions)
-10. [Documentation du code](#-documentation-du-code)
-11. [Tests et validation](#-tests-et-validation)
-12. [Checklist avant modification](#-checklist-avant-modification)
+1. [Agent Skills - Compétences spécialisées](#-agent-skills---compétences-spécialisées)
+2. [Présentation du projet](#-présentation-du-projet)
+3. [Architecture et structure](#-architecture-et-structure)
+4. [Conventions de code](#-conventions-de-code)
+5. [Design System et UI](#-design-system-et-ui)
+6. [Patterns et bonnes pratiques](#-patterns-et-bonnes-pratiques)
+7. [Gestion d'état](#-gestion-détat)
+8. [Appels API](#-appels-api)
+9. [Système de permissions](#-système-de-permissions)
+10. [Gestion des versions](#-gestion-des-versions)
+11. [Documentation du code](#-documentation-du-code)
+12. [Tests et validation](#-tests-et-validation)
+13. [Checklist avant modification](#-checklist-avant-modification)
+
+---
+
+## 🎓 Agent Skills - Compétences spécialisées
+
+Le projet utilise un **système d'Agent Skills** situé dans [`.github/skills/`](.github/skills/) pour guider l'agent IA dans différents aspects du développement.
+
+### 📚 Skills disponibles
+
+| Skill | Description | Quand l'utiliser |
+|-------|-------------|------------------|
+| [**project-overview**](.github/skills/project-overview/SKILL.md) | Vision globale du projet, domaine métier, architecture générale | Au démarrage, décisions majeures, nouvelles fonctionnalités |
+| [**coding-standards**](.github/skills/coding-standards/SKILL.md) | Standards TypeScript/React, conventions de code, qualité | À chaque écriture/modification de code |
+| [**architecture**](.github/skills/architecture/SKILL.md) | Patterns architecturaux, organisation du code, performance | Nouvelles fonctionnalités, refactoring, décisions techniques |
+| [**workflow-git**](.github/skills/workflow-git/SKILL.md) | Workflow Git, versioning, conventions de commit | Commit, push, release, gestion de branches |
+
+### 🚀 Activation automatique
+
+Les skills sont activés automatiquement selon le contexte de la requête :
+
+```
+Utilisateur: "Crée un composant QuoteFilter"
+→ Agent active: project-overview → architecture → coding-standards
+
+Utilisateur: "Commit le code"
+→ Agent active: workflow-git
+
+Utilisateur: "Crée une nouvelle version"
+→ Agent active: project-overview → workflow-git
+```
+
+### 📖 Documentation complète
+
+- **[README des skills](.github/skills/README.md)** : Guide complet du système
+- **[Quick Start](.github/skills/QUICKSTART.md)** : Démarrage rapide
+- **[Deliverables](.github/skills/DELIVERABLES.md)** : Récapitulatif technique
+
+> **💡 Important :** Les Agent Skills complètent ce guide AGENT.md en fournissant des instructions détaillées et des exemples concrets pour chaque domaine de compétence. Consultez-les pour des informations approfondies sur les standards de code, l'architecture et le workflow Git.
 
 ---
 
@@ -1023,20 +1215,91 @@ setIsOpen(false);
 
 ## ✅ Tests et validation
 
-### Avant de soumettre du code
+### ⚠️ RÈGLE ABSOLUE - Approche Professionnelle
 
-1. **Build réussi** : `npm run build` sans erreur
-2. **Lint propre** : `npm run lint` sans erreur
-3. **Types valides** : Pas d'erreurs TypeScript
-4. **Test manuel** : Fonctionnalité testée dans le navigateur
-5. **Responsive** : Testé sur mobile et desktop
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  🔴 OBLIGATOIRE APRÈS CHAQUE MODIFICATION DE CODE                  │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  1. VÉRIFIER LES ERREURS TypeScript :                              │
+│     → Utiliser get_errors sur les fichiers modifiés                │
+│     → Corriger TOUTES les erreurs avant de continuer               │
+│                                                                     │
+│  2. VÉRIFIER LES IMPORTS :                                         │
+│     → Toujours vérifier que les types/interfaces existent          │
+│     → Chercher où ils sont exportés (grep_search)                  │
+│     → Ne JAMAIS supposer qu'un import existe                       │
+│                                                                     │
+│  3. LANCER LE BUILD :                                              │
+│     → npm run build DOIT passer sans erreur                        │
+│     → Si erreur : corriger AVANT de continuer                      │
+│                                                                     │
+│  4. TESTER L'APPLICATION :                                         │
+│     → npm run dev et vérifier visuellement                         │
+│     → Tester le scénario utilisateur complet                       │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
-### Validation des types
+### Workflow de vérification obligatoire
 
 ```bash
-# Vérifier les types
+# 1. Après chaque modification, vérifier les erreurs
+# (Dans l'agent, utiliser get_errors sur les fichiers modifiés)
+
+# 2. Vérifier que le build passe
+npm run build
+
+# 3. Vérifier les types (optionnel, le build le fait)
 npx tsc --noEmit
+
+# 4. Lancer l'application pour tester
+npm run dev
 ```
+
+### Vérification des imports - CRITIQUE
+
+Avant d'utiliser un type ou une interface :
+
+```typescript
+// ❌ MAUVAIS - Supposer que le type existe dans index.ts
+import type { Emission } from '../types';
+
+// ✅ BON - Vérifier d'abord où le type est exporté
+// 1. Chercher : grep_search "export.*Emission|interface Emission"
+// 2. Importer depuis le bon fichier :
+import type { Emission } from '../types/emission';
+```
+
+### Vérification des types Zustand
+
+Lors de la création d'un store Zustand, toujours :
+
+```typescript
+// ✅ BON - Types explicites pour l'état initial
+const initialState: Pick<MyStoreState, 'data' | 'status'> = {
+  data: {
+    field: undefined as FieldType | undefined,  // Type explicite
+  },
+  status: null,
+};
+
+// ❌ MAUVAIS - Inférence automatique incorrecte
+const initialState = {
+  data: {
+    field: '',  // Sera inféré comme string, pas comme ShowType | undefined
+  },
+};
+```
+
+### Avant de soumettre du code
+
+1. **Erreurs TypeScript** : `get_errors` sur tous les fichiers modifiés
+2. **Build réussi** : `npm run build` sans erreur
+3. **Lint propre** : `npm run lint` sans erreur (si disponible)
+4. **Test manuel** : Fonctionnalité testée dans le navigateur
+5. **Responsive** : Testé sur mobile et desktop (si applicable)
 
 ---
 
