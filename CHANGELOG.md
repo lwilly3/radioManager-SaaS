@@ -54,6 +54,57 @@ Détails : [docs/changelog/CHANGELOG-YYYY.md](docs/changelog/CHANGELOG-YYYY.md#1
 
 ---
 
+## [1.2.0] - 2026-01-30
+
+Nouvelle version majeure du module Citations avec création manuelle et depuis conducteurs, corrections importantes et améliorations techniques.
+
+### ✨ Fonctionnalités
+- **Module Citations - Slice 2 : Créer une citation manuelle**
+  - Ajout du formulaire de création de citation (`QuoteForm.tsx`)
+  - Ajout de la page de création (`CreateQuote.tsx`)
+  - Upload de fichiers audio optionnel (Firebase Storage)
+  - Validation des données avec Zod (`quoteSchema.ts`)
+  - Support des catégories, tags, contexte d'émission
+  - Gestion des auteurs avec avatar optionnel
+  - **Création de citation depuis un conducteur** :
+    - Bouton "Nouvelle citation" dans ShowPlanDetail (avec permission)
+    - Pré-remplissage automatique du contexte (émission, date)
+    - Sélection rapide des invités du conducteur comme auteurs
+    - Liaison automatique de la citation au conducteur (showPlanId, emissionId)
+
+### 🐛 Corrections
+- **Module Citations** : Fix erreur Firestore avec valeurs `undefined`
+  - Ajout de la fonction `removeUndefined` pour nettoyer les données
+  - Utilisation de spread operator conditionnel pour éviter les champs vides
+  - Correction de l'erreur "Unsupported field value: undefined"
+- **Auth** : Fix boucle infinie dans `useAuthCheck`
+  - Extraction correcte de `logout` depuis Zustand avec sélecteurs
+  - Suppression de `logout` des dépendances du useEffect
+- **ProtectedRoute** : Ajout du support `requiredPermission`
+  - Vérification des permissions avant l'accès aux routes protégées
+  - Redirection vers `/` si permission manquante
+
+### 🔧 Technique
+- Mise à jour des types `Quote` pour rendre les champs plus flexibles (context, metadata, author optionnels)
+- Ajout de champs `showId`, `showPlanId`, `showName` dans Context
+- Ajout de la route `/quotes/create` avec permission `quotes_create`
+- Intégration avec Firebase Storage pour les fichiers audio
+- Passage de state via React Router pour pré-remplissage
+
+---
+
+## [1.1.5] - 2025-12-12
+
+### 🔧 Technique
+- Mise à jour du store Zustand (`useVersionStore`) pour rendre la gestion de la version dynamique.
+  - La version actuelle est désormais synchronisée automatiquement avec `package.json`.
+  - Ajout d'une vérification pour éviter les erreurs si `state` est `undefined` lors de la réhydratation.
+
+### 📝 Documentation
+- Mise à jour de `docs/VERSIONING.md` pour inclure les nouvelles instructions liées à la gestion dynamique des versions.
+
+---
+
 ## [1.1.4] - 2025-12-12
 
 ### 🐛 Corrigé

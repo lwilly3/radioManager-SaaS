@@ -10,6 +10,7 @@ import {
   X,
   StopCircle,
   Check,
+  Quote,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -23,6 +24,7 @@ import { generateKey } from '../utils/keyGenerator';
 import { useStatusUpdate } from '../hooks/status/useStatusUpdate';
 import { useDashboard } from '../hooks/dashbord/useDashboard';
 import PdfGenerator from '../components/common/PdfGenerator';
+import { useAuthStore } from '../store/useAuthStore';
 
 const ShowPlanDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -31,6 +33,7 @@ const ShowPlanDetail: React.FC = () => {
   const { show: locationShowPlan } = location.state || {};
   const { updateStatus, isUpdating } = useStatusUpdate();
   const { dashboardData } = useDashboard();
+  const { permissions } = useAuthStore();
 
   const [activeSegmentId, setActiveSegmentId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -159,6 +162,20 @@ const ShowPlanDetail: React.FC = () => {
                 </div>
               )}
               
+              {/* Bouton Créer Citation */}
+              {permissions?.quotes_create && (
+                <button
+                  onClick={() => navigate('/quotes/create', { 
+                    state: { showPlan } 
+                  })}
+                  className="btn bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2"
+                  title="Créer une citation depuis ce conducteur"
+                >
+                  <Quote className="h-5 w-5" />
+                  <span className="hidden sm:inline">Nouvelle citation</span>
+                </button>
+              )}
+
               {/* Export PDF Button */}
               <PdfGenerator
                 data={showPlan}

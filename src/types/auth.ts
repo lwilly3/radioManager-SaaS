@@ -79,6 +79,15 @@ export interface LoginResponse {
     can_view_files: boolean;
     can_upload_files: boolean;
     can_delete_files: boolean;
+    // Permissions module Citations
+    quotes_view: boolean;
+    quotes_create: boolean;
+    quotes_edit: boolean;
+    quotes_delete: boolean;
+    quotes_publish: boolean;
+    stream_transcription_view: boolean;
+    stream_transcription_create: boolean;
+    quotes_capture_live: boolean;
     granted_at: string;
   };
 }

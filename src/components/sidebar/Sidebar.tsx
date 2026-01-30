@@ -14,6 +14,7 @@ import {
   FileText,
   CheckSquare,
   UserCog,
+  Quote,
 } from 'lucide-react';
 import SidebarLogo from './SidebarLogo';
 import NavLink from './NavLink';
@@ -130,6 +131,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               icon={<UserCircle />}
               text="Invités"
               isActive={location.pathname.startsWith('/guests')}
+            />
+          )}
+
+          {permissions?.quotes_view && (
+            <NavLink
+              to="/quotes"
+              icon={<Quote />}
+              text="Citations"
+              isActive={location.pathname.startsWith('/quotes')}
             />
           )}
 

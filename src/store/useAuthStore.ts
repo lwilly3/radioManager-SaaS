@@ -12,7 +12,7 @@ interface AuthState {
     family_name: string;
     username: string;
     email: string;
-    phone_number: string;
+    phone_number: string | null;
   } | null;
   token: string | null;
   permissions: Record<string, boolean | string | number> | null;
@@ -25,7 +25,7 @@ interface AuthState {
     family_name: string;
     username: string;
     email: string;
-    phone_number: string;
+    phone_number: string | null;
   } | null) => void;
   setPermission: (permissions: Record<string, boolean | string | number> | null) => void;
   setToken: (token: string | null) => void;

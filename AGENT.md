@@ -131,17 +131,21 @@
 
 ### Fichiers à mettre à jour lors d'un changement de version
 
-| Fichier | Modification |
-|---------|--------------|
-| `package.json` | Champ `"version": "X.Y.Z"` |
-| `src/store/useVersionStore.ts` | Champ `currentVersion: 'X.Y.Z'` |
-| `src/store/useVersionStore.ts` | Ajouter entrée dans `defaultVersions[]` |
-| `CHANGELOG.md` | Nouvelle entrée avec date, version, description |
+| Fichier | Modification | Automatique |
+|---------|--------------|-------------|
+| `package.json` | Champ `"version": "X.Y.Z"` | ❌ Manuel |
+| `CHANGELOG.md` | Nouvelle entrée avec date, version, description | ❌ Manuel |
+| `src/store/defaultVersions.ts` | Tableau des versions pour l'UI | ✅ Auto (via `npm run generate-versions`) |
 
+> ✅ **Automatisation** : 
+> - Le tableau `defaultVersions` est généré automatiquement depuis `CHANGELOG.md`
+> - Lors du build (`npm run build`), le script `generate-versions.js` parse le CHANGELOG
+> - Il crée/met à jour `src/store/defaultVersions.ts` avec les 10 dernières versions
+> - Plus besoin de modifier manuellement `useVersionStore.ts` !
+>
 > ⚠️ **Important** : 
-> - Ne pas oublier `useVersionStore.ts` sinon la fenêtre "Informations de version" sera obsolète !
-> - Ajouter la nouvelle version EN PREMIER dans le tableau `defaultVersions` (ordre décroissant)
-> - Garder maximum 10 versions dans `defaultVersions`
+> - Toujours mettre à jour `CHANGELOG.md` avec le bon format (voir ci-dessous)
+> - La version dans `package.json` est utilisée automatiquement pour `currentVersion`
 
 ### Format d'entrée CHANGELOG.md
 

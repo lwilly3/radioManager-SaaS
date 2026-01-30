@@ -185,17 +185,19 @@ git commit -m "✨ feat(module): Description - v1.3.0"
 
 ### src/store/useVersionStore.ts
 
-> ⚠️ **IMPORTANT** : Ce fichier doit aussi être mis à jour sinon l'UI affichera une version obsolète !
+> ✅ **AUTOMATISÉ** : Ce fichier est maintenant synchronisé automatiquement avec CHANGELOG.md !
 
-**Deux éléments à mettre à jour :**
+**Fonctionnement automatique :**
 
-1. **`currentVersion`** - La version actuelle affichée
+1. **`currentVersion`** - Synchronisé automatiquement avec `package.json`
 
 ```typescript
+import packageJson from '../../package.json';
+
 export const useVersionStore = create<VersionState>()(
   persist(
     (set, get) => ({
-      currentVersion: '1.2.4', // ← Mettre à jour ici !
+      currentVersion: packageJson.version, // ← Automatique depuis package.json
       versions: [],
       ...
     }),
@@ -204,7 +206,19 @@ export const useVersionStore = create<VersionState>()(
 );
 ```
 
-2. **`defaultVersions`** - L'historique des versions (fenêtre "Informations de version")
+2. **`defaultVersions`** - Généré automatiquement depuis CHANGELOG.md
+
+Le fichier `src/store/defaultVersions.ts` est créé automatiquement lors du build via le script `scripts/generate-versions.js`. Ce script :
+- Parse le fichier `CHANGELOG.md`
+- Extrait les 10 dernières versions avec leurs détails
+- Génère un fichier TypeScript importé par `useVersionStore.ts`
+
+**Pour régénérer manuellement :**
+```bash
+npm run generate-versions
+```
+
+**Aucune modification manuelle nécessaire !**
 
 ```typescript
 const defaultVersions: Version[] = [
@@ -540,3 +554,46 @@ git push origin develop
 ---
 
 > **Note :** Ce guide doit être consulté par tout développeur ou agent IA avant de faire un commit qui modifie le comportement de l'application.
+
+---
+
+### Mise à jour dynamique de la version
+
+Depuis la modification du store Zustand (`useVersionStore`), la version actuelle de l'application est automatiquement synchronisée avec la version définie dans `package.json`. Cela garantit que les futures mises à jour utilisent toujours la version correcte sans intervention manuelle.
+
+#### Étapes de gestion des versions
+
+1. **Mettre à jour `package.json`** :
+   - Modifiez le champ `"version"` pour refléter la nouvelle version.
+   - Exemple :
+     ```json
+     {
+       "version": "1.2.0"
+     }
+     ```
+
+2. **Vérifier le fichier `src/store/useVersionStore.ts`** :
+   - Assurez-vous que la logique dynamique est en place (elle utilise automatiquement la version de `package.json`).
+   - Aucun changement manuel n'est requis dans `currentVersion`.
+
+3. **Mettre à jour `CHANGELOG.md`** :
+   - Ajoutez une entrée pour la nouvelle version avec les détails des changements.
+
+4. **Tester l'application** :
+   - Exécutez `npm run build` pour vérifier que la version est correctement propagée.
+   - Testez l'interface utilisateur pour confirmer que la version affichée est correcte.
+
+5. **Commit et push** :
+   - Committez les modifications avec un message clair :
+     ```bash
+     git add .
+     git commit -m "🔖 chore: Mise à jour vers la version 1.2.0"
+     git push origin develop
+     ```
+
+#### Règles supplémentaires
+- **Ne modifiez pas manuellement `currentVersion` dans le store Zustand.**
+- **Vérifiez toujours que `package.json` est la source de vérité pour la version.**
+- **En cas de problème avec la persistance locale (`localStorage`), videz les données stockées pour forcer une réinitialisation.**
+
+---

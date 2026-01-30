@@ -6,6 +6,337 @@ Use icons from lucide-react for logos.
 
 Use stock photos from unsplash where appropriate, only valid URLs you know exist. Do not download the images, only link to them in image tags.
 
+---
+
+# 🤖 CONTEXTE DU PROJET - RadioManager SaaS
+
+## 📚 Documents de référence essentiels
+
+**À CONSULTER EN PRIORITÉ :**
+
+1. **[AGENT.md](AGENT.md)** - Guide complet pour agents IA
+   - Règles de push (develop par défaut, main uniquement si demandé)
+   - Règle de confirmation automatique après fix
+   - Gestion des versions (SemVer)
+   - Conventions de commit
+   - Structure du projet
+
+2. **[CHANGELOG.md](CHANGELOG.md)** - Historique des modifications
+   - Contexte des changements récents
+   - Décisions techniques prises
+   - État actuel du projet
+   - **Version actuelle : 1.1.5**
+
+3. **[docs/GIT_WORKFLOW.md](docs/GIT_WORKFLOW.md)** - Stratégie de branches
+   - `develop` → Serveur TEST
+   - `main` → PRODUCTION
+   - Règles de merge
+
+4. **[docs/VERSIONING.md](docs/VERSIONING.md)** - Gestion versions SemVer
+   - MAJOR.MINOR.PATCH
+   - Quand incrémenter chaque niveau
+
+## 📖 Documentation technique par module
+
+| Module | Documentation |
+|--------|---------------|
+| **Citations** | [docs/modules/quotes.md](docs/modules/quotes.md) |
+| **Conducteurs** | [docs/modules/show-plans.md](docs/modules/show-plans.md) |
+| **Archives** | [docs/modules/archives.md](docs/modules/archives.md) |
+| **Authentification** | [docs/modules/authentication.md](docs/modules/authentication.md) |
+| **Chat** | [docs/modules/chat.md](docs/modules/chat.md) |
+| **Dashboard** | [docs/modules/dashboard.md](docs/modules/dashboard.md) |
+| **Émissions** | [docs/modules/emissions.md](docs/modules/emissions.md) |
+| **Invités** | [docs/modules/guests.md](docs/modules/guests.md) |
+| **Présentateurs** | [docs/modules/presenters.md](docs/modules/presenters.md) |
+| **Profil** | [docs/modules/profile.md](docs/modules/profile.md) |
+| **Paramètres** | [docs/modules/settings.md](docs/modules/settings.md) |
+| **Tâches** | [docs/modules/tasks.md](docs/modules/tasks.md) |
+| **Équipe** | [docs/modules/team.md](docs/modules/team.md) |
+| **Utilisateurs** | [docs/modules/users.md](docs/modules/users.md) |
+
+## 🎯 Documentation métier
+
+| Document | Description |
+|----------|-------------|
+| [docs/business/README.md](docs/business/README.md) | Vue d'ensemble métier |
+| [docs/business/authentication-and-access.md](docs/business/authentication-and-access.md) | Authentification & accès |
+| [docs/business/emissions-and-content.md](docs/business/emissions-and-content.md) | Émissions & contenu |
+| [docs/business/programming-and-scheduling.md](docs/business/programming-and-scheduling.md) | Programmation & planification |
+| [docs/business/talent-and-collaboration.md](docs/business/talent-and-collaboration.md) | Talents & collaboration |
+| [docs/business/user-and-permissions.md](docs/business/user-and-permissions.md) | Utilisateurs & permissions |
+
+## 🔗 Documentation spécifique
+
+- **[docs/QUOTES_SHOWPLAN_INTEGRATION.md](docs/QUOTES_SHOWPLAN_INTEGRATION.md)** - Intégration Citations ↔ Conducteurs
+- **[docs/TESTING_QUOTES.md](docs/TESTING_QUOTES.md)** - Guide de test du module Citations
+- **[docs/API_MIGRATION_GUIDE.md](docs/API_MIGRATION_GUIDE.md)** - Migration API (api.radio.audace.ovh → api.cloud.audace.ovh)
+- **[docs/ARCHITECTURE_ANALYSIS.md](docs/ARCHITECTURE_ANALYSIS.md)** - Analyse de l'architecture
+
+---
+
+## 🚀 RÈGLES PRIORITAIRES (depuis AGENT.md)
+
+### ⚠️ Règle de Push
+
+```
+PAR DÉFAUT → Pousser sur develop (serveur TEST)
+
+git checkout develop
+git add -A
+git commit -m "📝 type(scope): Description"
+git push origin develop
+
+UNIQUEMENT si l'utilisateur dit "sur main" ou "en production" :
+→ Demander confirmation avant de pousser sur main !
+```
+
+### ✅ Règle de Confirmation Automatique
+
+```
+QUAND L'UTILISATEUR DIT "PROBLÈME RÉSOLU" OU "ÇA MARCHE" :
+
+L'AGENT DOIT AUTOMATIQUEMENT :
+1. Faire un résumé rapide du fix
+2. Préparer le message de commit
+3. DÉTERMINER L'IMPACT SUR LA VERSION (SemVer)
+4. DEMANDER CONFIRMATION : "Voulez-vous que je pousse sur develop ? 
+   Version X.Y.Z → X.Y.W"
+5. Si oui → mettre à jour package.json + CHANGELOG.md
+6. Commit et push sur develop
+```
+
+### 🏷️ Versioning (SemVer)
+
+```
+MAJOR (X.0.0) → Changement INCOMPATIBLE
+MINOR (0.X.0) → Nouvelle FONCTIONNALITÉ
+PATCH (0.0.X) → Correction de BUG
+```
+
+### 📝 Commits Conventionnels
+
+```
+✨ feat(scope): Nouvelle fonctionnalité
+🐛 fix(scope): Correction de bug
+📝 docs(scope): Documentation
+🎨 style(scope): Formatage (sans changement de code)
+♻️ refactor(scope): Refactoring
+⚡ perf(scope): Amélioration performance
+✅ test(scope): Tests
+🔧 chore(scope): Maintenance
+```
+
+---
+
+## 🛠️ STACK TECHNIQUE
+
+### Frontend
+- **React 18.2.0** + TypeScript 5.2.2
+- **Vite 5.0.0** (build tool avec HMR)
+- **Tailwind CSS 3.3.5** (styling)
+- **Zustand 4.4.7** (state management avec persist)
+- **React Router DOM 6.21.1** (routing)
+- **React Hook Form 7.48.2** + Zod 3.22.4 (formulaires et validation)
+- **Tanstack React Query 5.0.0** (data fetching)
+- **Lucide React 0.309.0** (icônes)
+- **date-fns 3.0.0** (manipulation dates)
+
+### Backend & Services
+- **FastAPI** (API Python)
+- **Firebase Firestore 10.7.1** (base de données temps réel)
+- **Firebase Storage** (stockage fichiers)
+- **Firebase Auth** (authentification)
+
+### Outils
+- **jsPDF 2.5.2** + jsPDF AutoTable (génération PDF)
+- **html2canvas** (capture d'écran pour réseaux sociaux)
+
+---
+
+## 📂 STRUCTURE DU PROJET
+
+```
+radioManager-SaaS/
+├── src/
+│   ├── api/              # Services API
+│   │   ├── firebase/     # Firebase (Firestore, Storage, Auth)
+│   │   └── auth/         # FastAPI Auth
+│   ├── components/       # Composants React
+│   │   ├── auth/
+│   │   ├── quotes/       # Module Citations
+│   │   ├── showPlans/    # Module Conducteurs
+│   │   ├── guests/
+│   │   ├── sidebar/
+│   │   ├── ui/
+│   │   └── ...
+│   ├── hooks/            # Custom hooks
+│   │   ├── auth/
+│   │   ├── quotes/
+│   │   ├── shows/
+│   │   └── ...
+│   ├── pages/            # Pages de l'application
+│   │   ├── Quotes/
+│   │   ├── shows/
+│   │   ├── guests/
+│   │   └── ...
+│   ├── schemas/          # Schémas de validation Zod
+│   ├── services/         # Services métier
+│   ├── store/            # Stores Zustand
+│   ├── types/            # Types TypeScript
+│   ├── utils/            # Utilitaires
+│   └── App.tsx           # Point d'entrée
+├── docs/                 # Documentation complète
+│   ├── modules/          # Doc par module
+│   └── business/         # Doc métier
+├── AGENT.md              # Guide pour agents IA
+├── CHANGELOG.md          # Historique des modifications
+├── README.md             # Documentation projet
+└── package.json          # Version actuelle: 1.1.5
+```
+
+---
+
+## 🎯 MODULES IMPLÉMENTÉS
+
+### ✅ Module Citations (Quotes)
+**Documentation** : [docs/modules/quotes.md](docs/modules/quotes.md)
+
+**Fonctionnalités** :
+- ✅ Slice 1 : Lister les citations (temps réel Firestore)
+- ✅ Slice 2 : Créer une citation manuelle
+  - Formulaire complet avec validation Zod
+  - Upload audio optionnel (Firebase Storage)
+  - Création depuis un conducteur avec pré-remplissage
+  - Sélection rapide des invités du conducteur
+- ⏳ Slice 3 : Voir détails d'une citation
+- ⏳ Slice 4 : Éditer/Supprimer une citation
+- ⏳ Slice 5 : Générer contenu réseaux sociaux
+
+**Intégration** :
+- Lien avec Conducteurs : [docs/QUOTES_SHOWPLAN_INTEGRATION.md](docs/QUOTES_SHOWPLAN_INTEGRATION.md)
+- Tests : [docs/TESTING_QUOTES.md](docs/TESTING_QUOTES.md)
+
+**Permissions** :
+- `quotes_view` : Voir les citations
+- `quotes_create` : Créer des citations
+- `quotes_edit` : Modifier des citations
+- `quotes_delete` : Supprimer des citations
+- `quotes_publish` : Publier des citations
+
+### ✅ Module Conducteurs (Show Plans)
+**Documentation** : [docs/modules/show-plans.md](docs/modules/show-plans.md)
+
+**Fonctionnalités** :
+- Création/Édition/Suppression de conducteurs
+- Gestion des segments (intro, interview, musique, pub, outro)
+- Assignation d'invités et présentateurs
+- Timer de diffusion en direct
+- Export PDF
+- Gestion des statuts (préparation, attente diffusion, en cours, diffusé, archivé)
+- Bouton "Nouvelle citation" pour capturer des citations en contexte
+
+### ✅ Autres Modules
+- **Dashboard** : Vue d'ensemble, programme du jour
+- **Invités (Guests)** : Gestion des invités
+- **Présentateurs (Presenters)** : Gestion des animateurs
+- **Équipe (Team)** : Gestion de l'équipe
+- **Utilisateurs (Users)** : Gestion des utilisateurs et permissions
+- **Archives** : Consultation et recherche dans les archives
+- **Chat** : Messagerie interne (Firebase Firestore temps réel)
+- **Tâches** : Gestion des tâches
+- **Paramètres** : Configuration de l'application
+
+---
+
+## 🔐 SYSTÈME DE PERMISSIONS
+
+### Permissions Citations
+```typescript
+quotes_view                    // Voir les citations
+quotes_create                  // Créer des citations
+quotes_edit                    // Modifier des citations
+quotes_delete                  // Supprimer des citations
+quotes_publish                 // Publier des citations
+stream_transcription_view      // Voir transcriptions (Partie 2)
+stream_transcription_create    // Créer transcriptions (Partie 2)
+quotes_capture_live           // Capturer citations en direct (Partie 2)
+```
+
+### Permissions Conducteurs
+```typescript
+can_acces_showplan_section
+can_create_showplan
+can_edit_showplan
+can_delete_showplan
+can_archive_showplan
+can_changestatus_showplan
+can_changestatus_owned_showplan
+can_setOnline_showplan
+can_viewAll_showplan
+```
+
+### Permissions Utilisateurs, Invités, etc.
+Voir la liste complète des permissions en fin de document.
+
+---
+
+## 🔄 ÉTAT ACTUEL DU PROJET (30 janvier 2026)
+
+### Dernières implémentations
+- ✅ Module Citations Slice 1 & 2 (Lister + Créer)
+- ✅ Intégration Citations ↔ Conducteurs
+- ✅ Fix boucle infinie dans useAuthCheck
+- ✅ Fix erreur Firestore avec valeurs undefined
+- ✅ Support requiredPermission dans ProtectedRoute
+
+### En cours / À venir
+- Slice 3-5 du module Citations
+- Partie 2 : Transcription automatique (après MVP stable)
+
+### Problèmes connus
+- Migration API en cours : api.radio.audace.ovh → api.cloud.audace.ovh
+- Voir [docs/API_MIGRATION_GUIDE.md](docs/API_MIGRATION_GUIDE.md)
+
+---
+
+# 📋 BONNES PRATIQUES (depuis AGENT.md)
+
+## TypeScript
+- ✅ Types stricts, pas de `any`
+- ✅ Interfaces pour tous les objets de données
+- ✅ Types exportés depuis `src/types/`
+
+## React
+- ✅ Hooks modernes (useState, useEffect, useCallback, useMemo)
+- ✅ Composants fonctionnels uniquement
+- ✅ Zustand pour state management global
+- ✅ React Query pour data fetching
+
+## Firebase
+- ✅ Supprimer les valeurs `undefined` avant Firestore (utiliser `removeUndefined`)
+- ✅ Utiliser `serverTimestamp()` pour createdAt/updatedAt
+- ✅ Abonnements temps réel avec `onSnapshot`
+- ✅ Gestion des erreurs avec try/catch
+
+## Formulaires
+- ✅ React Hook Form + Zod pour validation
+- ✅ Messages d'erreur en français
+- ✅ Désactivation des boutons pendant soumission
+
+## Styling
+- ✅ Tailwind CSS classes
+- ✅ Design responsive (mobile-first)
+- ✅ Lucide React pour les icônes
+- ✅ Pas de bibliothèques UI externes (sauf si demandé)
+
+## Documentation
+- ✅ Mettre à jour CHANGELOG.md après chaque modification significative
+- ✅ Commenter les fonctions complexes
+- ✅ Types JSDoc pour les fonctions importantes
+
+---
+
 
 
 
@@ -1504,6 +1835,304 @@ pour le mecanisme d'atribution ou de supression de ces privileges par defaut des
 - can_destroy_archives
 - can_restore_archives
 - can_delete_archives
+
+**Permissions Citations (ajoutées en janvier 2026)** :
+- quotes_view                    // Voir les citations
+- quotes_create                  // Créer des citations
+- quotes_edit                    // Modifier des citations
+- quotes_delete                  // Supprimer des citations
+- quotes_publish                 // Publier des citations
+- stream_transcription_view      // Voir transcriptions (Partie 2 - à venir)
+- stream_transcription_create    // Créer transcriptions (Partie 2 - à venir)
+- quotes_capture_live           // Capturer citations en direct (Partie 2 - à venir)
+
+---
+
+## 5. Module Citations (Firebase Firestore)
+
+**⚠️ Important** : Le module Citations utilise Firebase Firestore, pas l'API FastAPI.
+
+### 5.1 Structure des données
+
+**Collection Firestore** : `quotes`
+
+**Type Quote** :
+```typescript
+interface Quote {
+  id: string;
+  content: string;                    // Texte de la citation (10-500 caractères)
+  author: {
+    id?: string;
+    name: string;
+    role?: 'guest' | 'presenter' | 'other';
+    avatar?: string;
+  };
+  context?: {
+    showId?: string;                  // ID du conducteur
+    showPlanId?: string;              // ID du conducteur (redondant pour clarté)
+    showName?: string;                // Nom de l'émission
+    emissionId?: string;              // ID de l'émission
+    date?: string;                    // Date ISO
+    timestamp?: string;               // Timestamp dans l'émission (HH:mm:ss)
+  };
+  source: {
+    type: 'manual' | 'stream_transcription' | 'audio_file';
+    audioUrl?: string;                // URL Firebase Storage
+    audioFile?: string;               // Nom du fichier
+    duration?: number;                // Durée en secondes
+  };
+  metadata?: {
+    category?: 'statement' | 'position' | 'quote' | 'fact';
+    tags: string[];
+    language?: 'fr' | 'en';
+    isVerified?: boolean;
+  };
+  publications: Array<{
+    id: string;
+    platform: 'facebook' | 'twitter' | 'instagram' | 'linkedin' | 'other';
+    content: string;
+    image?: string;
+    publishedAt?: string;
+    status: 'draft' | 'scheduled' | 'published';
+    url?: string;
+  }>;
+  status: 'draft' | 'approved' | 'published' | 'archived';
+  createdBy: string;                  // User ID
+  createdAt: string;                  // ISO timestamp
+  updatedAt: string;                  // ISO timestamp
+}
+```
+
+### 5.2 Créer une citation (Firebase)
+
+**⚠️ Règle importante** : Supprimer toutes les valeurs `undefined` avant d'envoyer à Firestore !
+
+**Service** : `src/api/firebase/quotes.ts`
+
+```typescript
+import { createQuote } from '../../api/firebase/quotes';
+
+// Fonction utilitaire pour nettoyer les undefined
+const removeUndefined = <T extends Record<string, any>>(obj: T): Partial<T> => {
+  const cleaned: any = {};
+  for (const key in obj) {
+    if (obj[key] !== undefined) {
+      if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
+        const nested = removeUndefined(obj[key]);
+        if (Object.keys(nested).length > 0) {
+          cleaned[key] = nested;
+        }
+      } else {
+        cleaned[key] = obj[key];
+      }
+    }
+  }
+  return cleaned;
+};
+
+// Création
+const quoteData: CreateQuoteData = {
+  content: "Citation exemple",
+  author: {
+    name: "Jean Dupont",
+    ...(role && { role }),
+    ...(avatar && { avatar }),
+  },
+  source: { type: 'manual' },
+  metadata: { tags: [], language: 'fr', isVerified: false },
+  status: 'draft',
+  createdBy: userId,
+};
+
+const cleanedData = removeUndefined(quoteData);
+const quoteId = await createQuote(cleanedData, userId);
+```
+
+### 5.3 Lister les citations (temps réel)
+
+```typescript
+import { useQuotes } from '../../hooks/quotes/useQuotes';
+
+// Dans un composant
+const { quotes, isLoading, error, refresh } = useQuotes({ status: 'draft' });
+
+// Les quotes se mettent à jour en temps réel via onSnapshot
+```
+
+**Filtres disponibles** :
+```typescript
+interface QuoteFilters {
+  status?: 'draft' | 'approved' | 'published' | 'archived';
+  emissionId?: string;
+  authorId?: string;
+  sourceType?: 'manual' | 'stream_transcription' | 'audio_file';
+  category?: 'statement' | 'position' | 'quote' | 'fact';
+  tags?: string[];
+}
+```
+
+### 5.4 Upload audio (Firebase Storage)
+
+```typescript
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '../../api/firebase/firebase';
+
+// Upload
+const fileName = `quotes/${Date.now()}_${file.name}`;
+const storageRef = ref(storage, fileName);
+await uploadBytes(storageRef, file);
+const audioUrl = await getDownloadURL(storageRef);
+
+// Ajouter à la citation
+source: {
+  type: 'manual',
+  audioUrl,
+  audioFile: file.name,
+  duration: audioDuration
+}
+```
+
+### 5.5 Intégration avec Conducteurs
+
+**Créer une citation depuis un conducteur** :
+
+```typescript
+// Dans ShowPlanDetail.tsx
+<button onClick={() => navigate('/quotes/create', { 
+  state: { showPlan } 
+})}>
+  <Quote className="h-5 w-5" />
+  Nouvelle citation
+</button>
+
+// Dans CreateQuote.tsx
+const showPlanContext = location.state?.showPlan;
+
+// Pré-remplissage automatique
+useEffect(() => {
+  if (showPlanContext) {
+    setDefaultValues({
+      showName: showPlanContext.emission || showPlanContext.title,
+      date: format(new Date(showPlanContext.broadcast_date), 'yyyy-MM-dd'),
+    });
+  }
+}, [showPlanContext]);
+
+// Contexte enrichi
+context: {
+  showId: showPlanContext?.id?.toString(),
+  showPlanId: showPlanContext?.id?.toString(),
+  showName: formData.showName || showPlanContext?.title,
+  emissionId: showPlanContext?.emission_id?.toString(),
+  date: formData.date,
+  timestamp: formData.timestamp,
+}
+```
+
+**Sélection rapide des invités** :
+
+```typescript
+// Dans QuoteForm.tsx
+{showPlanGuests && showPlanGuests.length > 0 && (
+  <select onChange={(e) => handleGuestSelect(e.target.value)}>
+    <option value="">-- Saisir manuellement --</option>
+    {showPlanGuests.map((guest) => (
+      <option key={guest.id} value={guest.id}>
+        {guest.name} {guest.role && `(${guest.role})`}
+      </option>
+    ))}
+  </select>
+)}
+```
+
+### 5.6 Validation des données (Zod)
+
+**Schéma** : `src/schemas/quoteSchema.ts`
+
+```typescript
+import { z } from 'zod';
+
+export const createQuoteFormSchema = z.object({
+  content: z.string()
+    .min(10, 'La citation doit contenir au moins 10 caractères')
+    .max(500, 'La citation ne peut pas dépasser 500 caractères'),
+  authorName: z.string().min(1, 'Le nom de l\'auteur est requis'),
+  authorRole: z.string().optional(),
+  authorAvatar: z.string().url('URL invalide').optional().or(z.literal('')),
+  showName: z.string().optional(),
+  date: z.string().optional(),
+  timestamp: z.string().optional(),
+  category: z.string().optional(),
+  tags: z.string().optional(), // Chaîne séparée par des virgules
+  audioFile: z.instanceof(File).optional(),
+});
+```
+
+### 5.7 Composants Citations
+
+**Pages** :
+- `src/pages/Quotes/QuotesList.tsx` - Liste avec filtres et temps réel
+- `src/pages/Quotes/CreateQuote.tsx` - Formulaire de création
+
+**Composants** :
+- `src/components/quotes/QuoteCard.tsx` - Affichage d'une citation
+- `src/components/quotes/QuoteForm.tsx` - Formulaire réutilisable
+
+**Hooks** :
+- `src/hooks/quotes/useQuotes.ts` - Liste avec filtres et CRUD
+- `src/hooks/quotes/useQuote.ts` - Citation unique par ID
+
+**Services** :
+- `src/api/firebase/quotes.ts` - CRUD Firestore + temps réel
+
+### 5.8 Routes Citations
+
+```typescript
+// Dans App.tsx
+<Route path="quotes">
+  <Route index element={<QuotesList />} />
+  <Route path="create" element={
+    <ProtectedRoute requiredPermission="quotes_create">
+      <CreateQuote />
+    </ProtectedRoute>
+  } />
+</Route>
+```
+
+### 5.9 Problèmes courants et solutions
+
+**1. Erreur "Unsupported field value: undefined"**
+```typescript
+// ❌ Mauvais
+author: { name: "Test", role: undefined }
+
+// ✅ Bon
+author: {
+  name: "Test",
+  ...(role && { role })
+}
+
+// Ou utiliser removeUndefined()
+const cleanedData = removeUndefined(quoteData);
+```
+
+**2. Boucle infinie dans useEffect**
+```typescript
+// ❌ Mauvais
+const { logout } = useAuthStore();
+useEffect(() => { ... }, [logout]);
+
+// ✅ Bon
+const logout = useAuthStore((state) => state.logout);
+useEffect(() => { ... }, []); // Sans logout dans les dépendances
+```
+
+**3. Permissions manquantes**
+```typescript
+// Vérifier avant affichage
+const { permissions } = useAuthStore();
+{permissions?.quotes_create && <button>Créer</button>}
+```
 
 ---
 
