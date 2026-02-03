@@ -7,20 +7,30 @@
 ```
 .github/skills/
 ├── README.md                          # Documentation principale
+├── QUICKSTART.md                      # Guide démarrage rapide
+├── DELIVERABLES.md                    # Récapitulatif technique
 ├── project-overview/
 │   └── SKILL.md                       # Vue d'ensemble projet
 ├── coding-standards/
 │   └── SKILL.md                       # Standards de code
 ├── architecture/
 │   └── SKILL.md                       # Patterns architecturaux
-└── workflow-git/
-    └── SKILL.md                       # Workflow Git
+├── workflow-git/
+│   └── SKILL.md                       # Workflow Git
+├── testing/
+│   └── SKILL.md                       # Tests et qualité
+├── security/
+│   └── SKILL.md                       # Sécurité et validation
+└── performance/
+    └── SKILL.md                       # Optimisation performance
 
 .vscode/
 └── settings.json                      # Configuration VS Code
 ```
 
-### 2. Skills créés (4 compétences)
+### 2. Skills créés (7 compétences)
+
+#### Phase 1 - Fondations ✅
 
 | Skill | Lignes | Description | Priorité |
 |-------|--------|-------------|----------|
@@ -29,7 +39,19 @@
 | **architecture** | ~850 | Patterns, organisation, performance | Critique |
 | **workflow-git** | ~700 | Git workflow, versioning, commits | Critique |
 
-**Total : ~2450 lignes de documentation structurée**
+**Sous-total Phase 1 : ~2450 lignes**
+
+#### Phase 2 - Qualité ✅
+
+| Skill | Lignes | Description | Priorité |
+|-------|--------|-------------|----------|
+| **testing** | ~700 | Tests unitaires, intégration, E2E avec Vitest | Haute |
+| **security** | ~650 | Auth, validation, XSS/CSRF, données sensibles | Critique |
+| **performance** | ~800 | Optimisation React, memoization, lazy loading | Haute |
+
+**Sous-total Phase 2 : ~2150 lignes**
+
+**Total : ~4600 lignes de documentation structurée**
 
 ---
 
@@ -74,6 +96,35 @@
 - ✅ Bonnes pratiques Git
 - ✅ Résolution de conflits
 - ✅ Checklists commit/release
+
+### Testing
+- ✅ Tests unitaires avec Vitest et Testing Library
+- ✅ Tests d'intégration (hooks, API)
+- ✅ Tests E2E avec Playwright
+- ✅ Mocking (Firebase, API, localStorage)
+- ✅ Stratégie de test (pyramide de tests)
+- ✅ Couverture de code (80% minimum)
+- ✅ Tests de non-régression
+
+### Security
+- ✅ Authentification Firebase (Auth, rules)
+- ✅ Validation avec Zod (côté client et API)
+- ✅ Protection XSS/CSRF
+- ✅ Upload de fichiers sécurisé
+- ✅ Gestion des secrets (variables d'environnement)
+- ✅ Rate limiting
+- ✅ Logging sécurisé (pas de données sensibles)
+- ✅ Content Security Policy
+
+### Performance
+- ✅ Optimisation React (memo, useMemo, useCallback)
+- ✅ Virtualization (react-window pour listes volumineuses)
+- ✅ Lazy loading (React.lazy, code splitting)
+- ✅ Optimisation images (compression, lazy loading)
+- ✅ Pagination Firestore (cursors, limits)
+- ✅ Debouncing/throttling
+- ✅ Bundle optimization (tree shaking, chunking)
+- ✅ Monitoring Web Vitals
 
 ---
 
@@ -197,7 +248,10 @@ Chaque skill suit ce format standardisé :
 
 ## 🎓 Recommandations d'évolution
 
-### Phase 2 - Qualité (Priorité Haute)
+### Phase 2 - Qualité ✅ COMPLÉTÉ
+- ✅ **testing** : Tests unitaires, intégration, E2E (Vitest, Testing Library, Playwright)
+- ✅ **security** : Auth, validation, XSS/CSRF, données sensibles
+- ✅ **performance** : Optimisation React, lazy loading, virtualization, Web Vitals
 ```
 .github/skills/
 ├── testing/

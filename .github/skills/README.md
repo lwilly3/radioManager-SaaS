@@ -13,12 +13,41 @@ Les **Agent Skills** sont des guides spécialisés qui orientent l'agent IA dans
 
 ## 🎯 Skills disponibles
 
+### Phase 1 - Fondations ✅
+
 | Skill | Priorité | Description | Quand l'utiliser |
 |-------|----------|-------------|------------------|
 | [**project-overview**](./project-overview/SKILL.md) | Critique | Vision globale du projet, domaine métier, architecture générale | Au démarrage, décisions majeures, nouvelles fonctionnalités |
 | [**coding-standards**](./coding-standards/SKILL.md) | Critique | Standards de code TypeScript/React, conventions, qualité | À chaque écriture/modification de code |
 | [**architecture**](./architecture/SKILL.md) | Critique | Patterns architecturaux, organisation code, performance | Nouvelles fonctionnalités, refactoring, décisions techniques |
 | [**workflow-git**](./workflow-git/SKILL.md) | Critique | Workflow Git, versioning, conventions commit | Commit, push, release, gestion branches |
+
+### Phase 2 - Qualité ✅
+
+| Skill | Priorité | Description | Quand l'utiliser |
+|-------|----------|-------------|------------------|
+| [**testing**](./testing/SKILL.md) | Haute | Tests unitaires, intégration, E2E, stratégie de test | Création de composants, hooks, corrections de bugs |
+| [**security**](./security/SKILL.md) | Critique | Sécurité, authentification, validation, protection données | Manipulation données sensibles, auth, uploads |
+| [**performance**](./performance/SKILL.md) | Haute | Optimisation React, bundle, requêtes, Core Web Vitals | Listes volumineuses, problèmes de lenteur, optimisation |
+
+### Phase 3 - API & Intégration ✅
+
+| Skill | Priorité | Description | Quand l'utiliser |
+|-------|----------|-------------|------------------|
+| [**api-consumer**](./api-consumer/SKILL.md) | Critique | Documentation complète de l'API backend (~85 routes) | Intégration API, création services, debug requêtes |
+| [**firebase**](./firebase/SKILL.md) | Haute | Firebase/Firestore pour Chat, Tasks, Quotes | Modules temps réel, CRUD Firestore, Storage |
+
+Le skill **api-consumer** inclut une documentation détaillée par module :
+- [routes/auth.md](./api-consumer/routes/auth.md) - Authentification JWT, invitations, reset password
+- [routes/users.md](./api-consumer/routes/users.md) - Gestion utilisateurs, recherche
+- [routes/shows.md](./api-consumer/routes/shows.md) - Conducteurs, segments, recherche
+- [routes/emissions.md](./api-consumer/routes/emissions.md) - Gestion des émissions
+- [routes/presenters.md](./api-consumer/routes/presenters.md) - Gestion des présentateurs
+- [routes/guests.md](./api-consumer/routes/guests.md) - Gestion des invités
+- [routes/permissions.md](./api-consumer/routes/permissions.md) - Permissions, rôles, templates
+- [routes/notifications.md](./api-consumer/routes/notifications.md) - Notifications utilisateur
+- [routes/setup-version.md](./api-consumer/routes/setup-version.md) - Setup, version, dashboard
+- [routes/quotes.md](./api-consumer/routes/quotes.md) - Citations (Firebase)
 
 ## 🔄 Relations entre skills
 
@@ -28,21 +57,50 @@ Les **Agent Skills** sont des guides spécialisés qui orientent l'agent IA dans
 │            (Base : Comprendre le projet)                     │
 └────────────────────┬─────────────────────────────────────────┘
                      │
-         ┌───────────┼───────────┐
-         │           │           │
-         ▼           ▼           ▼
-┌─────────────┐ ┌──────────┐ ┌─────────────┐
-│   coding-   │ │   archi- │ │  workflow-  │
-│  standards  │ │  tecture │ │     git     │
-└─────────────┘ └──────────┘ └─────────────┘
-     (Code)      (Structure)   (Versioning)
+         ┌───────────┼───────────┬────────────┐
+         │           │           │            │
+         ▼           ▼           ▼            ▼
+┌─────────────┐ ┌──────────┐ ┌─────────────┐ ┌────────────┐
+│   coding-   │ │   archi- │ │  workflow-  │ │  security  │
+│  standards  │ │  tecture │ │     git     │ │ (Critique) │
+└─────────────┘ └──────────┘ └─────────────┘ └────────────┘
+     (Code)      (Structure)   (Versioning)      (Sécurité)
+         │           │              │               │
+         │           │              │               │
+         └───────┬───┴──────┬───────┴───────────────┘
+                 │          │
+                 ▼          ▼
+         ┌──────────┐  ┌──────────────┐
+         │ testing  │  │ performance  │
+         │ (Haute)  │  │   (Haute)    │
+         └──────────┘  └──────────────┘
+           (Tests)       (Optimisation)
+                 │
+                 ▼
+         ┌──────────────┐
+         │ api-consumer │
+         │ (Critique)   │
+         └──────────────┘
+          (Intégration API)
+                 │
+                 ▼
+         ┌──────────────┐
+         │   firebase   │
+         │   (Haute)    │
+         └──────────────┘
+          (Temps réel)
 ```
 
 **Ordre d'activation recommandé:**
 1. **project-overview** → Comprendre le contexte
-2. **architecture** → Décider de la structure
-3. **coding-standards** → Écrire le code
-4. **workflow-git** → Commiter et versionner
+2. **api-consumer** → Connaître les endpoints disponibles
+3. **firebase** → Connaître les patterns Firestore
+4. **architecture** → Décider de la structure
+5. **coding-standards** → Écrire le code
+6. **security** → Sécuriser le code (auth, validation, XSS/CSRF)
+7. **testing** → Tester le code (unitaire, intégration, E2E)
+8. **performance** → Optimiser si nécessaire (memoization, lazy loading)
+9. **workflow-git** → Commiter et versionner
 
 ## 🚀 Utilisation par l'agent
 
@@ -53,11 +111,20 @@ L'agent active automatiquement les skills selon le contexte :
 | Action utilisateur | Skills activés |
 |-------------------|----------------|
 | "Explique le projet" | `project-overview` |
-| "Crée un composant X" | `project-overview` → `architecture` → `coding-standards` |
-| "Ajoute une fonctionnalité Y" | `project-overview` → `architecture` → `coding-standards` |
+| "Crée un composant X" | `project-overview` → `architecture` → `coding-standards` → `testing` |
+| "Ajoute une fonctionnalité Y" | `project-overview` → `architecture` → `coding-standards` → `security` → `testing` |
 | "Commit le code" | `workflow-git` |
 | "Crée une version" | `project-overview` → `workflow-git` |
-| "Refactorise ce code" | `architecture` → `coding-standards` |
+| "Refactorise ce code" | `architecture` → `coding-standards` → `performance` |
+| "Teste cette fonctionnalité" | `testing` → `coding-standards` |
+| "Optimise ce composant" | `performance` → `coding-standards` |
+| "Sécurise cette route" | `security` → `architecture` |
+| "Intègre l'API shows" | `api-consumer` → `coding-standards` → `security` |
+| "Appelle l'endpoint X" | `api-consumer` → `coding-standards` |
+| "Liste les routes API" | `api-consumer` |
+| "Ajoute un listener Firestore" | `firebase` → `coding-standards` |
+| "Crée un chat en temps réel" | `firebase` → `architecture` → `coding-standards` |
+| "Upload un fichier audio" | `firebase` → `security` |
 
 ### Exemples de déclencheurs
 
@@ -69,7 +136,9 @@ Agent active :
 1. project-overview → Comprendre où cela s'insère
 2. architecture → Décider de la structure (hooks, stores, API)
 3. coding-standards → Écrire le code selon les conventions
-4. workflow-git → Commiter avec le bon format
+4. security → Vérifier les permissions et validations
+5. testing → Écrire les tests unitaires et d'intégration
+6. workflow-git → Commiter avec le bon format
 ```
 
 #### Scenario 2 : Correction de bug
@@ -79,10 +148,23 @@ Utilisateur : "Corrige le bug de l'authentification"
 Agent active :
 1. project-overview → Identifier le module Auth
 2. coding-standards → Corriger selon les standards
-3. workflow-git → Commit avec 🐛 fix(auth): ...
+3. security → Vérifier les failles de sécurité
+4. testing → Ajouter des tests de non-régression
+5. workflow-git → Commit avec 🐛 fix(auth): ...
 ```
 
-#### Scenario 3 : Release
+#### Scenario 3 : Optimisation de performance
+```
+Utilisateur : "Optimise le chargement de la liste des émissions"
+
+Agent active :
+1. performance → Analyser les problèmes (re-renders, données volumineuses)
+2. architecture → Décider des optimizations (memoization, virtualization)
+3. coding-standards → Implémenter selon les conventions
+4. testing → Vérifier que tout fonctionne toujours
+```
+
+#### Scenario 4 : Release
 ```
 Utilisateur : "Crée une nouvelle version"
 
@@ -265,6 +347,47 @@ Pour toute question sur les skills :
 
 ## 📝 Changelog des skills
 
+### Version 1.2.0 - 2026-02-03
+
+**Ajout du skill Firebase**
+
+✨ **Nouveau skill :**
+- `firebase` : Patterns Firebase/Firestore pour modules temps réel
+
+📝 **Documentation :**
+- CRUD Firestore avec exemples complets
+- Listeners temps réel (onSnapshot)
+- Firebase Storage (upload/download fichiers)
+- Sous-collections (messages dans rooms)
+- Batch et transactions
+- Gestion des erreurs Firebase
+- Règles de sécurité Firestore
+- Structure des documents (Quote, Task, ChatRoom, Message)
+
+🎯 **Modules couverts :**
+- Chat (rooms, messages)
+- Tasks (tâches Kanban)
+- Quotes (citations)
+- UserPreferences
+- Versions
+
+---
+
+### Version 1.1.0 - 2026-02-03
+
+**Ajout du skill api-consumer**
+
+✨ **Nouveau skill :**
+- `api-consumer` : Documentation complète API backend (~85 routes)
+
+📝 **Documentation :**
+- 10 fichiers de routes détaillées
+- Authentification, Users, Shows, Emissions, etc.
+- Exemples d'intégration avec hooks existants
+- Gestion d'erreurs standardisée
+
+---
+
 ### Version 1.0.0 - 2026-01-30
 
 **Création initiale du système d'Agent Skills**
@@ -289,6 +412,6 @@ Pour toute question sur les skills :
 
 ---
 
-**Dernière mise à jour** : 2026-01-30  
-**Version** : 1.0.0  
+**Dernière mise à jour** : 2026-02-03  
+**Version** : 1.2.0  
 **Auteur** : Équipe RadioManager SaaS
