@@ -1,5 +1,5 @@
 import api from '../../api/api';
-import type { Guest } from '../../types/guest';
+import type { Guest } from '../../types';
 
 export const guestApi = {
   search: async (token: string, query: string): Promise<Guest[]> => {

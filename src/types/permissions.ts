@@ -73,6 +73,13 @@ export interface UserPermissions {
   can_destroy_archives: boolean;
   can_restore_archives: boolean;
   can_delete_archives: boolean;
+
+  // Citations
+  quotes_view: boolean;
+  quotes_create: boolean;
+  quotes_edit: boolean;
+  quotes_delete: boolean;
+  quotes_publish: boolean;
 }
 
 export interface RoleTemplate {
@@ -428,6 +435,37 @@ export const permissionCategories: PermissionCategory[] = [
       },
     ],
   },
+  {
+    id: 'citations',
+    name: 'Citations',
+    permissions: [
+      {
+        key: 'quotes_view',
+        label: 'Voir les citations',
+        description: 'Peut voir les citations',
+      },
+      {
+        key: 'quotes_create',
+        label: 'Créer des citations',
+        description: 'Peut créer de nouvelles citations',
+      },
+      {
+        key: 'quotes_edit',
+        label: 'Modifier les citations',
+        description: 'Peut modifier les citations (statut, contenu)',
+      },
+      {
+        key: 'quotes_delete',
+        label: 'Supprimer les citations',
+        description: 'Peut supprimer des citations',
+      },
+      {
+        key: 'quotes_publish',
+        label: 'Publier les citations',
+        description: 'Peut publier des citations (évolution future)',
+      },
+    ],
+  },
 ];
 
 export const defaultRoleTemplates: RoleTemplate[] = [
@@ -465,6 +503,12 @@ export const defaultRoleTemplates: RoleTemplate[] = [
       can_create_tasks: true,
       can_edit_tasks: true,
       can_assign_tasks: true,
+      // Citations
+      quotes_view: true,
+      quotes_create: true,
+      quotes_edit: true,
+      quotes_delete: false,
+      quotes_publish: false,
     },
   },
   {
@@ -487,6 +531,12 @@ export const defaultRoleTemplates: RoleTemplate[] = [
       can_view_tasks: true,
       can_create_tasks: true,
       can_edit_tasks: true,
+      // Citations
+      quotes_view: true,
+      quotes_create: true,
+      quotes_edit: true,
+      quotes_delete: false,
+      quotes_publish: false,
     },
   },
   {
@@ -501,6 +551,12 @@ export const defaultRoleTemplates: RoleTemplate[] = [
       can_view_messages: true,
       can_view_files: true,
       can_view_tasks: true,
+      // Citations
+      quotes_view: true,
+      quotes_create: false,
+      quotes_edit: false,
+      quotes_delete: false,
+      quotes_publish: false,
     },
   },
 ];

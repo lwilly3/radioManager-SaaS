@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import SegmentDetails from './SegmentDetails'; // Composant enfant qui affiche les détails d'un segment.
+import SegmentDetailsWithQuotes from './SegmentDetailsWithQuotes'; // Composant avec support citations
 import type { ShowSegment } from '../../../types'; // Type TypeScript pour décrire la structure d'un segment.
 import { generateKey } from '../../../utils/keyGenerator'; // Import de la fonction utilitaire
 
@@ -7,6 +7,12 @@ interface DetailedSegmentListProps {
   segments: ShowSegment[]; // Liste des segments à afficher.
   activeSegmentId: string | null; // ID du segment actuellement actif.
   onSegmentClick: (segmentId: string) => void; // Fonction callback appelée lorsqu'un segment est cliqué.
+  // Props pour le contexte du conducteur (pour les citations)
+  showPlanId?: string;
+  showPlanTitle?: string;
+  emissionId?: string;
+  emissionName?: string;
+  broadcastDate?: string;
 }
 
 // Composant principal qui affiche une liste détaillée de segments.
@@ -14,6 +20,11 @@ const DetailedSegmentList: React.FC<DetailedSegmentListProps> = ({
   segments,
   activeSegmentId,
   onSegmentClick,
+  showPlanId,
+  showPlanTitle,
+  emissionId,
+  emissionName,
+  broadcastDate,
 }) => {
   // État local pour suivre les segments actuellement développés.
   const [expandedSegments, setExpandedSegments] = useState<Set<string>>(
@@ -45,9 +56,14 @@ const DetailedSegmentList: React.FC<DetailedSegmentListProps> = ({
   return (
     <div className="space-y-4">
       {segments.map((segment) => (
-        <SegmentDetails
+        <SegmentDetailsWithQuotes
           key={generateKey(segment.id ? segment.id.toString() : `segment-${Math.random()}`)}
           segment={segment}
+          showPlanId={showPlanId || ''}
+          showPlanTitle={showPlanTitle}
+          emissionId={emissionId}
+          emissionName={emissionName}
+          broadcastDate={broadcastDate}
           isExpanded={expandedSegments.has(segment.id)}
           onToggle={() => {
             toggleSegment(segment.id);

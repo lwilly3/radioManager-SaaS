@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../../store/useAuthStore';
 import { guestApi } from '../../services/api/guests';
-import type { Guest } from '../../types/guest';
+import type { Guest } from '../../types';
 
 export const useGuestSearch = (query: string) => {
   const token = useAuthStore((state) => state.token);

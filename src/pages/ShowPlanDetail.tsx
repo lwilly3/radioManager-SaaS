@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   ChevronLeft,
   Calendar,
@@ -11,6 +11,8 @@ import {
   StopCircle,
   Check,
   Quote,
+  AlertCircle,
+  MessageSquare,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -25,6 +27,8 @@ import { useStatusUpdate } from '../hooks/status/useStatusUpdate';
 import { useDashboard } from '../hooks/dashbord/useDashboard';
 import PdfGenerator from '../components/common/PdfGenerator';
 import { useAuthStore } from '../store/useAuthStore';
+import { showsApi } from '../services/api/shows';
+import { useQuotesByShowPlan } from '../hooks/quotes/useQuotesByShowPlan';
 
 const ShowPlanDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -33,29 +37,106 @@ const ShowPlanDetail: React.FC = () => {
   const { show: locationShowPlan } = location.state || {};
   const { updateStatus, isUpdating } = useStatusUpdate();
   const { dashboardData } = useDashboard();
-  const { permissions } = useAuthStore();
+  const { permissions, token } = useAuthStore();
 
   const [activeSegmentId, setActiveSegmentId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showPlan, setShowPlan] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [notification, setNotification] = useState<{
     type: 'success' | 'error';
     message: string;
   } | null>(null);
 
+  // Récupérer les citations de ce conducteur (requête optimisée)
+  const { quotes: showPlanQuotes, count: quotesCount, isLoading: quotesLoading } = useQuotesByShowPlan(id);
+
   // Try to find the show plan from different sources
   useEffect(() => {
-    if (locationShowPlan) {
-      setShowPlan(locationShowPlan);
-    } else if (dashboardData?.programme_du_jour) {
-      const foundShow = dashboardData.programme_du_jour.find(
-        (show: any) => show.id.toString() === id
-      );
-      if (foundShow) {
-        setShowPlan(foundShow);
+    const loadShowPlan = async () => {
+      setIsLoading(true);
+      setLoadError(null);
+
+      // 1. Essayer depuis location.state
+      if (locationShowPlan) {
+        setShowPlan(locationShowPlan);
+        setIsLoading(false);
+        return;
       }
-    }
-  }, [id, locationShowPlan, dashboardData]);
+
+      // 2. Essayer depuis le dashboard
+      if (dashboardData?.programme_du_jour) {
+        const foundShow = dashboardData.programme_du_jour.find(
+          (show: any) => show.id.toString() === id
+        );
+        if (foundShow) {
+          setShowPlan(foundShow);
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      // 3. Charger depuis l'API
+      if (id && token) {
+        try {
+          console.log('Chargement conducteur via API, ID:', id);
+          const fetchedShowPlan = await showsApi.getById(token, id);
+          console.log('Conducteur chargé:', fetchedShowPlan);
+          setShowPlan(fetchedShowPlan);
+        } catch (error: any) {
+          console.error('Erreur chargement conducteur:', error);
+          const statusCode = error.response?.status;
+          const errorMsg = error.response?.data?.detail || error.message;
+          
+          if (statusCode === 404) {
+            setLoadError(`Le conducteur #${id} n'existe pas ou a été supprimé.`);
+          } else if (statusCode === 403) {
+            setLoadError(`Vous n'avez pas les droits d'accès au conducteur #${id}.`);
+          } else {
+            setLoadError(`Erreur lors du chargement (${statusCode || 'réseau'}): ${errorMsg}`);
+          }
+        }
+      } else if (!token) {
+        setLoadError('Session expirée. Veuillez vous reconnecter.');
+      }
+      
+      setIsLoading(false);
+    };
+
+    loadShowPlan();
+  }, [id, locationShowPlan, dashboardData, token]);
+
+  // État de chargement
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-gray-500">Chargement du conducteur...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // État d'erreur
+  if (loadError) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center max-w-md">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Erreur de chargement</h2>
+          <p className="text-gray-600 mb-6">{loadError}</p>
+          <button
+            onClick={() => navigate(-1)}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+          >
+            Retour
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!showPlan) {
     return (
@@ -239,6 +320,19 @@ const ShowPlanDetail: React.FC = () => {
                         <span>{showPlan.guests.length} invité(s)</span>
                       </div>
                     )}
+                    {/* Lien discret vers les citations */}
+                    <Link
+                      to={`/quotes?showPlanId=${id}`}
+                      className={`flex items-center gap-1 transition-colors ${
+                        quotesCount > 0 
+                          ? 'text-indigo-600 hover:text-indigo-700' 
+                          : 'text-gray-400 hover:text-gray-600'
+                      }`}
+                      title={quotesCount > 0 ? `Voir les ${quotesCount} citation(s)` : 'Aucune citation'}
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                      <span>{quotesCount} citation{quotesCount !== 1 ? 's' : ''}</span>
+                    </Link>
                   </div>
                 </div>
 
@@ -280,6 +374,11 @@ const ShowPlanDetail: React.FC = () => {
               segments={segments}
               activeSegmentId={activeSegmentId}
               onSegmentClick={setActiveSegmentId}
+              showPlanId={id}
+              showPlanTitle={showPlan?.title}
+              emissionId={showPlan?.emission_id?.toString()}
+              emissionName={showPlan?.emission}
+              broadcastDate={showPlan?.date}
             />
           </div>
         </div>

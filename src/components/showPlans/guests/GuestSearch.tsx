@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Search, Plus } from 'lucide-react';
 import { useGuestSearch } from '../../../hooks/guests/useGuestSearch';
-import type { Guest } from '../../../types/guest';
+import type { Guest } from '../../../types';
 
 interface GuestSearchProps {
   onSelect: (guest: Guest) => void;

@@ -36,6 +36,7 @@ import SignupWithInvite from './pages/auth/SignupWithInvite';
 import ResetPassword from './pages/auth/ResetPassword';
 import QuotesList from './pages/Quotes/QuotesList';
 import CreateQuote from './pages/Quotes/CreateQuote';
+import QuoteDetail from './pages/Quotes/QuoteDetail';
 
 const App: React.FC = () => {
   const isAuthenticated = useAuthStore((state) => Boolean(state.token));
@@ -121,6 +122,7 @@ const App: React.FC = () => {
                   <CreateQuote />
                 </ProtectedRoute>
               } />
+              <Route path=":id" element={<QuoteDetail />} />
             </Route>
 
             {/* Tasks */}

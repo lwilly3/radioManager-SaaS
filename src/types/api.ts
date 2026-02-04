@@ -4,6 +4,7 @@ export interface ApiShowResponse {
   title: string;
   type: string;
   emission: string;
+  emission_id?: number | string;
   broadcast_date: string;
   duration: number;
   frequency: string;
@@ -14,6 +15,7 @@ export interface ApiShowResponse {
 }
 
 export interface ApiPresenterResponse {
+  id: number | string;
   name: string;
   contact_info: string | null;
   biography: string | null;
@@ -21,6 +23,7 @@ export interface ApiPresenterResponse {
 }
 
 export interface ApiSegmentResponse {
+  id: number | string;
   title: string;
   type: string;
   duration: number;
@@ -31,6 +34,7 @@ export interface ApiSegmentResponse {
 }
 
 export interface ApiGuestResponse {
+  id: number | string;
   name: string;
   contact_info: string | null;
   biography: string | null;

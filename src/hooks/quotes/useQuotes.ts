@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import {
   subscribeToQuotes,
+  subscribeToQuote,
   createQuote,
   updateQuote,
   deleteQuote,
@@ -59,7 +60,23 @@ export const useQuotes = (
     return () => {
       unsubscribe();
     };
-  }, [filters?.status, filters?.emissionId, filters?.category, realTime, refreshTrigger]);
+  }, [
+    filters?.status, 
+    filters?.emissionId, 
+    filters?.showPlanId,
+    filters?.segmentId,
+    filters?.contentType,
+    filters?.category, 
+    filters?.importance,
+    filters?.authorName,
+    filters?.query,
+    filters?.dateFrom,
+    filters?.dateTo,
+    filters?.segmentType,
+    filters?.tags?.join(','), // Convertir tableau en string pour comparaison
+    realTime, 
+    refreshTrigger
+  ]);
 
   // Créer une citation
   const create = async (data: CreateQuoteData): Promise<string> => {
@@ -116,7 +133,7 @@ export const useQuotes = (
 };
 
 /**
- * Hook pour récupérer une seule citation par ID
+ * Hook pour récupérer une seule citation par ID avec écoute temps réel
  */
 export const useQuote = (quoteId: string | undefined) => {
   const [quote, setQuote] = useState<Quote | null>(null);
@@ -133,15 +150,22 @@ export const useQuote = (quoteId: string | undefined) => {
     setIsLoading(true);
     setError(null);
 
-    getQuoteById(quoteId)
-      .then(fetchedQuote => {
-        setQuote(fetchedQuote);
+    // Utiliser la souscription temps réel pour que les changements soient reflétés immédiatement
+    const unsubscribe = subscribeToQuote(
+      quoteId,
+      (updatedQuote) => {
+        setQuote(updatedQuote);
         setIsLoading(false);
-      })
-      .catch(err => {
-        setError(err instanceof Error ? err.message : 'Erreur de chargement');
+      },
+      (err) => {
+        setError(err.message || 'Erreur de chargement');
         setIsLoading(false);
-      });
+      }
+    );
+
+    return () => {
+      unsubscribe();
+    };
   }, [quoteId]);
 
   return { quote, isLoading, error };

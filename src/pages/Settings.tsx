@@ -12,6 +12,7 @@ import PermissionAuditLog from '../components/settings/PermissionAuditLog';
 import PresentersList from '../components/settings/presenters/PresenterList';
 import RoleManagement from '../components/settings/RoleManagement';
 import VersionInfo from '../components/settings/VersionInfo';
+import PdfSettings from '../components/settings/PdfSettings';
 import {
   Settings as SettingsIcon,
   Users,
@@ -20,6 +21,7 @@ import {
   History,
   UserCog,
   Tag,
+  FileText,
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
@@ -68,7 +70,7 @@ const Settings: React.FC = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
-    if (tab && ['general', 'presenters', 'privileges', 'roles', 'templates', 'audit', 'versions'].includes(tab)) {
+    if (tab && ['general', 'presenters', 'privileges', 'roles', 'templates', 'audit', 'versions', 'pdf'].includes(tab)) {
       setActiveTab(tab);
       log(`Tab set from URL: ${tab}`);
     }
@@ -185,6 +187,16 @@ const Settings: React.FC = () => {
         <Tag className="h-4 w-4" />
         <span>Versions</span>
       </TabsTrigger>
+      <TabsTrigger
+        key="pdf"
+        value="pdf"
+        active={activeTab === 'pdf'}
+        className="flex items-center gap-2 whitespace-nowrap"
+        onValueChange={handleTabChange}
+      >
+        <FileText className="h-4 w-4" />
+        <span>Export PDF</span>
+      </TabsTrigger>
     </TabsList>
   );
 
@@ -225,10 +237,8 @@ const Settings: React.FC = () => {
           key="general-content"
           value="general"
           active={activeTab === 'general'}
-          parentValue={activeTab}
           className="mt-0"
         >
-          {log(`Rendering GeneralSettings for tab: ${activeTab}`)}
           <GeneralSettings />
         </TabsContent>
 
@@ -236,10 +246,8 @@ const Settings: React.FC = () => {
           key="presenters-content"
           value="presenters"
           active={activeTab === 'presenters'}
-          parentValue={activeTab}
           className="mt-0"
         >
-          {log(`Rendering PresentersList for tab: ${activeTab}`)}
           <PresentersList />
         </TabsContent>
 
@@ -247,10 +255,8 @@ const Settings: React.FC = () => {
           key="privileges-content"
           value="privileges"
           active={activeTab === 'privileges'}
-          parentValue={activeTab}
           className="mt-0"
         >
-          {log(`Rendering PresenterPrivileges for tab: ${activeTab}`)}
           <PresenterPrivileges />
         </TabsContent>
 
@@ -258,10 +264,8 @@ const Settings: React.FC = () => {
           key="roles-content"
           value="roles"
           active={activeTab === 'roles'}
-          parentValue={activeTab}
           className="mt-0"
         >
-          {log(`Rendering RoleManagement for tab: ${activeTab}`)}
           <ErrorBoundary>
             <RoleManagement />
           </ErrorBoundary>
@@ -271,10 +275,8 @@ const Settings: React.FC = () => {
           key="templates-content"
           value="templates"
           active={activeTab === 'templates'}
-          parentValue={activeTab}
           className="mt-0"
         >
-          {log(`Rendering RoleTemplates for tab: ${activeTab}`)}
           <ErrorBoundary>
             <RoleTemplates onApplyTemplate={handleApplyTemplate} />
           </ErrorBoundary>
@@ -284,10 +286,8 @@ const Settings: React.FC = () => {
           key="audit-content"
           value="audit"
           active={activeTab === 'audit'}
-          parentValue={activeTab}
           className="mt-0"
         >
-          {log(`Rendering PermissionAuditLog for tab: ${activeTab}`)}
           <PermissionAuditLog />
         </TabsContent>
 
@@ -295,11 +295,18 @@ const Settings: React.FC = () => {
           key="versions-content"
           value="versions"
           active={activeTab === 'versions'}
-          parentValue={activeTab}
           className="mt-0"
         >
-          {log(`Rendering VersionInfo for tab: ${activeTab}`)}
           <VersionInfo />
+        </TabsContent>
+
+        <TabsContent
+          key="pdf-content"
+          value="pdf"
+          active={activeTab === 'pdf'}
+          className="mt-0"
+        >
+          <PdfSettings />
         </TabsContent>
       </Tabs>
     </div>

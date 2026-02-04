@@ -1,12 +1,19 @@
 import api from '../../api/api';
 import type { ApiShowResponse } from '../../types/api';
-import type { ShowPlan } from '../../types';
+import type { ShowPlan, ShowType } from '../../types';
 
 const authHeaders = (token: string) => ({
   headers: { Authorization: `Bearer ${token}` },
 });
 
-const API_URL = 'https://api.radio.audace.ovh';
+// Valider et convertir le type de show
+const mapShowType = (type: string): ShowType => {
+  const validTypes: ShowType[] = [
+    'morning-show', 'news', 'talk-show', 'music-show', 
+    'cultural', 'sports', 'documentary', 'entertainment', 'debate', 'other'
+  ];
+  return validTypes.includes(type as ShowType) ? (type as ShowType) : 'other';
+};
 
 // Convert API response to internal format
 const mapApiShowToShowPlan = (apiShow: ApiShowResponse): ShowPlan => {
@@ -18,33 +25,39 @@ const mapApiShowToShowPlan = (apiShow: ApiShowResponse): ShowPlan => {
     emission_id: apiShow.emission_id ? String(apiShow.emission_id) : undefined,
     emission: apiShow.emission,
     title: apiShow.title,
-    type: apiShow.type,
-    showType: apiShow.type,
+    showType: mapShowType(apiShow.type),
     date: apiShow.broadcast_date,
     description: apiShow.description,
     status: apiShow.status,
-    segments: segments.map((segment) => ({
+    segments: segments.map((segment, index) => ({
       id: segment.id.toString(),
       title: segment.title,
       duration: segment.duration,
       type: segment.type.toLowerCase() as any,
       description: segment.description,
       startTime: segment.startTime || '',
+      position: segment.position?.toString() || index.toString(),
       guests: segment.guests?.map((guest) => guest.id.toString()) || [],
     })),
     presenters: apiShow.presenters?.map((presenter) => ({
       id: presenter.id.toString(),
+      user_id: presenter.id.toString(),
       name: presenter.name,
       isMainPresenter: presenter.isMainPresenter,
     })) || [],
     guests: segments
       .flatMap((segment) => segment.guests || [])
       .map((guest) => ({
-        id: guest.id.toString(),
+        id: Number(guest.id) || 0,
         name: guest.name,
-        role: guest.role as any,
-        biography: guest.biography || undefined,
-        avatar: guest.avatar || undefined,
+        role: guest.role || null,
+        biography: guest.biography || null,
+        avatar: guest.avatar || null,
+        contact_info: guest.contact_info || null,
+        phone: null,
+        email: null,
+        segments: [],
+        appearances: [],
       })),
   };
 };
@@ -75,9 +88,20 @@ export const showsApi = {
   // Get show by ID
   getById: async (token: string, id: string): Promise<ShowPlan> => {
     try {
-      const response = await api.get(`/shows/x/${id}`, authHeaders(token));
+      // Essayer d'abord l'endpoint authentifié
+      const response = await api.get(`/shows/getdetail/${id}`, authHeaders(token));
       return mapApiShowToShowPlan(response.data);
-    } catch (error) {
+    } catch (error: any) {
+      // Si 404 sur getdetail, essayer l'autre endpoint
+      if (error.response?.status === 404) {
+        try {
+          const response = await api.get(`/shows/x/${id}`, authHeaders(token));
+          return mapApiShowToShowPlan(response.data);
+        } catch (fallbackError) {
+          console.error(`Failed to fetch show ${id} (fallback):`, fallbackError);
+          throw fallbackError;
+        }
+      }
       console.error(`Failed to fetch show ${id}:`, error);
       throw error;
     }

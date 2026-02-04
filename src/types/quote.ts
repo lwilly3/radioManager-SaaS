@@ -1,5 +1,17 @@
 // Types pour le module Citations
-// Version MVP - Fonctionnalités manuelles uniquement
+// Version avec intégration segments de conducteurs
+
+import type { SegmentType } from './index';
+
+/**
+ * Types de contenu éditorial (simplifié à 4 choix)
+ * Règle UX : Trop de choix = paralysie décisionnelle
+ */
+export type QuoteContentType = 
+  | 'quote'           // Citation exacte (verbatim)
+  | 'key_idea'        // Idée clé / Point important
+  | 'statement'       // Déclaration / Prise de position
+  | 'fact';           // Fait / Information vérifiable
 
 /**
  * Auteur d'une citation
@@ -7,8 +19,18 @@
 export interface Author {
   id?: string;
   name: string;
-  role?: 'guest' | 'presenter' | 'other';
+  role?: 'guest' | 'presenter' | 'caller' | 'other';
   avatar?: string;
+}
+
+/**
+ * Liaison avec un segment de conducteur
+ */
+export interface SegmentLink {
+  id: string;                         // ID du segment
+  title: string;                      // Titre du segment
+  type: SegmentType;                  // intro, interview, music, etc.
+  position: number;                   // Position dans le conducteur
 }
 
 /**
@@ -18,9 +40,20 @@ export interface Context {
   showId?: string;
   showName?: string;
   showPlanId?: string;
+  showPlanTitle?: string;
   emissionId?: string;
-  date?: string;
-  timestamp?: string; // HH:mm:ss dans l'émission
+  emissionName?: string;
+  broadcastDate?: string;             // YYYY-MM-DD
+  timestamp?: string;                 // HH:mm:ss dans l'émission (optionnel)
+}
+
+/**
+ * Horodatage optionnel (jamais bloquant)
+ */
+export interface QuoteTiming {
+  timestamp?: string;                 // HH:mm:ss dans l'émission
+  segmentMinute?: number;             // Minute dans le segment
+  approximateTime?: 'start' | 'middle' | 'end';
 }
 
 /**
@@ -30,7 +63,6 @@ export interface Context {
 export interface Source {
   type: 'manual' | 'stream_transcription' | 'audio_file';
   transcriptionId?: string; // Pour Partie 2
-  segmentId?: string; // Pour Partie 2
   streamTimestamp?: number; // Pour Partie 2
   audioUrl?: string;
   audioFile?: string;
@@ -38,12 +70,27 @@ export interface Source {
 }
 
 /**
+ * Catégorie thématique de la citation
+ */
+export type QuoteCategory = 
+  | 'politique'
+  | 'sport'
+  | 'culture'
+  | 'economie'
+  | 'societe'
+  | 'humour'
+  | 'autre';
+
+/**
  * Métadonnées de la citation
  */
 export interface Metadata {
-  category?: 'statement' | 'position' | 'quote' | 'fact';
+  category?: QuoteCategory;           // Catégorie thématique
+  contentType?: QuoteContentType;     // Type de contenu (quote, key_idea, etc.)
   tags: string[];
+  keywords?: string[];                // Mots-clés extraits pour recherche
   language?: 'fr' | 'en';
+  importance?: 'low' | 'medium' | 'high';
   isVerified?: boolean;
   capturedBy?: string;
   capturedAt?: Date;
@@ -72,35 +119,68 @@ export interface Publication {
 }
 
 /**
- * Citation complète
+ * Citation complète avec liaison segment
  */
 export interface Quote {
   id: string;
   content: string;
+  contentType: QuoteContentType;
   author: Author;
+  segment?: SegmentLink;              // Liaison segment (nouveau)
   context: Context;
+  timing?: QuoteTiming;               // Horodatage optionnel (nouveau)
   source: Source;
   metadata: Metadata;
   media?: Media;
-  publications: Publication[];
-  status: 'draft' | 'approved' | 'published' | 'archived';
+  status: 'draft' | 'validated' | 'archived';
   createdBy: string;
+  createdByName?: string;
   createdAt: string;
   updatedAt: string;
 }
 
 /**
- * Données pour créer une citation
+ * Données pour créer une citation (mode rapide)
+ * Seuls content et authorName sont requis
  */
 export interface CreateQuoteData {
+  // ✅ REQUIS (Mode rapide)
   content: string;
-  author: Author;
-  context?: Context;
-  source: Omit<Source, 'transcriptionId' | 'segmentId' | 'streamTimestamp'>; // MVP : pas de transcription
-  metadata?: Metadata;
-  media?: Media;
-  status?: 'draft' | 'approved' | 'published' | 'archived';
-  createdBy?: string;
+  authorName: string;
+  
+  // Optionnels mais recommandés
+  authorId?: string;
+  authorRole?: Author['role'];
+  authorAvatar?: string;
+  
+  // Liaison segment (optionnel)
+  segmentId?: string;
+  segmentTitle?: string;
+  segmentType?: SegmentType;
+  segmentPosition?: number;
+  
+  // Contexte (pré-rempli si depuis conducteur)
+  showPlanId?: string;
+  showPlanTitle?: string;
+  emissionId?: string;
+  emissionName?: string;
+  broadcastDate?: string;
+  
+  // Horodatage (100% optionnel)
+  timestamp?: string;
+  segmentMinute?: number;
+  approximateTime?: 'start' | 'middle' | 'end';
+  
+  // Métadonnées
+  contentType?: QuoteContentType;
+  category?: Metadata['category'];
+  tags?: string[];
+  importance?: 'low' | 'medium' | 'high';
+  
+  // Source
+  sourceType?: Source['type'];
+  audioUrl?: string;
+  audioDuration?: number;
 }
 
 /**
@@ -108,21 +188,49 @@ export interface CreateQuoteData {
  */
 export interface UpdateQuoteData {
   content?: string;
+  contentType?: QuoteContentType;
   author?: Author;
+  segment?: SegmentLink;
   context?: Context;
+  timing?: QuoteTiming;
   metadata?: Metadata;
   media?: Media;
   status?: Quote['status'];
 }
 
 /**
- * Filtres pour la liste des citations
+ * Filtres pour la recherche avancée de citations
  */
 export interface QuoteFilters {
-  status?: Quote['status'];
-  emissionId?: string;
+  // Recherche texte
+  query?: string;                     // Recherche full-text
+  
+  // Filtres principaux
+  authorName?: string;
   authorId?: string;
-  sourceType?: Source['type'];
+  emissionId?: string;
+  emissionName?: string;
+  showPlanId?: string;
+  segmentId?: string;
+  segmentType?: SegmentType;
+  
+  // Filtres métadonnées
+  contentType?: QuoteContentType;
   category?: Metadata['category'];
   tags?: string[];
+  importance?: 'low' | 'medium' | 'high';
+  status?: Quote['status'];
+  sourceType?: Source['type'];
+  
+  // Filtres date
+  dateFrom?: string;                  // YYYY-MM-DD
+  dateTo?: string;                    // YYYY-MM-DD
+  
+  // Pagination
+  limit?: number;
+  startAfter?: string;                // Cursor pagination
+  
+  // Tri
+  orderBy?: 'createdAt' | 'broadcastDate' | 'authorName' | 'importance';
+  orderDirection?: 'asc' | 'desc';
 }

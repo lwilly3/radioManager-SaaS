@@ -5,6 +5,37 @@ import type { Version } from '../types/version';
 
 export const defaultVersions: Version[] = [
   {
+    version: "1.3.0",
+    releaseDate: "2026-02-04",
+    description: "Système de templates PDF pour les archives et optimisation des notes techniques.",
+    features: [
+      "Templates PDF pour Archives",
+      "Template \"Classique\" : format simple portrait, liste compacte",
+      "Template \"Professionnel\" : format paysage avec en-tête stylisé, statistiques, badges de statut",
+      "Choix du template et de l'orientation lors de l'export",
+      "Configuration des paramètres par défaut dans Réglages > Export PDF",
+      "Stockage des préférences dans Firestore (archiveDefaultTemplate, archiveDefaultOrientation)",
+      "Notes techniques optimisées (Conducteur - Volet droit)",
+      "Debounce de 800ms pour réduire les appels Firestore",
+      "Indicateur de statut de sauvegarde (⏳ saving / ✅ saved / ❌ error)",
+      "Templates rapides prédéfinis (🎤 Micro, 🎵 Jingle, 📞 Appel, 🎥 Vidéo, ⚠️ Attention)",
+      "Section rétractable pour gagner de l'espace",
+      "Toolbar enrichie (couleurs texte/fond, liens, titres H3)",
+      "Prévention des conflits lors de modifications simultanées"
+    ],
+    bugfixes: [
+      "Settings.tsx : Suppression des appels log() dans le JSX (erreur void → ReactNode)",
+      "Settings.tsx : Suppression de la prop parentValue non définie dans TabsContentProps",
+      "ShowPlanSidebar.tsx : Correction guest.contact.email → guest.email (type Guest)"
+    ],
+    improvements: [
+      "Nouveau fichier archivePdfGenerator.ts refactorisé avec deux générateurs",
+      "Ajout ARCHIVE_PDF_TEMPLATES dans pdfTemplates.ts",
+      "Hook usePdfSettings étendu avec archiveDefaultTemplate et archiveDefaultOrientation",
+      "Export des nouvelles fonctions dans src/utils/pdf/index.ts"
+    ]
+  },
+  {
     version: "1.2.0",
     releaseDate: "2026-01-30",
     description: "Nouvelle version majeure du module Citations avec création manuelle et depuis conducteurs, corrections importantes et améliorations techniques.",

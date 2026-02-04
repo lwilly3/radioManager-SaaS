@@ -46,6 +46,7 @@ export default function CreateQuote() {
   
   // Récupération des données du conducteur si présentes
   const showPlanContext = location.state?.showPlan;
+  const segmentContext = location.state?.segment;
   const [defaultValues, setDefaultValues] = useState<Partial<QuoteFormData> | undefined>();
 
   // Pré-remplir le formulaire avec les données du conducteur
@@ -72,7 +73,6 @@ export default function CreateQuote() {
     try {
       // Upload du fichier audio si présent
       let audioUrl: string | undefined;
-      let audioFileName: string | undefined;
       let audioDuration: number | undefined;
 
       if (formData.audioFile) {
@@ -85,7 +85,6 @@ export default function CreateQuote() {
         
         // Récupération de l'URL
         audioUrl = await getDownloadURL(storageRef);
-        audioFileName = file.name;
 
         // Récupération de la durée (si possible via l'élément audio)
         try {
@@ -107,48 +106,57 @@ export default function CreateQuote() {
         ? formData.tags.split(',').map(tag => tag.trim()).filter(Boolean)
         : [];
 
-      // Construction de l'objet citation
+      // Construction de l'objet citation avec le nouveau format
       const quoteData: CreateQuoteData = {
+        // Champs requis
         content: formData.content,
-        author: {
-          name: formData.authorName,
-          ...(formData.authorRole && { role: formData.authorRole as 'guest' | 'presenter' | 'other' }),
-          ...(formData.authorAvatar && { avatar: formData.authorAvatar }),
-        },
-        context: (formData.showName || formData.date || formData.timestamp || showPlanContext) ? {
-          ...(showPlanContext?.id && { showId: showPlanContext.id.toString() }),
-          ...(formData.showName || showPlanContext?.title) && { showName: formData.showName || showPlanContext?.title },
-          ...(showPlanContext?.id && { showPlanId: showPlanContext.id.toString() }),
-          ...(showPlanContext?.emission_id && { emissionId: showPlanContext.emission_id.toString() }),
-          ...(formData.date && { date: formData.date }),
-          ...(formData.timestamp && { timestamp: formData.timestamp }),
-        } : undefined,
-        source: {
-          type: 'manual',
-          ...(audioUrl && { audioUrl }),
-          ...(audioFileName && { audioFile: audioFileName }),
-          ...(audioDuration && { duration: audioDuration }),
-        },
-        metadata: {
-          ...(formData.category && { category: formData.category as 'statement' | 'position' | 'quote' | 'fact' }),
-          tags,
-          language: 'fr',
-          isVerified: false,
-        },
-        status: 'draft',
-        createdBy: user.id,
+        authorName: formData.authorName,
+        
+        // Auteur optionnel
+        authorRole: formData.authorRole as 'guest' | 'presenter' | 'caller' | 'other' | undefined,
+        authorAvatar: formData.authorAvatar || undefined,
+        
+        // Liaison segment si présent
+        segmentId: segmentContext?.id?.toString(),
+        segmentTitle: segmentContext?.title,
+        segmentType: segmentContext?.type,
+        segmentPosition: segmentContext?.position,
+        
+        // Contexte depuis le conducteur si présent
+        showPlanId: showPlanContext?.id?.toString(),
+        showPlanTitle: showPlanContext?.title,
+        emissionId: showPlanContext?.emission_id?.toString(),
+        emissionName: formData.showName || showPlanContext?.emission,
+        broadcastDate: formData.date,
+        
+        // Horodatage optionnel
+        timestamp: formData.timestamp,
+        
+        // Métadonnées
+        contentType: 'quote',
+        category: formData.category as CreateQuoteData['category'],
+        tags,
+        importance: 'medium',
+        
+        // Source
+        sourceType: 'manual',
+        audioUrl: audioUrl,
+        audioDuration: audioDuration,
       };
 
-      // Nettoyage des valeurs undefined
-      const cleanedData = removeUndefined(quoteData) as CreateQuoteData;
-
       // Création dans Firestore
-      await createQuote(cleanedData, user.id);
+      await createQuote(quoteData, user.id, user.name);
 
-      // Redirection vers la liste avec succès
-      navigate('/quotes', { 
-        state: { message: 'Citation créée avec succès !' } 
-      });
+      // Redirection : vers le conducteur si on vient d'un segment, sinon vers la liste
+      if (showPlanContext?.id) {
+        navigate(`/show-plans/${showPlanContext.id}`, { 
+          state: { message: 'Citation créée avec succès !' } 
+        });
+      } else {
+        navigate('/quotes', { 
+          state: { message: 'Citation créée avec succès !' } 
+        });
+      }
     } catch (err: any) {
       console.error('Erreur lors de la création:', err);
       setError(err.message || 'Une erreur est survenue lors de la création');
@@ -157,7 +165,12 @@ export default function CreateQuote() {
   };
 
   const handleCancel = () => {
-    navigate('/quotes');
+    // Retourner au conducteur si on vient d'un segment, sinon à la liste des citations
+    if (showPlanContext?.id) {
+      navigate(`/show-plans/${showPlanContext.id}`);
+    } else {
+      navigate('/quotes');
+    }
   };
 
   return (
@@ -179,6 +192,9 @@ export default function CreateQuote() {
                   <Radio className="w-4 h-4 text-indigo-600" />
                   <p className="text-sm text-gray-500">
                     Depuis le conducteur : <span className="font-medium">{showPlanContext.title}</span>
+                    {segmentContext && (
+                      <span className="text-indigo-600"> → {segmentContext.title}</span>
+                    )}
                   </p>
                 </div>
               )}

@@ -1913,24 +1913,36 @@ export const SegmentCard: React.FC<SegmentCardProps> = ({
 
 ## ✅ Checklist d'implémentation
 
-### Phase 1 : Structure de base
-- [ ] Types TypeScript simplifiés (4 contentTypes, sans publication)
-- [ ] Service Firebase CRUD complet
-- [ ] Hook useQuotes avec React Query
-- [ ] Page de liste des citations
+### Phase 1 : Structure de base ✅
+- [x] Types TypeScript simplifiés (4 contentTypes, sans publication)
+- [x] Service Firebase CRUD complet
+- [x] Hook useQuotes avec React Query
+- [x] Page de liste des citations (QuotesList)
+- [x] Page de détail citation (QuoteDetail)
+- [x] Composant QuoteCard avec actions contextuelles
 
-### Phase 2 : Intégration conducteur
-- [ ] Bouton "Ajouter citation" contextuel sur chaque segment
+### Phase 2 : Intégration conducteur ✅
+- [x] Lien discret vers citations dans ShowPlanDetail (compteur + icône)
+- [x] Hook useQuotesByShowPlan optimisé (double requête string/number)
+- [x] Filtrage par URL (`/quotes?showPlanId=X`)
+- [x] Header contextuel dans QuotesList (affiche "Citations du conducteur X")
+- [x] Bouton "Ajouter citation" contextuel sur chaque segment (via SegmentDetailsWithQuotes)
 - [ ] Formulaire en **mode rapide** par défaut (2 champs)
 - [ ] Mode avancé dépliant pour métadonnées
-- [ ] Aperçu dernière citation sans déplier
-- [ ] Horodatage optionnel (jamais bloquant)
+- [ ] Aperçu dernière citation dans SegmentCard (sans déplier)
+- [x] Horodatage optionnel (jamais bloquant)
+
+### Phase 2b : Gestion des statuts ✅
+- [x] Changement de statut inline dans QuoteCard
+- [x] UI ergonomique dans QuoteDetail (header coloré + boutons contextuels)
+- [x] Permissions owner-based (créateur peut modifier son statut)
+- [x] Mise à jour temps réel via subscribeToQuote
 
 ### Phase 3 : Recherche avancée
 - [ ] Composant QuoteSearchBar avec suggestions
 - [ ] Tags populaires en raccourcis
 - [ ] Recherches récentes de l'utilisateur
-- [ ] Filtres multiples (émission, auteur, catégorie, dates)
+- [x] Filtres multiples (émission, auteur, catégorie, dates)
 - [ ] Pagination par curseur
 
 ### 🔮 Phase 4 : Évolutions futures
@@ -1938,6 +1950,36 @@ export const SegmentCard: React.FC<SegmentCardProps> = ({
 - [ ] Génération d'images avec templates
 - [ ] Planification de publications
 - [ ] Transcription automatique (si budget)
+- [ ] Index Firestore composite pour orderBy optimisé
+
+---
+
+## 🔧 Notes techniques d'implémentation
+
+### Hook useQuotesByShowPlan
+
+Le hook effectue **deux requêtes Firestore parallèles** pour gérer les différences de type de `showPlanId` (string vs number) :
+
+```typescript
+// src/hooks/quotes/useQuotesByShowPlan.ts
+// Requête avec showPlanId comme string
+where('context.showPlanId', '==', showPlanIdStr)
+// + Requête avec showPlanId comme number (si applicable)
+where('context.showPlanId', '==', showPlanIdNum)
+```
+
+Les résultats sont fusionnés et dédupliqués côté client.
+
+> ⚠️ **Note** : Pour activer `orderBy` côté serveur, créer un index composite Firestore sur `context.showPlanId` + `createdAt`.
+
+### Permissions owner-based
+
+Les utilisateurs peuvent modifier le statut de leurs propres citations sans avoir besoin de permissions admin :
+
+```typescript
+const isOwner = user?.id === quote.createdBy;
+const canChangeStatus = isOwner || hasPermission('quotes_edit');
+```
 
 ---
 
