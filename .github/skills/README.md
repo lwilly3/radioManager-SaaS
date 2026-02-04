@@ -36,6 +36,7 @@ Les **Agent Skills** sont des guides spécialisés qui orientent l'agent IA dans
 |-------|----------|-------------|------------------|
 | [**api-consumer**](./api-consumer/SKILL.md) | Critique | Documentation complète de l'API backend (~85 routes) | Intégration API, création services, debug requêtes |
 | [**firebase**](./firebase/SKILL.md) | Haute | Firebase/Firestore pour Chat, Tasks, Quotes | Modules temps réel, CRUD Firestore, Storage |
+| [**quotes-integration**](./quotes-integration/SKILL.md) | Haute | Intégration citations sur segments de conducteurs | Citations, segments, recherche, publication |
 
 Le skill **api-consumer** inclut une documentation détaillée par module :
 - [routes/auth.md](./api-consumer/routes/auth.md) - Authentification JWT, invitations, reset password
@@ -125,6 +126,9 @@ L'agent active automatiquement les skills selon le contexte :
 | "Ajoute un listener Firestore" | `firebase` → `coding-standards` |
 | "Crée un chat en temps réel" | `firebase` → `architecture` → `coding-standards` |
 | "Upload un fichier audio" | `firebase` → `security` |
+| "Ajoute une citation sur un segment" | `quotes-integration` → `firebase` → `coding-standards` |
+| "Recherche des citations" | `quotes-integration` → `firebase` |
+| "Intègre les citations sur les conducteurs" | `quotes-integration` → `architecture` → `firebase` |
 
 ### Exemples de déclencheurs
 
@@ -347,6 +351,32 @@ Pour toute question sur les skills :
 
 ## 📝 Changelog des skills
 
+### Version 1.3.0 - 2026-02-04
+
+**Ajout du skill quotes-integration**
+
+✨ **Nouveau skill :**
+- `quotes-integration` : Intégration complète des citations sur les segments de conducteurs
+
+📝 **Documentation :**
+- Structure de données Quote avec liaison segment
+- Service Firebase CRUD complet avec recherche avancée
+- Composant SegmentQuoteForm avec pré-remplissage automatique
+- Composant QuoteSearchBar avec filtres multiples
+- Hook useQuotes avec React Query
+- Horodatage optionnel (non bloquant)
+- Index Firestore recommandés
+- Intégration sur la page conducteur
+
+🎯 **Fonctionnalités couvertes :**
+- Ajout de citations sur chaque segment
+- Métadonnées (intervenant, horodatage optionnel, type de contenu)
+- Base éditoriale consultable et réutilisable
+- Recherche full-text et filtres avancés
+- Génération de contenu pour plateformes
+
+---
+
 ### Version 1.2.0 - 2026-02-03
 
 **Ajout du skill Firebase**
@@ -412,6 +442,6 @@ Pour toute question sur les skills :
 
 ---
 
-**Dernière mise à jour** : 2026-02-03  
-**Version** : 1.2.0  
+**Dernière mise à jour** : 2026-02-04  
+**Version** : 1.3.0  
 **Auteur** : Équipe RadioManager SaaS
