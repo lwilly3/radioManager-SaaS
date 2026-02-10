@@ -38,6 +38,12 @@ Les **Agent Skills** sont des guides spécialisés qui orientent l'agent IA dans
 | [**firebase**](./firebase/SKILL.md) | Haute | Firebase/Firestore pour Chat, Tasks, Quotes | Modules temps réel, CRUD Firestore, Storage |
 | [**quotes-integration**](./quotes-integration/SKILL.md) | Haute | Intégration citations sur segments de conducteurs | Citations, segments, recherche, publication |
 
+### Phase 4 - Modules Métier 🔄
+
+| Skill | Priorité | Description | Quand l'utiliser |
+|-------|----------|-------------|------------------|
+| [**inventory**](./inventory/SKILL.md) | Haute | Gestion inventaire multi-sites/multi-entreprises | Équipements, mouvements, maintenance, listes configurables |
+
 Le skill **api-consumer** inclut une documentation détaillée par module :
 - [routes/auth.md](./api-consumer/routes/auth.md) - Authentification JWT, invitations, reset password
 - [routes/users.md](./api-consumer/routes/users.md) - Gestion utilisateurs, recherche
@@ -129,6 +135,10 @@ L'agent active automatiquement les skills selon le contexte :
 | "Ajoute une citation sur un segment" | `quotes-integration` → `firebase` → `coding-standards` |
 | "Recherche des citations" | `quotes-integration` → `firebase` |
 | "Intègre les citations sur les conducteurs" | `quotes-integration` → `architecture` → `firebase` |
+| "Crée le module inventaire" | `inventory` → `firebase` → `architecture` → `coding-standards` |
+| "Ajoute un équipement" | `inventory` → `firebase` → `coding-standards` |
+| "Configure les catégories d'inventaire" | `inventory` → `firebase` |
+| "Transfère un équipement entre sites" | `inventory` → `firebase` → `security` |
 
 ### Exemples de déclencheurs
 

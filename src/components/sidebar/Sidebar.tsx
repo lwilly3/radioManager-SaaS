@@ -15,6 +15,12 @@ import {
   CheckSquare,
   UserCog,
   Quote,
+  Package,
+  Plus,
+  ChevronDown,
+  ChevronRight,
+  Wrench,
+  ArrowRightLeft,
 } from 'lucide-react';
 import SidebarLogo from './SidebarLogo';
 import NavLink from './NavLink';
@@ -30,9 +36,13 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const logout = useLogout();
   const user = useAuthStore((state) => state.user);
   const permissions = useAuthStore((state) => state.permissions);
+  const [inventoryOpen, setInventoryOpen] = React.useState(
+    location.pathname.startsWith('/inventory')
+  );
 
   const handleLogout = () => {
     logout();
@@ -141,6 +151,58 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               text="Citations"
               isActive={location.pathname.startsWith('/quotes')}
             />
+          )}
+
+          {permissions?.inventory_view && (
+            <div>
+              <button
+                onClick={() => setInventoryOpen(!inventoryOpen)}
+                className={`w-full flex items-center justify-between gap-2 px-4 py-2 rounded-lg transition-colors ${
+                  location.pathname.startsWith('/inventory')
+                    ? 'bg-indigo-50 text-indigo-700'
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Package className={`h-5 w-5 ${location.pathname.startsWith('/inventory') ? 'text-indigo-600' : 'text-gray-500'}`} />
+                  <span>Inventaire</span>
+                </div>
+                {inventoryOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              </button>
+              {inventoryOpen && (
+                <div className="ml-6 mt-1 space-y-1 border-l-2 border-gray-100 pl-3">
+                  <button
+                    onClick={() => navigate('/inventory')}
+                    className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors ${
+                      location.pathname === '/inventory' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Package className="h-3.5 w-3.5" />
+                    Liste & Analyse
+                  </button>
+                  {permissions?.inventory_create && (
+                    <button
+                      onClick={() => navigate('/inventory/create')}
+                      className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors ${
+                        location.pathname === '/inventory/create' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      Nouvel équipement
+                    </button>
+                  )}
+                  {permissions?.inventory_manage_settings && (
+                    <button
+                      onClick={() => navigate('/settings?tab=inventory')}
+                      className="w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                    >
+                      <Settings className="h-3.5 w-3.5" />
+                      Configuration
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           )}
 
           {permissions?.can_view_users && (

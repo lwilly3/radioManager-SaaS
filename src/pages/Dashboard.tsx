@@ -5,7 +5,7 @@ import StatCard from '../components/dashboard/StatCard';
 import ScheduleItem from '../components/dashboard/ScheduleItem';
 import LiveShowBanner from '../components/dashboard/LiveShowBanner';
 import QuickActions from '../components/dashboard/QuickActions';
-import { useDashboard } from '../hooks/dashbord/useDashboard';
+import { useDashboard } from '../hooks/dashboard/useDashboard';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useAuthStore } from '../store/useAuthStore';

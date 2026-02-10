@@ -5,6 +5,60 @@ import type { Version } from '../types/version';
 
 export const defaultVersions: Version[] = [
   {
+    version: "1.4.0",
+    releaseDate: "2026-02-10",
+    description: "Nouveau module **Inventaire** complet pour la gestion des équipements et du matériel radio multi-entreprises.",
+    features: [
+      "Module Inventaire",
+      "Page d'index avec statistiques, onglets (Tous, Archivés, Maintenance, Stock bas, Analyse), recherche et filtres avancés",
+      "Vue grille (cartes) et vue liste (tableau) avec basculement",
+      "Sélection multiple et actions groupées (archiver, supprimer)",
+      "Export CSV de l'inventaire",
+      "Onglet Analyse avec barres de répartition par catégorie, statut, localisation et condition",
+      "Gestion des équipements",
+      "Formulaire de création/édition complet : nom, référence, numéro de série, marque, modèle, catégorie, statut, condition",
+      "Référence automatique avec préfixe configurable et compteur incrémental (transactions Firestore)",
+      "Upload de photos et documents (Firebase Storage)",
+      "Localisation hiérarchique : Entreprise > Site > Salle (auto-sélection en cascade)",
+      "Attribution à un utilisateur",
+      "Gestion des consommables (quantité, stock min, alertes)",
+      "Page de détail d'équipement",
+      "4 onglets : Général, Historique des mouvements, Maintenance, Documents",
+      "Actions rapides : modifier, déplacer, archiver",
+      "Mouvements d'équipement",
+      "Formulaire de mouvement avec localisation source/destination",
+      "Types : transfert, attribution, retour, maintenance, prêt",
+      "Historique complet des mouvements",
+      "Configuration Inventaire (Réglages)",
+      "Listes configurables : catégories, statuts, conditions (avec couleurs et icônes)",
+      "Gestion des localisations : ajout/édition/suppression d'entreprises, sites, salles",
+      "Suppression sécurisée avec vérification des dépendances (équipements liés, entités enfants)",
+      "Préfixe et compteur de référence automatique",
+      "Composants UI Inventaire",
+      "EquipmentCard : carte avec photo/placeholder, badges statut/catégorie, localisation, menu contextuel, badge archivé",
+      "StatusBadge : badge coloré avec pastille selon le statut (9 statuts prédéfinis)",
+      "CategoryBadge : badge avec icône Lucide selon la catégorie",
+      "ConditionIndicator : barre de progression colorée avec score",
+      "LocationBreadcrumb : fil d'Ariane Entreprise › Site › Salle"
+    ],
+    bugfixes: [
+      "Fix des classes CSS primary-* inexistantes → remplacées par blue-* dans tout le module (56+ occurrences)",
+      "Fix des erreurs Firebase undefined → null pour tous les champs optionnels",
+      "Fix du bouton submit invisible sur CreateEquipment (positionnement fixe)",
+      "Fix de la propagation d'événements sur les boutons dans les accordéons (Settings)",
+      "Fix du chevauchement bouton Restaurer / bouton menu sur les cartes archivées",
+      "Amélioration de la visibilité des icônes et pictogrammes sur les cartes (contraste, taille, opacité)"
+    ],
+    improvements: [
+      "API Firebase : src/api/firebase/inventory.ts — CRUD complet + fonctions de dépendances",
+      "Types : src/types/inventory.ts — Equipment, EquipmentMovement, InventorySettings, ConfigurableOption",
+      "13+ hooks React Query dans src/hooks/inventory/",
+      "Permissions granulaires : inventory_view, inventory_create, inventory_edit, inventory_move, inventory_delete, inventory_manage_settings",
+      "Intégration sidebar avec icône Package et badge de permissions",
+      "Route protégée /inventory/* dans App.tsx"
+    ]
+  },
+  {
     version: "1.3.0",
     releaseDate: "2026-02-04",
     description: "Système de templates PDF pour les archives et optimisation des notes techniques.",

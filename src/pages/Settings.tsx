@@ -13,6 +13,7 @@ import PresentersList from '../components/settings/presenters/PresenterList';
 import RoleManagement from '../components/settings/RoleManagement';
 import VersionInfo from '../components/settings/VersionInfo';
 import PdfSettings from '../components/settings/PdfSettings';
+import InventorySettingsTab from '../components/settings/InventorySettingsTab';
 import {
   Settings as SettingsIcon,
   Users,
@@ -22,6 +23,7 @@ import {
   UserCog,
   Tag,
   FileText,
+  Package,
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
@@ -70,7 +72,7 @@ const Settings: React.FC = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
-    if (tab && ['general', 'presenters', 'privileges', 'roles', 'templates', 'audit', 'versions', 'pdf'].includes(tab)) {
+    if (tab && ['general', 'presenters', 'privileges', 'roles', 'templates', 'audit', 'versions', 'pdf', 'inventory'].includes(tab)) {
       setActiveTab(tab);
       log(`Tab set from URL: ${tab}`);
     }
@@ -197,6 +199,16 @@ const Settings: React.FC = () => {
         <FileText className="h-4 w-4" />
         <span>Export PDF</span>
       </TabsTrigger>
+      <TabsTrigger
+        key="inventory"
+        value="inventory"
+        active={activeTab === 'inventory'}
+        className="flex items-center gap-2 whitespace-nowrap"
+        onValueChange={handleTabChange}
+      >
+        <Package className="h-4 w-4" />
+        <span>Inventaire</span>
+      </TabsTrigger>
     </TabsList>
   );
 
@@ -307,6 +319,17 @@ const Settings: React.FC = () => {
           className="mt-0"
         >
           <PdfSettings />
+        </TabsContent>
+
+        <TabsContent
+          key="inventory-content"
+          value="inventory"
+          active={activeTab === 'inventory'}
+          className="mt-0"
+        >
+          <ErrorBoundary>
+            <InventorySettingsTab />
+          </ErrorBoundary>
         </TabsContent>
       </Tabs>
     </div>

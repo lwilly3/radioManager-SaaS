@@ -80,6 +80,22 @@ export interface UserPermissions {
   quotes_edit: boolean;
   quotes_delete: boolean;
   quotes_publish: boolean;
+
+  // Inventaire
+  inventory_view: boolean;
+  inventory_view_all_companies: boolean;
+  inventory_view_values: boolean;
+  inventory_create: boolean;
+  inventory_edit: boolean;
+  inventory_delete: boolean;
+  inventory_move: boolean;
+  inventory_approve_transfers: boolean;
+  inventory_approve_company_loans: boolean;
+  inventory_maintenance_create: boolean;
+  inventory_maintenance_manage: boolean;
+  inventory_manage_documents: boolean;
+  inventory_manage_settings: boolean;
+  inventory_manage_locations: boolean;
 }
 
 export interface RoleTemplate {
@@ -466,6 +482,82 @@ export const permissionCategories: PermissionCategory[] = [
       },
     ],
   },
+  {
+    id: 'inventaire',
+    name: 'Inventaire',
+    permissions: [
+      {
+        key: 'inventory_view',
+        label: "Voir l'inventaire",
+        description: 'Peut accéder à la liste des équipements',
+      },
+      {
+        key: 'inventory_view_all_companies',
+        label: 'Voir toutes les entreprises',
+        description: 'Accès à l\'inventaire de toutes les entreprises du groupe',
+      },
+      {
+        key: 'inventory_view_values',
+        label: 'Voir les valeurs',
+        description: 'Peut voir les prix et valeurs des équipements',
+      },
+      {
+        key: 'inventory_create',
+        label: 'Créer des équipements',
+        description: 'Peut ajouter de nouveaux équipements',
+      },
+      {
+        key: 'inventory_edit',
+        label: 'Modifier des équipements',
+        description: 'Peut éditer les informations des équipements',
+      },
+      {
+        key: 'inventory_delete',
+        label: 'Supprimer des équipements',
+        description: 'Peut archiver ou supprimer des équipements',
+      },
+      {
+        key: 'inventory_move',
+        label: 'Gérer les mouvements',
+        description: 'Peut créer des attributions, transferts et prêts',
+      },
+      {
+        key: 'inventory_approve_transfers',
+        label: 'Approuver les transferts',
+        description: 'Peut approuver les transferts inter-sites',
+      },
+      {
+        key: 'inventory_approve_company_loans',
+        label: 'Approuver les prêts inter-entreprises',
+        description: 'Peut approuver les prêts entre entreprises',
+      },
+      {
+        key: 'inventory_maintenance_create',
+        label: 'Créer des maintenances',
+        description: 'Peut créer des fiches de maintenance',
+      },
+      {
+        key: 'inventory_maintenance_manage',
+        label: 'Gérer les maintenances',
+        description: 'Peut gérer toutes les maintenances',
+      },
+      {
+        key: 'inventory_manage_documents',
+        label: 'Gérer les documents',
+        description: 'Peut upload/supprimer des documents',
+      },
+      {
+        key: 'inventory_manage_settings',
+        label: "Configurer l'inventaire",
+        description: 'Peut gérer les listes (catégories, statuts...)',
+      },
+      {
+        key: 'inventory_manage_locations',
+        label: 'Gérer les localisations',
+        description: 'Peut gérer les sites et locaux',
+      },
+    ],
+  },
 ];
 
 export const defaultRoleTemplates: RoleTemplate[] = [
@@ -509,6 +601,21 @@ export const defaultRoleTemplates: RoleTemplate[] = [
       quotes_edit: true,
       quotes_delete: false,
       quotes_publish: false,
+      // Inventaire (accès limité)
+      inventory_view: true,
+      inventory_view_all_companies: false,
+      inventory_view_values: false,
+      inventory_create: false,
+      inventory_edit: false,
+      inventory_delete: false,
+      inventory_move: false,
+      inventory_approve_transfers: false,
+      inventory_approve_company_loans: false,
+      inventory_maintenance_create: false,
+      inventory_maintenance_manage: false,
+      inventory_manage_documents: false,
+      inventory_manage_settings: false,
+      inventory_manage_locations: false,
     },
   },
   {
@@ -537,6 +644,21 @@ export const defaultRoleTemplates: RoleTemplate[] = [
       quotes_edit: true,
       quotes_delete: false,
       quotes_publish: false,
+      // Inventaire
+      inventory_view: true,
+      inventory_view_all_companies: false,
+      inventory_view_values: true,
+      inventory_create: true,
+      inventory_edit: true,
+      inventory_delete: false,
+      inventory_move: true,
+      inventory_approve_transfers: false,
+      inventory_approve_company_loans: false,
+      inventory_maintenance_create: true,
+      inventory_maintenance_manage: true,
+      inventory_manage_documents: true,
+      inventory_manage_settings: false,
+      inventory_manage_locations: false,
     },
   },
   {
@@ -557,6 +679,21 @@ export const defaultRoleTemplates: RoleTemplate[] = [
       quotes_edit: false,
       quotes_delete: false,
       quotes_publish: false,
+      // Inventaire (lecture seule)
+      inventory_view: true,
+      inventory_view_all_companies: false,
+      inventory_view_values: false,
+      inventory_create: false,
+      inventory_edit: false,
+      inventory_delete: false,
+      inventory_move: false,
+      inventory_approve_transfers: false,
+      inventory_approve_company_loans: false,
+      inventory_maintenance_create: false,
+      inventory_maintenance_manage: false,
+      inventory_manage_documents: false,
+      inventory_manage_settings: false,
+      inventory_manage_locations: false,
     },
   },
 ];

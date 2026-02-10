@@ -24,7 +24,7 @@ import ShowPlanTimer from '../components/showPlans/detail/ShowPlanTimer';
 import PresenterBadge from '../components/showPlans/presenters/PresenterBadge';
 import { generateKey } from '../utils/keyGenerator';
 import { useStatusUpdate } from '../hooks/status/useStatusUpdate';
-import { useDashboard } from '../hooks/dashbord/useDashboard';
+import { useDashboard } from '../hooks/dashboard/useDashboard';
 import PdfGenerator from '../components/common/PdfGenerator';
 import { useAuthStore } from '../store/useAuthStore';
 import { showsApi } from '../services/api/shows';
@@ -177,7 +177,7 @@ const ShowPlanDetail: React.FC = () => {
   const handleEndBroadcast = async () => {
     if (!showPlan.id) return;
     
-    const success = await updateStatus(showPlan.id.toString(), 'termine');
+    const success = await updateStatus(showPlan.id.toString(), 'Terminé');
     if (success) {
       navigate('/show-plans', {
         replace: true,

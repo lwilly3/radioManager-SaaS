@@ -37,6 +37,10 @@ import ResetPassword from './pages/auth/ResetPassword';
 import QuotesList from './pages/Quotes/QuotesList';
 import CreateQuote from './pages/Quotes/CreateQuote';
 import QuoteDetail from './pages/Quotes/QuoteDetail';
+import InventoryPage from './pages/Inventory';
+import EquipmentDetailPage from './pages/Inventory/EquipmentDetail';
+import CreateEquipmentPage from './pages/Inventory/CreateEquipment';
+import EquipmentMovePage from './pages/Inventory/EquipmentMove';
 
 const App: React.FC = () => {
   const isAuthenticated = useAuthStore((state) => Boolean(state.token));
@@ -123,6 +127,35 @@ const App: React.FC = () => {
                 </ProtectedRoute>
               } />
               <Route path=":id" element={<QuoteDetail />} />
+            </Route>
+
+            {/* Inventory */}
+            <Route path="inventory">
+              <Route index element={
+                <ProtectedRoute>
+                  <InventoryPage />
+                </ProtectedRoute>
+              } />
+              <Route path="create" element={
+                <ProtectedRoute>
+                  <CreateEquipmentPage />
+                </ProtectedRoute>
+              } />
+              <Route path=":id" element={
+                <ProtectedRoute>
+                  <EquipmentDetailPage />
+                </ProtectedRoute>
+              } />
+              <Route path=":id/edit" element={
+                <ProtectedRoute>
+                  <CreateEquipmentPage />
+                </ProtectedRoute>
+              } />
+              <Route path=":id/move" element={
+                <ProtectedRoute>
+                  <EquipmentMovePage />
+                </ProtectedRoute>
+              } />
             </Route>
 
             {/* Tasks */}

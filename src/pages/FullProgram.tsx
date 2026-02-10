@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Calendar, Clock, Users, Search, Filter } from 'lucide-react';
 import { format, addDays, startOfWeek } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { useDashboard } from '../hooks/dashbord/useDashboard';
+import { useDashboard } from '../hooks/dashboard/useDashboard';
 import { generateKey } from '../utils/keyGenerator';
 
 const FullProgram: React.FC = () => {
